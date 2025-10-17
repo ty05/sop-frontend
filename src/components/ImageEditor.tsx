@@ -268,7 +268,6 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
             key={el.id}
             points={el.points || []}
             stroke={el.color}
-            strokeWidth={commonProps.strokeWidth}
             fill={el.color}
             pointerLength={10}
             pointerWidth={10}
@@ -284,7 +283,6 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
             width={el.width}
             height={el.height}
             stroke={el.color}
-            strokeWidth={commonProps.strokeWidth}
             fill="transparent"
             {...commonProps}
           />
@@ -353,7 +351,6 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
             y={el.y}
             radius={el.radius || 0}
             stroke={el.color}
-            strokeWidth={commonProps.strokeWidth}
             fill="transparent"
             {...commonProps}
           />
@@ -369,7 +366,6 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
             fill={el.color}
             fontWeight="bold"
             stroke={isSelected ? 'blue' : undefined}
-            strokeWidth={isSelected ? 1 : 0}
             {...commonProps}
           />
         );

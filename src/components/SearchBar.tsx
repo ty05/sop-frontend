@@ -74,8 +74,7 @@ export default function SearchBar({ workspaceId }: SearchBarProps) {
   };
 
   const highlightText = (text: string) => {
-    if (!text) return '';
-    return { __html: text };
+    return { __html: text || '' };
   };
 
   return (

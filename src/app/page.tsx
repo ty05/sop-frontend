@@ -8,11 +8,15 @@ export default function HomePage() {
   const router = useRouter();
 
   useEffect(() => {
-    if (isAuthenticated()) {
-      router.push('/documents');
-    } else {
-      router.push('/auth/login');
-    }
+    const checkAuth = async () => {
+      if (await isAuthenticated()) {
+        router.push('/documents');
+      } else {
+        router.push('/auth/login');
+      }
+    };
+
+    checkAuth();
   }, [router]);
 
   return (

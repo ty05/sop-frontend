@@ -37,7 +37,11 @@ export default function ChapterEditor({ videoId, duration }: ChapterEditorProps)
     ]);
   };
 
-  const updateChapter = (index: number, field: 'start_sec' | 'title', value: any) => {
+  const updateChapter = <K extends keyof Chapter>(
+    index: number,
+    field: K,
+    value: Chapter[K]
+  ) => {
     const updated = [...chapters];
     updated[index][field] = value;
     setChapters(updated);

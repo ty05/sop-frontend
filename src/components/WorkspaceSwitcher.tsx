@@ -58,7 +58,7 @@ export default function WorkspaceSwitcher() {
           </div>
           <button
             onClick={handleCreateClick}
-            disabled={limits && !limits.can_create}
+            disabled={!!(limits && !limits.can_create)}
             className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 w-full disabled:bg-gray-400"
           >
             + Create Workspace
@@ -76,6 +76,10 @@ export default function WorkspaceSwitcher() {
         )}
       </div>
     );
+  }
+
+  if (!activeWorkspace) {
+    return null; // Should not happen, but TypeScript needs this
   }
 
   return (
@@ -137,7 +141,7 @@ export default function WorkspaceSwitcher() {
                 setShowDropdown(false);
                 handleCreateClick();
               }}
-              disabled={limits && !limits.can_create}
+              disabled={!!(limits && !limits.can_create)}
               className={`w-full text-left p-3 font-medium ${
                 limits && !limits.can_create
                   ? 'text-gray-500 cursor-not-allowed'

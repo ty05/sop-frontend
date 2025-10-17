@@ -39,6 +39,8 @@ export default apiClient;
 // Auth API (kept for backward compatibility, but Supabase handles auth directly)
 export const authAPI = {
   // Note: Authentication is now handled by Supabase directly via AuthContext
+  // However, magic link verification still uses the backend endpoint
+  verifyToken: (token: string) => apiClient.get(`/auth/verify?token=${token}`),
 };
 
 // Documents API

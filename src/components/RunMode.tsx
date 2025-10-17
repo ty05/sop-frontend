@@ -20,26 +20,11 @@ export default function RunMode({ steps, documentId, onExit }: RunModeProps) {
   const [imageBlobUrls, setImageBlobUrls] = useState<Record<string, string>>({});
   const [loadingAssets, setLoadingAssets] = useState(false);
 
-  if (steps.length === 0) {
-    return (
-      <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-xl mb-4">No steps available</p>
-          <button
-            onClick={onExit}
-            className="bg-blue-600 hover:bg-blue-500 px-6 py-3 rounded-lg"
-          >
-            Exit Run Mode
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  const currentStep = steps[currentIndex];
+  const currentStep = steps.length > 0 ? steps[currentIndex] : null;
 
   // Load checklist progress when step changes
   useEffect(() => {
+    if (!currentStep) return;
     const loadProgress = async () => {
       if (currentStep.type === 'checklist' && currentStep.id) {
         setLoadingProgress(true);
@@ -62,10 +47,12 @@ export default function RunMode({ steps, documentId, onExit }: RunModeProps) {
     };
 
     loadProgress();
-  }, [currentIndex, currentStep.id, currentStep.type]);
+  }, [currentIndex, currentStep?.id, currentStep?.type]);
 
   // Load images and video when step changes
   useEffect(() => {
+    if (!currentStep) return;
+
     const loadAssets = async () => {
       setLoadingAssets(true);
 
@@ -124,7 +111,7 @@ export default function RunMode({ steps, documentId, onExit }: RunModeProps) {
         return {};
       });
     };
-  }, [currentIndex, currentStep.type, currentStep.image_ids]);
+  }, [currentIndex, currentStep?.type, currentStep?.image_ids]);
 
   const handleNext = () => {
     if (currentIndex < steps.length - 1) {
@@ -139,6 +126,8 @@ export default function RunMode({ steps, documentId, onExit }: RunModeProps) {
   };
 
   const handleCheckItem = async (index: number) => {
+    if (!currentStep) return;
+
     const newCheckedState = !checkedItems[index];
 
     // Optimistically update UI
@@ -163,6 +152,22 @@ export default function RunMode({ steps, documentId, onExit }: RunModeProps) {
       });
     }
   };
+
+  if (steps.length === 0 || !currentStep) {
+    return (
+      <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-xl mb-4">No steps available</p>
+          <button
+            onClick={onExit}
+            className="bg-blue-600 hover:bg-blue-500 px-6 py-3 rounded-lg"
+          >
+            Exit Run Mode
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-900 text-white p-8">

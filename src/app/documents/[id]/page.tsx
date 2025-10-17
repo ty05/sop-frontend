@@ -39,7 +39,7 @@ export default function DocumentPage() {
       if (stepId) {
         // Wait a bit for the DOM to render
         setTimeout(() => {
-          const element = document.getElementById(`step-${stepId}`);
+          const element = window.document.getElementById(`step-${stepId}`);
           element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }, 100);
       }
@@ -111,7 +111,7 @@ export default function DocumentPage() {
     }
   };
 
-  const handleAddStep = async (type: 'text' | 'checklist' | 'image') => {
+  const handleAddStep = async (type: 'text' | 'checklist' | 'image' | 'video') => {
     // Check permission
     if (!canEdit) {
       alert('You do not have permission to edit this document. Only owners and editors can make changes.');
@@ -245,7 +245,7 @@ export default function DocumentPage() {
                 <button
                   onClick={() => setMode('run')}
                   className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                    mode === 'run'
+                    (mode as Mode) === 'run'
                       ? 'bg-blue-600 text-white'
                       : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                   }`}
@@ -266,8 +266,8 @@ export default function DocumentPage() {
               <span className="text-yellow-600">ℹ️</span>
               <div className="flex-1">
                 <p className="text-sm text-yellow-800">
-                  <strong>Draft Mode:</strong> This document is not published. Steps won't appear in search results.
-                  Change status to "Published" above to make it searchable.
+                  <strong>Draft Mode:</strong> This document is not published. Steps won&apos;t appear in search results.
+                  Change status to &quot;Published&quot; above to make it searchable.
                 </p>
               </div>
             </div>
@@ -280,7 +280,7 @@ export default function DocumentPage() {
               <span className="text-gray-600">📦</span>
               <div className="flex-1">
                 <p className="text-sm text-gray-800">
-                  <strong>Archived:</strong> This document is archived and won't appear in search results.
+                  <strong>Archived:</strong> This document is archived and won&apos;t appear in search results.
                 </p>
               </div>
             </div>

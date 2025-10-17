@@ -28,6 +28,8 @@ export interface Step {
   checklist_items?: ChecklistItem[];
   image_ids?: string[];
   video_id?: string;
+  video_start_sec?: number;
+  video_end_sec?: number;
   created_at: string;
 }
 

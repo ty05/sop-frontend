@@ -1,11 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { invitationsAPI } from '@/lib/api';
 
-export default function AcceptInvitePage() {
+function AcceptInviteContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, loading: authLoading } = useAuth();
@@ -115,5 +115,22 @@ export default function AcceptInvitePage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function AcceptInvitePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="max-w-md w-full bg-white p-8 rounded-lg shadow">
+          <div className="text-center">
+            <div className="animate-spin h-8 w-8 border-4 border-blue-600 border-t-transparent rounded-full mx-auto mb-4"></div>
+            <p>Loading...</p>
+          </div>
+        </div>
+      </div>
+    }>
+      <AcceptInviteContent />
+    </Suspense>
   );
 }
