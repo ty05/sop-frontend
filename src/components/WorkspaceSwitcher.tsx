@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { useWorkspace } from '@/contexts/WorkspaceContext';
 import apiClient from '@/lib/api';
@@ -153,18 +154,18 @@ export default function WorkspaceSwitcher() {
       <div className="flex-1 overflow-y-auto">
         <div className="p-4 space-y-2">
           <div className="text-xs text-gray-400 uppercase font-semibold mb-2">Quick Actions</div>
-          <a
+          <Link
             href="/documents"
             className="block px-3 py-2 hover:bg-gray-800 rounded text-sm"
           >
             📄 Documents
-          </a>
-          <a
+          </Link>
+          <Link
             href="/workspace/settings"
             className="block px-3 py-2 hover:bg-gray-800 rounded text-sm"
           >
             ⚙️ Settings
-          </a>
+          </Link>
         </div>
 
         {activeWorkspace.description && (

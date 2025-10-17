@@ -462,7 +462,7 @@ export default function StepEditor({ step, onUpdate, readOnly = false }: StepEdi
             </div>
           ) : (
             <div className="text-gray-500 italic text-center py-8 border-2 border-dashed rounded">
-              No images uploaded yet. Click "Upload Image" to add one.
+              No images uploaded yet. Click &quot;Upload Image&quot; to add one.
             </div>
           )}
         </div>
