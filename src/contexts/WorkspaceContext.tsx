@@ -65,10 +65,9 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
 
       if (workspace) {
         setActiveWorkspaceState(workspace);
-      } else if (workspacesList.length === 0) {
-        // No workspaces available - this is OK, user needs to create one
-        setError('No workspaces found. Please create one to get started.');
       }
+      // Note: If no workspaces exist (workspacesList.length === 0), this is a normal state
+      // for new users. We don't set an error - the UI will guide them to create one.
     } catch (error: any) {
       console.error('Failed to load workspaces:', error);
       const errorMsg = error.response?.data?.detail || error.message || 'Failed to load workspaces';
