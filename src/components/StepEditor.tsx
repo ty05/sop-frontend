@@ -157,6 +157,9 @@ export default function StepEditor({ step, onUpdate, readOnly = false }: StepEdi
         },
       });
 
+      // Mark upload as complete
+      await assetsAPI.complete(asset_id);
+
       // Update step with image ID
       const currentImageIds = step.image_ids || [];
       await stepsAPI.update(step.id, {
@@ -221,6 +224,9 @@ export default function StepEditor({ step, onUpdate, readOnly = false }: StepEdi
           'Content-Type': 'image/png',
         },
       });
+
+      // Mark upload as complete
+      await assetsAPI.complete(asset_id);
 
       // Update step with new image ID
       const currentImageIds = step.image_ids || [];
