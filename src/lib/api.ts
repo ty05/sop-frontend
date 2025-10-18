@@ -94,6 +94,8 @@ export const assetsAPI = {
   get: (id: string) => apiClient.get(`/assets/${id}`),
 
   complete: (assetId: string) => apiClient.post(`/assets/${assetId}/complete`),
+
+  delete: (assetId: string) => apiClient.delete(`/assets/${assetId}`),
 };
 
 // Video API

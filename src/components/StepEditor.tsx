@@ -39,7 +39,7 @@ export default function StepEditor({ step, onUpdate, readOnly = false }: StepEdi
     setChecklistItems(step.checklist_items || []);
   }, [step]);
 
-  // Load images with authentication and create blob URLs
+  // Load images - use CDN URLs directly from assets
   useEffect(() => {
     const loadImages = async () => {
       if (step.type === 'image' && step.image_ids && step.image_ids.length > 0) {
@@ -53,23 +53,15 @@ export default function StepEditor({ step, onUpdate, readOnly = false }: StepEdi
           }
 
           try {
-            const token = session?.access_token;
-            if (!token) continue;
+            // Get asset metadata which includes CDN URL
+            const response = await assetsAPI.get(imageId);
+            const asset = response.data;
 
-            const apiUrl = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/$/, '');
-            const response = await fetch(
-              `${apiUrl}/assets/${imageId}/stream`,
-              {
-                headers: {
-                  'Authorization': `Bearer ${token}`
-                }
-              }
-            );
-
-            if (response.ok) {
-              const blob = await response.blob();
-              const blobUrl = URL.createObjectURL(blob);
-              newBlobUrls[imageId] = blobUrl;
+            if (asset.cdn_url) {
+              // Use CDN URL directly (CORS is now configured on R2)
+              newBlobUrls[imageId] = asset.cdn_url;
+            } else if (asset.playback_url) {
+              newBlobUrls[imageId] = asset.playback_url;
             }
           } catch (error) {
             console.error(`Failed to load image ${imageId}:`, error);
@@ -82,7 +74,7 @@ export default function StepEditor({ step, onUpdate, readOnly = false }: StepEdi
 
     loadImages();
 
-    // Cleanup blob URLs on unmount
+    // Cleanup blob URLs on unmount (only for blob: URLs)
     return () => {
       Object.values(imageBlobUrls).forEach(url => {
         if (url.startsWith('blob:')) {
@@ -178,28 +170,25 @@ export default function StepEditor({ step, onUpdate, readOnly = false }: StepEdi
 
   const handleImageEdit = async (imageId: string) => {
     try {
-      const token = session?.access_token;
-      if (!token) {
-        alert('Authentication required');
-        return;
+      // Get image URL from loaded images or fetch it
+      let imageUrl = imageBlobUrls[imageId];
+
+      if (!imageUrl) {
+        const response = await assetsAPI.get(imageId);
+        const asset = response.data;
+        imageUrl = asset.cdn_url || asset.playback_url;
       }
 
-      // Fetch image with authentication
-      const apiUrl = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/$/, '');
-      const response = await fetch(
-        `${apiUrl}/assets/${imageId}/stream`,
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        }
-      );
+      if (!imageUrl) {
+        throw new Error('Image URL not available');
+      }
 
+      // For editing, we need to convert to blob
+      const response = await fetch(imageUrl);
       if (!response.ok) {
         throw new Error('Failed to fetch image');
       }
 
-      // Create blob URL from response
       const blob = await response.blob();
       const blobUrl = URL.createObjectURL(blob);
 
@@ -267,13 +256,23 @@ export default function StepEditor({ step, onUpdate, readOnly = false }: StepEdi
   };
 
   const handleRemoveImage = async (imageId: string) => {
-    if (!confirm('Remove this image?')) return;
+    if (!confirm('Remove this image? This will permanently delete the file.')) return;
 
     try {
+      // Remove from step's image_ids
       const updatedImageIds = (step.image_ids || []).filter(id => id !== imageId);
       await stepsAPI.update(step.id, {
         image_ids: updatedImageIds,
       });
+
+      // Delete the asset and file from R2
+      try {
+        await assetsAPI.delete(imageId);
+      } catch (error) {
+        console.error('Failed to delete asset from storage:', error);
+        // Continue even if deletion fails - the reference is already removed
+      }
+
       onUpdate();
     } catch (error) {
       alert('Failed to remove image');

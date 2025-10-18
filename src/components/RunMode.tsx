@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Step } from '@/types';
-import { progressAPI } from '@/lib/api';
+import { progressAPI, assetsAPI } from '@/lib/api';
 import VideoPlayer from '@/components/VideoPlayer';
 
 interface RunModeProps {
@@ -49,44 +49,37 @@ export default function RunMode({ steps, documentId, onExit }: RunModeProps) {
     loadProgress();
   }, [currentIndex, currentStep?.id, currentStep?.type]);
 
-  // Load images and video when step changes
+  // Load images using CDN URLs
   useEffect(() => {
     if (!currentStep) return;
 
     const loadAssets = async () => {
       setLoadingAssets(true);
 
-      // Clean up previous blob URLs
-      Object.values(imageBlobUrls).forEach(url => URL.revokeObjectURL(url));
+      // Clean up previous blob URLs (only blob: URLs)
+      Object.values(imageBlobUrls).forEach(url => {
+        if (url.startsWith('blob:')) {
+          URL.revokeObjectURL(url);
+        }
+      });
       setImageBlobUrls({});
 
       try {
-        const token = session?.access_token;
-        if (!token) {
-          console.error('No access token found');
-          setLoadingAssets(false);
-          return;
-        }
-
         // Load images
         if (currentStep.type === 'image' && currentStep.image_ids && currentStep.image_ids.length > 0) {
           const newBlobUrls: Record<string, string> = {};
 
           for (const imageId of currentStep.image_ids) {
             try {
-              const apiUrl = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/$/, '');
-              const response = await fetch(`${apiUrl}/assets/${imageId}/stream`, {
-                headers: {
-                  'Authorization': `Bearer ${token}`
-                }
-              });
+              // Get asset metadata which includes CDN URL
+              const response = await assetsAPI.get(imageId);
+              const asset = response.data;
 
-              if (response.ok) {
-                const blob = await response.blob();
-                const blobUrl = URL.createObjectURL(blob);
-                newBlobUrls[imageId] = blobUrl;
-              } else {
-                console.error(`Failed to load image ${imageId}: ${response.status}`);
+              if (asset.cdn_url) {
+                // Use CDN URL directly (CORS is now configured on R2)
+                newBlobUrls[imageId] = asset.cdn_url;
+              } else if (asset.playback_url) {
+                newBlobUrls[imageId] = asset.playback_url;
               }
             } catch (error) {
               console.error(`Error loading image ${imageId}:`, error);
@@ -108,7 +101,11 @@ export default function RunMode({ steps, documentId, onExit }: RunModeProps) {
     return () => {
       // Clean up blob URLs when component unmounts or step changes
       setImageBlobUrls(prev => {
-        Object.values(prev).forEach(url => URL.revokeObjectURL(url));
+        Object.values(prev).forEach(url => {
+          if (url.startsWith('blob:')) {
+            URL.revokeObjectURL(url);
+          }
+        });
         return {};
       });
     };
