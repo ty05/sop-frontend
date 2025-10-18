@@ -56,8 +56,9 @@ export default function StepEditor({ step, onUpdate, readOnly = false }: StepEdi
             const token = session?.access_token;
             if (!token) continue;
 
+            const apiUrl = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/$/, '');
             const response = await fetch(
-              `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/assets/${imageId}/stream`,
+              `${apiUrl}/assets/${imageId}/stream`,
               {
                 headers: {
                   'Authorization': `Bearer ${token}`
@@ -184,8 +185,9 @@ export default function StepEditor({ step, onUpdate, readOnly = false }: StepEdi
       }
 
       // Fetch image with authentication
+      const apiUrl = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/$/, '');
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/assets/${imageId}/stream`,
+        `${apiUrl}/assets/${imageId}/stream`,
         {
           headers: {
             'Authorization': `Bearer ${token}`

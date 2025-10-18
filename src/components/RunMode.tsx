@@ -74,7 +74,8 @@ export default function RunMode({ steps, documentId, onExit }: RunModeProps) {
 
           for (const imageId of currentStep.image_ids) {
             try {
-              const response = await fetch(`http://localhost:8000/assets/${imageId}/stream`, {
+              const apiUrl = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/$/, '');
+              const response = await fetch(`${apiUrl}/assets/${imageId}/stream`, {
                 headers: {
                   'Authorization': `Bearer ${token}`
                 }

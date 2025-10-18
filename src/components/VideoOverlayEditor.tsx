@@ -123,8 +123,9 @@ export default function VideoOverlayEditor({
           throw new Error('Authentication required');
         }
 
+        const apiUrl = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/$/, '');
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/assets/${videoId}/stream`,
+          `${apiUrl}/assets/${videoId}/stream`,
           {
             headers: {
               'Authorization': `Bearer ${token}`
