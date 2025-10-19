@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, useState, useEffect } from 'react';
-import { Stage, Layer, Line, Circle, Rect, Text, Arrow, Image as KonvaImage, Group } from 'react-konva';
+import { Stage, Layer, Line, Circle, Rect, Text, Arrow, Image as KonvaImage, Group, Transformer } from 'react-konva';
 import useImage from 'use-image';
 
 interface ImageEditorProps {
@@ -43,6 +43,19 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
   const [isPanning, setIsPanning] = useState(false);
   const [panStart, setPanStart] = useState({ x: 0, y: 0 });
   const [spacePressed, setSpacePressed] = useState(false);
+  const transformerRef = useRef<any>(null);
+  const selectedShapeRef = useRef<any>(null);
+
+  // Attach transformer to selected shape
+  useEffect(() => {
+    if (selectedId !== null && selectedShapeRef.current) {
+      // Attach transformer to the selected shape
+      if (transformerRef.current) {
+        transformerRef.current.nodes([selectedShapeRef.current]);
+        transformerRef.current.getLayer()?.batchDraw();
+      }
+    }
+  }, [selectedId]);
 
   // Handle keyboard shortcuts
   useEffect(() => {
@@ -130,8 +143,8 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
     }
 
     if (tool === 'select') {
-      // Deselect when clicking on empty space
-      const clickedOnEmpty = e.target === e.target.getStage();
+      // Deselect when clicking on empty space or the background image
+      const clickedOnEmpty = e.target === e.target.getStage() || e.target.getType() === 'Image';
       if (clickedOnEmpty) {
         setSelectedId(null);
       }
@@ -297,38 +310,27 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
   const handleElementDragEnd = (e: any, elementId: number) => {
     const updatedElements = elements.map((el) => {
       if (el.id === elementId) {
-        // For arrows wrapped in Group, e.target is the Group with x,y position
-        // Get the new position in canvas space
-        const newX = e.target.x();
-        const newY = e.target.y();
+        // Get the drag delta (amount moved from original position)
+        const deltaX = e.target.x();
+        const deltaY = e.target.y();
 
-        // For arrows, calculate new absolute points from Group position
+        // For arrows, update all points by the delta
         if (el.tool === 'arrow' && el.points) {
-          const points = el.points;
-          const minX = Math.min(points[0], points[2]);
-          const minY = Math.min(points[1], points[3]);
-          const relativePoints = [
-            points[0] - minX,
-            points[1] - minY,
-            points[2] - minX,
-            points[3] - minY,
-          ];
-
           return {
             ...el,
             points: [
-              newX + relativePoints[0],
-              newY + relativePoints[1],
-              newX + relativePoints[2],
-              newY + relativePoints[3],
+              el.points[0] + deltaX,
+              el.points[1] + deltaY,
+              el.points[2] + deltaX,
+              el.points[3] + deltaY,
             ],
           };
         }
-        // For other elements, just update x and y
+        // For other elements, add delta to current position
         return {
           ...el,
-          x: newX,
-          y: newY,
+          x: el.x + deltaX,
+          y: el.y + deltaY,
         };
       }
       return el;
@@ -336,7 +338,7 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
 
     setElements(updatedElements);
 
-    // Reset the shape position (since we updated the element data)
+    // Reset the shape position to 0,0 (since we updated the element data)
     e.target.position({ x: 0, y: 0 });
 
     // Force redraw
@@ -352,14 +354,90 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
     }
   };
 
+  const handleTransformEnd = (e: any, elementId: number) => {
+    const node = e.target;
+    const scaleX = node.scaleX();
+    const scaleY = node.scaleY();
+
+    // Reset scale to 1 and apply it to the dimensions
+    node.scaleX(1);
+    node.scaleY(1);
+
+    const updatedElements = elements.map((el) => {
+      if (el.id === elementId) {
+        if (el.tool === 'arrow' && el.points) {
+          // For arrows in Group, get the Group's position and scale
+          const groupX = node.x();
+          const groupY = node.y();
+          const points = el.points;
+          const minX = Math.min(points[0], points[2]);
+          const minY = Math.min(points[1], points[3]);
+          const relativePoints = [
+            points[0] - minX,
+            points[1] - minY,
+            points[2] - minX,
+            points[3] - minY,
+          ];
+
+          // Apply scale and position
+          return {
+            ...el,
+            points: [
+              groupX + relativePoints[0] * scaleX,
+              groupY + relativePoints[1] * scaleY,
+              groupX + relativePoints[2] * scaleX,
+              groupY + relativePoints[3] * scaleY,
+            ],
+          };
+        } else if (el.tool === 'circle') {
+          // For circles, update radius
+          return {
+            ...el,
+            x: node.x(),
+            y: node.y(),
+            radius: Math.max(el.radius || 0, 5) * scaleX,
+            width: (el.radius || 0) * 2 * scaleX,
+            height: (el.radius || 0) * 2 * scaleY,
+          };
+        } else if (el.tool === 'text') {
+          // For text, update position only (fontSize can be adjusted separately if needed)
+          return {
+            ...el,
+            x: node.x(),
+            y: node.y(),
+            width: el.width * scaleX,
+            height: el.height * scaleY,
+          };
+        } else {
+          // For rect, mosaic, spotlight
+          return {
+            ...el,
+            x: node.x(),
+            y: node.y(),
+            width: Math.max(5, el.width * scaleX),
+            height: Math.max(5, el.height * scaleY),
+          };
+        }
+      }
+      return el;
+    });
+
+    setElements(updatedElements);
+
+    // Reset position to (0,0) since we updated the element data
+    node.position({ x: 0, y: 0 });
+  };
+
   const renderElement = (el: DrawElement, isDraggable = false) => {
     const isSelected = selectedId === el.id;
     const canDrag = isDraggable && tool === 'select';
     const commonProps = {
+      ref: isSelected ? selectedShapeRef : null,
       draggable: canDrag,
       onClick: () => handleElementClick(el.id),
       onTap: () => handleElementClick(el.id),
       onDragEnd: (e: any) => handleElementDragEnd(e, el.id),
+      onTransformEnd: (e: any) => handleTransformEnd(e, el.id),
       onMouseEnter: (e: any) => {
         if (canDrag) {
           const stage = e.target.getStage();
@@ -656,6 +734,18 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
               {image && <KonvaImage image={image} />}
               {elements.map((el) => renderElement(el, true))}
               {currentElement && renderElement(currentElement, false)}
+              {tool === 'select' && selectedId !== null && (
+                <Transformer
+                  ref={transformerRef}
+                  boundBoxFunc={(oldBox, newBox) => {
+                    // Limit resize to minimum size
+                    if (newBox.width < 5 || newBox.height < 5) {
+                      return oldBox;
+                    }
+                    return newBox;
+                  }}
+                />
+              )}
             </Layer>
           </Stage>
         </div>
@@ -672,9 +762,11 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
             <div className="mt-2">
               <p className="font-semibold">Select tool:</p>
               <ul className="list-disc list-inside ml-2">
-                <li>Click any element to select it (shows blue highlight)</li>
+                <li>Click any element to select it (shows blue highlight and resize handles)</li>
                 <li>Drag elements to move them around the canvas</li>
+                <li>Drag the corner/edge handles to resize elements</li>
                 <li>Press Delete or Backspace to remove selected element</li>
+                <li>Click on empty space to deselect</li>
               </ul>
             </div>
           )}
