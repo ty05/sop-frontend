@@ -40,10 +40,19 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [scale, setScale] = useState(1);
   const [stagePos, setStagePos] = useState({ x: 0, y: 0 });
+  const [isPanning, setIsPanning] = useState(false);
+  const [panStart, setPanStart] = useState({ x: 0, y: 0 });
+  const [spacePressed, setSpacePressed] = useState(false);
 
   // Handle keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Track space bar for panning
+      if (e.code === 'Space' && !isAddingText) {
+        e.preventDefault();
+        setSpacePressed(true);
+      }
+
       // Delete selected element
       if ((e.key === 'Delete' || e.key === 'Backspace') && selectedId !== null && !isAddingText) {
         e.preventDefault();
@@ -52,8 +61,19 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
       }
     };
 
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (e.code === 'Space') {
+        setSpacePressed(false);
+        setIsPanning(false);
+      }
+    };
+
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+    };
   }, [selectedId, elements, isAddingText]);
 
   // Zoom functions
@@ -98,6 +118,17 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
     // Don't interfere with text input
     if (isAddingText) return;
 
+    const stage = e.target.getStage();
+    const pointerPos = stage.getPointerPosition();
+
+    // Handle panning (Space + drag or middle mouse button)
+    if (spacePressed || e.evt.button === 1) {
+      e.evt.preventDefault();
+      setIsPanning(true);
+      setPanStart({ x: pointerPos.x - stagePos.x, y: pointerPos.y - stagePos.y });
+      return;
+    }
+
     if (tool === 'select') {
       // Deselect when clicking on empty space
       const clickedOnEmpty = e.target === e.target.getStage();
@@ -107,15 +138,18 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
       return;
     }
 
-    const stage = e.target.getStage();
-    const pos = stage.getPointerPosition();
+    // Convert screen coordinates to canvas coordinates (accounting for zoom and pan)
+    const pos = {
+      x: (pointerPos.x - stage.x()) / scale,
+      y: (pointerPos.y - stage.y()) / scale,
+    };
 
     // Text tool: show inline text input at click position
     if (tool === 'text') {
-      // Get stage position relative to viewport
+      // Get stage position relative to viewport (use screen coordinates)
       const stageBox = stage.container().getBoundingClientRect();
-      const screenX = stageBox.left + pos.x;
-      const screenY = stageBox.top + pos.y;
+      const screenX = stageBox.left + pointerPos.x;
+      const screenY = stageBox.top + pointerPos.y;
 
       setTextPosition({ x: screenX, y: screenY });
       setTextCanvasPosition({ x: pos.x, y: pos.y });
@@ -144,9 +178,25 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
   };
 
   const handleMouseMove = (e: any) => {
+    const stage = e.target.getStage();
+    const pointerPos = stage.getPointerPosition();
+
+    // Handle panning
+    if (isPanning) {
+      setStagePos({
+        x: pointerPos.x - panStart.x,
+        y: pointerPos.y - panStart.y,
+      });
+      return;
+    }
+
     if (!isDrawing || !currentElement) return;
 
-    const pos = e.target.getStage().getPointerPosition();
+    // Convert screen coordinates to canvas coordinates (accounting for zoom and pan)
+    const pos = {
+      x: (pointerPos.x - stage.x()) / scale,
+      y: (pointerPos.y - stage.y()) / scale,
+    };
 
     if (tool === 'arrow') {
       setCurrentElement({
@@ -173,6 +223,11 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
   };
 
   const handleMouseUp = () => {
+    if (isPanning) {
+      setIsPanning(false);
+      return;
+    }
+
     if (!isDrawing) return;
 
     setIsDrawing(false);
@@ -242,11 +297,13 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
   const handleElementDragEnd = (e: any, elementId: number) => {
     const updatedElements = elements.map((el) => {
       if (el.id === elementId) {
+        // Get the drag delta in screen space, then convert to canvas space
+        const deltaX = e.target.x() / scale;
+        const deltaY = e.target.y() / scale;
+
         // For arrows, we need to update the points by the delta
         // because arrows are positioned at (0,0) and points are absolute
         if (el.tool === 'arrow' && el.points) {
-          const deltaX = e.target.x();
-          const deltaY = e.target.y();
           return {
             ...el,
             points: [
@@ -257,12 +314,11 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
             ],
           };
         }
-        // For other elements (rect, circle, text, etc.), use absolute position
-        // e.target.x() and e.target.y() give the final dragged position
+        // For other elements (rect, circle, text, etc.), add delta to original position
         return {
           ...el,
-          x: e.target.x(),
-          y: e.target.y(),
+          x: el.x + deltaX,
+          y: el.y + deltaY,
         };
       }
       return el;
@@ -556,15 +612,14 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
             scaleY={scale}
             x={stagePos.x}
             y={stagePos.y}
-            draggable={tool === 'select'}
+            draggable={false}
             onWheel={handleWheel}
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
-            onDragEnd={(e) => {
-              setStagePos({ x: e.target.x(), y: e.target.y() });
+            style={{
+              cursor: isPanning ? 'grabbing' : spacePressed ? 'grab' : tool === 'select' ? 'default' : 'crosshair'
             }}
-            style={{ cursor: tool === 'select' ? 'grab' : 'crosshair' }}
           >
             <Layer>
               {image && <KonvaImage image={image} />}
@@ -578,14 +633,16 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
           <p>Tip: Select a tool, then click and drag on the image to draw. Use the color picker to change colors.</p>
           <p className="mt-1">
             <strong>Zoom:</strong> Use mouse wheel or zoom buttons (🔍− / 🔍+) to zoom in/out. Click percentage to reset to 100%.
-            {tool === 'select' && ' Drag canvas to pan when zoomed in.'}
+          </p>
+          <p className="mt-1">
+            <strong>Pan:</strong> Hold <kbd className="px-1 bg-gray-200 rounded">Space</kbd> and drag, or use middle mouse button to pan around the canvas.
           </p>
           {tool === 'select' && (
             <div className="mt-2">
               <p className="font-semibold">Select tool:</p>
               <ul className="list-disc list-inside ml-2">
                 <li>Click any element to select it (shows blue highlight)</li>
-                <li>Drag elements to move them, or drag canvas to pan when zoomed</li>
+                <li>Drag elements to move them around the canvas</li>
                 <li>Press Delete or Backspace to remove selected element</li>
               </ul>
             </div>
