@@ -366,9 +366,9 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
     const updatedElements = elements.map((el) => {
       if (el.id === elementId) {
         if (el.tool === 'arrow' && el.points) {
-          // For arrows in Group, get the Group's position and scale
-          const groupX = node.x();
-          const groupY = node.y();
+          // For arrows in Group, get the Group's position delta and scale
+          const deltaX = node.x();
+          const deltaY = node.y();
           const points = el.points;
           const minX = Math.min(points[0], points[2]);
           const minY = Math.min(points[1], points[3]);
@@ -379,32 +379,32 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
             points[3] - minY,
           ];
 
-          // Apply scale and position
+          // Apply scale to relative points, then add back the original position plus delta
           return {
             ...el,
             points: [
-              groupX + relativePoints[0] * scaleX,
-              groupY + relativePoints[1] * scaleY,
-              groupX + relativePoints[2] * scaleX,
-              groupY + relativePoints[3] * scaleY,
+              minX + deltaX + relativePoints[0] * scaleX,
+              minY + deltaY + relativePoints[1] * scaleY,
+              minX + deltaX + relativePoints[2] * scaleX,
+              minY + deltaY + relativePoints[3] * scaleY,
             ],
           };
         } else if (el.tool === 'circle') {
-          // For circles, update radius
+          // For circles, update radius and position
           return {
             ...el,
-            x: node.x(),
-            y: node.y(),
+            x: el.x + node.x(),
+            y: el.y + node.y(),
             radius: Math.max(el.radius || 0, 5) * scaleX,
             width: (el.radius || 0) * 2 * scaleX,
             height: (el.radius || 0) * 2 * scaleY,
           };
         } else if (el.tool === 'text') {
-          // For text, update position only (fontSize can be adjusted separately if needed)
+          // For text, update position (fontSize can be adjusted separately if needed)
           return {
             ...el,
-            x: node.x(),
-            y: node.y(),
+            x: el.x + node.x(),
+            y: el.y + node.y(),
             width: el.width * scaleX,
             height: el.height * scaleY,
           };
@@ -412,8 +412,8 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
           // For rect, mosaic, spotlight
           return {
             ...el,
-            x: node.x(),
-            y: node.y(),
+            x: el.x + node.x(),
+            y: el.y + node.y(),
             width: Math.max(5, el.width * scaleX),
             height: Math.max(5, el.height * scaleY),
           };
