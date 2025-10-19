@@ -297,28 +297,38 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
   const handleElementDragEnd = (e: any, elementId: number) => {
     const updatedElements = elements.map((el) => {
       if (el.id === elementId) {
-        // Get the drag delta in screen space, then convert to canvas space
-        const deltaX = e.target.x() / scale;
-        const deltaY = e.target.y() / scale;
+        // For arrows wrapped in Group, e.target is the Group with x,y position
+        // Get the new position in canvas space
+        const newX = e.target.x();
+        const newY = e.target.y();
 
-        // For arrows, we need to update the points by the delta
-        // because arrows are positioned at (0,0) and points are absolute
+        // For arrows, calculate new absolute points from Group position
         if (el.tool === 'arrow' && el.points) {
+          const points = el.points;
+          const minX = Math.min(points[0], points[2]);
+          const minY = Math.min(points[1], points[3]);
+          const relativePoints = [
+            points[0] - minX,
+            points[1] - minY,
+            points[2] - minX,
+            points[3] - minY,
+          ];
+
           return {
             ...el,
             points: [
-              el.points[0] + deltaX,
-              el.points[1] + deltaY,
-              el.points[2] + deltaX,
-              el.points[3] + deltaY,
+              newX + relativePoints[0],
+              newY + relativePoints[1],
+              newX + relativePoints[2],
+              newY + relativePoints[3],
             ],
           };
         }
-        // For other elements (rect, circle, text, etc.), add delta to original position
+        // For other elements, just update x and y
         return {
           ...el,
-          x: el.x + deltaX,
-          y: el.y + deltaY,
+          x: newX,
+          y: newY,
         };
       }
       return el;
@@ -365,22 +375,40 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
         }
       },
       // Visual feedback for selection
-      strokeWidth: isSelected ? 4 : el.tool === 'arrow' ? 3 : 2,
       shadowColor: isSelected ? 'blue' : undefined,
       shadowBlur: isSelected ? 10 : undefined,
     };
     switch (el.tool) {
       case 'arrow':
+        // Wrap arrow in a Group for proper dragging
+        // Calculate bounding box for positioning
+        const points = el.points || [0, 0, 0, 0];
+        const minX = Math.min(points[0], points[2]);
+        const minY = Math.min(points[1], points[3]);
+        const relativePoints = [
+          points[0] - minX,
+          points[1] - minY,
+          points[2] - minX,
+          points[3] - minY,
+        ];
+
         return (
-          <Arrow
+          <Group
             key={el.id}
-            points={el.points || []}
-            stroke={el.color}
-            fill={el.color}
-            pointerLength={10}
-            pointerWidth={10}
+            x={minX}
+            y={minY}
             {...commonProps}
-          />
+          >
+            <Arrow
+              points={relativePoints}
+              stroke={el.color}
+              fill={el.color}
+              pointerLength={20}
+              pointerWidth={20}
+              strokeWidth={isSelected ? 6 : 4}
+              listening={false}
+            />
+          </Group>
         );
       case 'rect':
         return (
@@ -392,6 +420,7 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
             height={el.height}
             stroke={el.color}
             fill="transparent"
+            strokeWidth={isSelected ? 6 : 4}
             {...commonProps}
           />
         );
@@ -460,6 +489,7 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
             radius={el.radius || 0}
             stroke={el.color}
             fill="transparent"
+            strokeWidth={isSelected ? 6 : 4}
             {...commonProps}
           />
         );
@@ -470,10 +500,11 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
             x={el.x}
             y={el.y}
             text={el.text || ''}
-            fontSize={24}
+            fontSize={32}
             fill={el.color}
             fontWeight="bold"
             stroke={isSelected ? 'blue' : undefined}
+            strokeWidth={isSelected ? 2 : 0}
             {...commonProps}
           />
         );
@@ -705,10 +736,10 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
               placeholder="Type text here..."
               className="border-none outline-none px-2 py-1 text-lg"
               style={{
-                fontSize: '24px',
+                fontSize: '32px',
                 fontWeight: 'bold',
                 color: color,
-                minWidth: '200px',
+                minWidth: '250px',
               }}
             />
             <div className="text-xs text-gray-500 mt-1">
