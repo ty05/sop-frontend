@@ -38,6 +38,8 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
   const [textCanvasPosition, setTextCanvasPosition] = useState<{ x: number; y: number } | null>(null);
   const [textValue, setTextValue] = useState('');
   const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [scale, setScale] = useState(1);
+  const [stagePos, setStagePos] = useState({ x: 0, y: 0 });
 
   // Handle keyboard shortcuts
   useEffect(() => {
@@ -53,6 +55,44 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [selectedId, elements, isAddingText]);
+
+  // Zoom functions
+  const handleZoomIn = () => {
+    setScale((prevScale) => Math.min(prevScale + 0.1, 3)); // Max 300%
+  };
+
+  const handleZoomOut = () => {
+    setScale((prevScale) => Math.max(prevScale - 0.1, 0.3)); // Min 30%
+  };
+
+  const handleZoomReset = () => {
+    setScale(1);
+    setStagePos({ x: 0, y: 0 });
+  };
+
+  const handleWheel = (e: any) => {
+    e.evt.preventDefault();
+
+    const stage = stageRef.current;
+    const oldScale = stage.scaleX();
+    const pointer = stage.getPointerPosition();
+
+    const mousePointTo = {
+      x: (pointer.x - stage.x()) / oldScale,
+      y: (pointer.y - stage.y()) / oldScale,
+    };
+
+    const newScale = e.evt.deltaY < 0 ? oldScale * 1.05 : oldScale / 1.05;
+    const clampedScale = Math.max(0.3, Math.min(3, newScale));
+
+    setScale(clampedScale);
+
+    const newPos = {
+      x: pointer.x - mousePointTo.x * clampedScale,
+      y: pointer.y - mousePointTo.y * clampedScale,
+    };
+    setStagePos(newPos);
+  };
 
   const handleMouseDown = (e: any) => {
     // Don't interfere with text input
@@ -144,7 +184,19 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
 
   const handleSave = async () => {
     const stage = stageRef.current;
+
+    // Temporarily reset scale and position to export at original size
+    const originalScale = stage.scaleX();
+    const originalPos = { x: stage.x(), y: stage.y() };
+
+    stage.scale({ x: 1, y: 1 });
+    stage.position({ x: 0, y: 0 });
+
     const dataURL = stage.toDataURL({ pixelRatio: 2 });
+
+    // Restore zoom and position
+    stage.scale({ x: originalScale, y: originalScale });
+    stage.position(originalPos);
 
     // Convert to Blob
     const response = await fetch(dataURL);
@@ -431,7 +483,32 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
             />
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex gap-2 items-center">
+            {/* Zoom controls */}
+            <div className="flex items-center gap-1 border-r pr-2">
+              <button
+                onClick={handleZoomOut}
+                className="bg-gray-200 hover:bg-gray-300 px-3 py-2 rounded"
+                title="Zoom out (or use mouse wheel)"
+              >
+                🔍−
+              </button>
+              <button
+                onClick={handleZoomReset}
+                className="bg-gray-200 hover:bg-gray-300 px-3 py-2 rounded text-sm"
+                title="Reset zoom to 100%"
+              >
+                {Math.round(scale * 100)}%
+              </button>
+              <button
+                onClick={handleZoomIn}
+                className="bg-gray-200 hover:bg-gray-300 px-3 py-2 rounded"
+                title="Zoom in (or use mouse wheel)"
+              >
+                🔍+
+              </button>
+            </div>
+
             <button
               onClick={() => {
                 if (selectedId) {
@@ -470,15 +547,24 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
           </div>
         </div>
 
-        <div className="border-2 border-gray-300 overflow-auto max-h-[70vh]">
+        <div className="border-2 border-gray-300 overflow-auto max-h-[70vh] relative">
           <Stage
             ref={stageRef}
             width={image?.width || 800}
             height={image?.height || 600}
+            scaleX={scale}
+            scaleY={scale}
+            x={stagePos.x}
+            y={stagePos.y}
+            draggable={tool === 'select'}
+            onWheel={handleWheel}
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
-            style={{ cursor: tool === 'select' ? 'default' : 'crosshair' }}
+            onDragEnd={(e) => {
+              setStagePos({ x: e.target.x(), y: e.target.y() });
+            }}
+            style={{ cursor: tool === 'select' ? 'grab' : 'crosshair' }}
           >
             <Layer>
               {image && <KonvaImage image={image} />}
@@ -490,12 +576,16 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
 
         <div className="mt-4 text-sm text-gray-600">
           <p>Tip: Select a tool, then click and drag on the image to draw. Use the color picker to change colors.</p>
+          <p className="mt-1">
+            <strong>Zoom:</strong> Use mouse wheel or zoom buttons (🔍− / 🔍+) to zoom in/out. Click percentage to reset to 100%.
+            {tool === 'select' && ' Drag canvas to pan when zoomed in.'}
+          </p>
           {tool === 'select' && (
             <div className="mt-2">
               <p className="font-semibold">Select tool:</p>
               <ul className="list-disc list-inside ml-2">
                 <li>Click any element to select it (shows blue highlight)</li>
-                <li>Drag selected element to move it</li>
+                <li>Drag elements to move them, or drag canvas to pan when zoomed</li>
                 <li>Press Delete or Backspace to remove selected element</li>
               </ul>
             </div>
