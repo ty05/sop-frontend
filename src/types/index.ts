@@ -18,6 +18,25 @@ export interface Document {
   updated_at: string;
 }
 
+export interface ImageDetail {
+  id: string;
+  cdn_url: string;
+  filename: string;
+  mime_type?: string;
+  width?: number;
+  height?: number;
+}
+
+export interface VideoDetail {
+  id: string;
+  cdn_url: string;
+  filename: string;
+  mime_type?: string;
+  duration_sec?: number;
+  width?: number;
+  height?: number;
+}
+
 export interface Step {
   id: string;
   document_id: string;
@@ -27,7 +46,9 @@ export interface Step {
   body?: string;
   checklist_items?: ChecklistItem[];
   image_ids?: string[];
+  images?: ImageDetail[];  // NEW: Embedded image details
   video_id?: string;
+  video?: VideoDetail;  // NEW: Embedded video details
   video_start_sec?: number;
   video_end_sec?: number;
   created_at: string;

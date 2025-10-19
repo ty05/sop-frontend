@@ -2,6 +2,7 @@
 
 import { useRef, useState, useEffect } from 'react';
 import apiClient from '@/lib/api';
+import { VideoDetail } from '@/types';
 
 interface Chapter {
   id: string;
@@ -18,7 +19,8 @@ interface Overlay {
 }
 
 interface VideoPlayerProps {
-  videoId: string;
+  videoId?: string;  // Optional now - used as fallback
+  video?: VideoDetail;  // Embedded video data (preferred)
   startTime?: number;
   onTimeUpdate?: (time: number) => void;
   enablePiP?: boolean;
@@ -26,6 +28,7 @@ interface VideoPlayerProps {
 
 export default function VideoPlayer({
   videoId,
+  video,
   startTime = 0,
   onTimeUpdate,
   enablePiP = false
@@ -41,7 +44,7 @@ export default function VideoPlayer({
 
   useEffect(() => {
     loadVideoData();
-  }, [videoId]);
+  }, [videoId, video]);
 
   useEffect(() => {
     if (videoRef.current && startTime > 0) {
@@ -67,17 +70,26 @@ export default function VideoPlayer({
   }, [playbackUrl]);
 
   const loadVideoData = async () => {
-    try {
-      // Get asset with playback URL
-      const assetResponse = await apiClient.get(`/assets/${videoId}`);
-      setPlaybackUrl(assetResponse.data.playback_url);
-    } catch (error) {
-      console.error('Failed to load video asset:', error);
+    // Use embedded video data if available (no API call!)
+    if (video) {
+      setPlaybackUrl(video.cdn_url);
+    } else if (videoId) {
+      // Fallback: fetch video asset if no embedded data provided
+      try {
+        const assetResponse = await apiClient.get(`/assets/${videoId}`);
+        setPlaybackUrl(assetResponse.data.playback_url);
+      } catch (error) {
+        console.error('Failed to load video asset:', error);
+      }
     }
+
+    // Get the ID for loading chapters/overlays
+    const effectiveVideoId = video?.id || videoId;
+    if (!effectiveVideoId) return;
 
     // Load chapters (non-blocking)
     try {
-      const chaptersResponse = await apiClient.get(`/chapters/${videoId}/chapters`);
+      const chaptersResponse = await apiClient.get(`/chapters/${effectiveVideoId}/chapters`);
       setChapters(chaptersResponse.data);
     } catch (error) {
       console.error('Failed to load chapters:', error);
@@ -86,7 +98,7 @@ export default function VideoPlayer({
 
     // Load overlays (non-blocking)
     try {
-      const overlaysResponse = await apiClient.get(`/videos/${videoId}/overlays`);
+      const overlaysResponse = await apiClient.get(`/videos/${effectiveVideoId}/overlays`);
       setOverlays(overlaysResponse.data.filter((o: any) => o.type !== 'chapter'));
     } catch (error) {
       console.error('Failed to load overlays:', error);

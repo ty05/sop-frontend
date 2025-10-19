@@ -49,67 +49,26 @@ export default function RunMode({ steps, documentId, onExit }: RunModeProps) {
     loadProgress();
   }, [currentIndex, currentStep?.id, currentStep?.type]);
 
-  // Load images using CDN URLs
+  // Load images using embedded CDN URLs (no API calls!)
   useEffect(() => {
     if (!currentStep) return;
 
-    const loadAssets = async () => {
-      setLoadingAssets(true);
+    // Use embedded image data from step response
+    if (currentStep.type === 'image' && currentStep.images && currentStep.images.length > 0) {
+      const newBlobUrls: Record<string, string> = {};
 
-      // Clean up previous blob URLs (only blob: URLs)
-      Object.values(imageBlobUrls).forEach(url => {
-        if (url.startsWith('blob:')) {
-          URL.revokeObjectURL(url);
-        }
-      });
-      setImageBlobUrls({});
-
-      try {
-        // Load images
-        if (currentStep.type === 'image' && currentStep.image_ids && currentStep.image_ids.length > 0) {
-          const newBlobUrls: Record<string, string> = {};
-
-          for (const imageId of currentStep.image_ids) {
-            try {
-              // Get asset metadata which includes CDN URL
-              const response = await assetsAPI.get(imageId);
-              const asset = response.data;
-
-              if (asset.cdn_url) {
-                // Use CDN URL directly (CORS is now configured on R2)
-                newBlobUrls[imageId] = asset.cdn_url;
-              } else if (asset.playback_url) {
-                newBlobUrls[imageId] = asset.playback_url;
-              }
-            } catch (error) {
-              console.error(`Error loading image ${imageId}:`, error);
-            }
-          }
-
-          setImageBlobUrls(newBlobUrls);
-        }
-      } catch (error) {
-        console.error('Error loading assets:', error);
-      } finally {
-        setLoadingAssets(false);
+      for (const image of currentStep.images) {
+        newBlobUrls[image.id] = image.cdn_url;
       }
-    };
 
-    loadAssets();
-
-    // Cleanup on unmount or step change
-    return () => {
-      // Clean up blob URLs when component unmounts or step changes
-      setImageBlobUrls(prev => {
-        Object.values(prev).forEach(url => {
-          if (url.startsWith('blob:')) {
-            URL.revokeObjectURL(url);
-          }
-        });
-        return {};
-      });
-    };
-  }, [currentIndex, currentStep?.type, currentStep?.image_ids]);
+      setImageBlobUrls(newBlobUrls);
+      setLoadingAssets(false);
+    } else {
+      // Clean up if no images
+      setImageBlobUrls({});
+      setLoadingAssets(false);
+    }
+  }, [currentIndex, currentStep?.type, currentStep?.images]);
 
   const handleNext = () => {
     if (currentIndex < steps.length - 1) {
@@ -250,8 +209,12 @@ export default function RunMode({ steps, documentId, onExit }: RunModeProps) {
           </div>
         )}
 
-        {currentStep.type === 'video' && currentStep.video_id && (
-          <VideoPlayer videoId={currentStep.video_id} enablePiP={true} />
+        {currentStep.type === 'video' && (
+          <VideoPlayer
+            video={currentStep.video}
+            videoId={currentStep.video_id}
+            enablePiP={true}
+          />
         )}
 
         {/* Navigation */}

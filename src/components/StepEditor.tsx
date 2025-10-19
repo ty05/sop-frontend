@@ -39,40 +39,18 @@ export default function StepEditor({ step, onUpdate, readOnly = false }: StepEdi
     setChecklistItems(step.checklist_items || []);
   }, [step]);
 
-  // Load images - use CDN URLs directly from assets
+  // Load images - use embedded CDN URLs (optimized - no API calls!)
   useEffect(() => {
-    const loadImages = async () => {
-      if (step.type === 'image' && step.image_ids && step.image_ids.length > 0) {
-        const newBlobUrls: Record<string, string> = {};
+    if (step.type === 'image' && step.images && step.images.length > 0) {
+      const newBlobUrls: Record<string, string> = {};
 
-        for (const imageId of step.image_ids) {
-          // Skip if already loaded
-          if (imageBlobUrls[imageId]) {
-            newBlobUrls[imageId] = imageBlobUrls[imageId];
-            continue;
-          }
-
-          try {
-            // Get asset metadata which includes CDN URL
-            const response = await assetsAPI.get(imageId);
-            const asset = response.data;
-
-            if (asset.cdn_url) {
-              // Use CDN URL directly (CORS is now configured on R2)
-              newBlobUrls[imageId] = asset.cdn_url;
-            } else if (asset.playback_url) {
-              newBlobUrls[imageId] = asset.playback_url;
-            }
-          } catch (error) {
-            console.error(`Failed to load image ${imageId}:`, error);
-          }
-        }
-
-        setImageBlobUrls(newBlobUrls);
+      // Use embedded image data - no API calls needed!
+      for (const image of step.images) {
+        newBlobUrls[image.id] = image.cdn_url;
       }
-    };
 
-    loadImages();
+      setImageBlobUrls(newBlobUrls);
+    }
 
     // Cleanup blob URLs on unmount (only for blob: URLs)
     return () => {
@@ -82,7 +60,7 @@ export default function StepEditor({ step, onUpdate, readOnly = false }: StepEdi
         }
       });
     };
-  }, [step.image_ids]);
+  }, [step.images]);
 
   // Load video asset metadata
   useEffect(() => {
@@ -170,14 +148,8 @@ export default function StepEditor({ step, onUpdate, readOnly = false }: StepEdi
 
   const handleImageEdit = async (imageId: string) => {
     try {
-      // Get image URL from loaded images or fetch it
+      // Get image URL from loaded images (already embedded - no API call!)
       let imageUrl = imageBlobUrls[imageId];
-
-      if (!imageUrl) {
-        const response = await assetsAPI.get(imageId);
-        const asset = response.data;
-        imageUrl = asset.cdn_url || asset.playback_url;
-      }
 
       if (!imageUrl) {
         throw new Error('Image URL not available');
@@ -480,6 +452,7 @@ export default function StepEditor({ step, onUpdate, readOnly = false }: StepEdi
           {step.video_id ? (
             <div className="space-y-4">
               <VideoPlayer
+                video={step.video}
                 videoId={step.video_id}
                 startTime={step.video_start_sec}
                 enablePiP={true}
