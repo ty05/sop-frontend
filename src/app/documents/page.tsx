@@ -211,6 +211,9 @@ export default function DocumentsPage() {
               <div className="text-center py-12">Loading...</div>
             ) : (
               <div className="grid gap-4">
+                <div className="text-xs text-gray-500 mb-2">
+                  DEBUG: documents.length = {documents.length}, loading = {loading ? 'true' : 'false'}
+                </div>
                 {documents.map((doc) => (
                   <div
                     key={doc.id}
