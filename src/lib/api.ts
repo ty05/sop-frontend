@@ -51,7 +51,7 @@ export const documentsAPI = {
       const additionalParams = new URLSearchParams(queryString);
       additionalParams.forEach((value, key) => params.append(key, value));
     }
-    return apiClient.get(`/documents?${params}`);
+    return apiClient.get(`/documents?${params.toString()}`);
   },
 
   create: (data: { title: string; description?: string; workspace_id?: string; folder_id?: string | null }) =>
@@ -144,7 +144,7 @@ export const foldersAPI = {
   list: (workspaceId: string, parentId?: string) => {
     const params = new URLSearchParams({ workspace_id: workspaceId });
     if (parentId) params.append('parent_id', parentId);
-    return apiClient.get(`/folders?${params}`);
+    return apiClient.get(`/folders?${params.toString()}`);
   },
 
   tree: (workspaceId: string) =>

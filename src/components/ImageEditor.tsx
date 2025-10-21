@@ -310,12 +310,17 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
   const handleElementDragEnd = (e: any, elementId: number) => {
     const updatedElements = elements.map((el) => {
       if (el.id === elementId) {
-        // Get the drag delta (amount moved from original position)
-        const deltaX = e.target.x();
-        const deltaY = e.target.y();
+        // Get the new absolute position (not delta)
+        const newX = e.target.x();
+        const newY = e.target.y();
 
-        // For arrows, update all points by the delta
+        // For arrows, calculate the actual delta from the Group's original position
         if (el.tool === 'arrow' && el.points) {
+          const minX = Math.min(el.points[0], el.points[2]);
+          const minY = Math.min(el.points[1], el.points[3]);
+          const deltaX = newX - minX;
+          const deltaY = newY - minY;
+
           return {
             ...el,
             points: [
@@ -326,11 +331,11 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
             ],
           };
         }
-        // For other elements, add delta to current position
+        // For other elements, use the new position directly
         return {
           ...el,
-          x: el.x + deltaX,
-          y: el.y + deltaY,
+          x: newX,
+          y: newY,
         };
       }
       return el;
@@ -366,12 +371,14 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
     const updatedElements = elements.map((el) => {
       if (el.id === elementId) {
         if (el.tool === 'arrow' && el.points) {
-          // For arrows in Group, get the Group's position delta and scale
-          const deltaX = node.x();
-          const deltaY = node.y();
+          // For arrows in Group, get the Group's new position and scale
+          const newX = node.x();
+          const newY = node.y();
           const points = el.points;
           const minX = Math.min(points[0], points[2]);
           const minY = Math.min(points[1], points[3]);
+          const deltaX = newX - minX;
+          const deltaY = newY - minY;
           const relativePoints = [
             points[0] - minX,
             points[1] - minY,
@@ -379,22 +386,22 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
             points[3] - minY,
           ];
 
-          // Apply scale to relative points, then add back the original position plus delta
+          // Apply scale to relative points, then add back the new position
           return {
             ...el,
             points: [
-              minX + deltaX + relativePoints[0] * scaleX,
-              minY + deltaY + relativePoints[1] * scaleY,
-              minX + deltaX + relativePoints[2] * scaleX,
-              minY + deltaY + relativePoints[3] * scaleY,
+              newX + relativePoints[0] * scaleX,
+              newY + relativePoints[1] * scaleY,
+              newX + relativePoints[2] * scaleX,
+              newY + relativePoints[3] * scaleY,
             ],
           };
         } else if (el.tool === 'circle') {
           // For circles, update radius and position
           return {
             ...el,
-            x: el.x + node.x(),
-            y: el.y + node.y(),
+            x: node.x(),
+            y: node.y(),
             radius: Math.max(el.radius || 0, 5) * scaleX,
             width: (el.radius || 0) * 2 * scaleX,
             height: (el.radius || 0) * 2 * scaleY,
@@ -403,8 +410,8 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
           // For text, update position (fontSize can be adjusted separately if needed)
           return {
             ...el,
-            x: el.x + node.x(),
-            y: el.y + node.y(),
+            x: node.x(),
+            y: node.y(),
             width: el.width * scaleX,
             height: el.height * scaleY,
           };
@@ -412,8 +419,8 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
           // For rect, mosaic, spotlight
           return {
             ...el,
-            x: el.x + node.x(),
-            y: el.y + node.y(),
+            x: node.x(),
+            y: node.y(),
             width: Math.max(5, el.width * scaleX),
             height: Math.max(5, el.height * scaleY),
           };
