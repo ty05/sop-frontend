@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sop-manual-v1';
+const CACHE_NAME = 'sop-manual-v2';  // CHANGED: Increment version to force update
 const urlsToCache = [
   '/',
   '/documents',
@@ -7,6 +7,9 @@ const urlsToCache = [
 
 // Install event
 self.addEventListener('install', (event) => {
+  // Force the waiting service worker to become the active service worker
+  self.skipWaiting();
+
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => cache.addAll(urlsToCache))
@@ -65,15 +68,21 @@ self.addEventListener('fetch', (event) => {
 
 // Activate event
 self.addEventListener('activate', (event) => {
+  // Take control of all clients immediately
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME) {
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    })
+    Promise.all([
+      // Delete old caches
+      caches.keys().then((cacheNames) => {
+        return Promise.all(
+          cacheNames.map((cacheName) => {
+            if (cacheName !== CACHE_NAME) {
+              return caches.delete(cacheName);
+            }
+          })
+        );
+      }),
+      // Take control immediately
+      self.clients.claim()
+    ])
   );
 });
