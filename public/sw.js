@@ -1,19 +1,20 @@
-// DISABLED SERVICE WORKER - Unregister immediately
-self.addEventListener('install', () => {
+// COMPLETELY DISABLED - This service worker does nothing
+self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
 
-self.addEventListener('activate', () => {
-  // Delete all caches
-  caches.keys().then((cacheNames) => {
-    return Promise.all(
-      cacheNames.map((cacheName) => caches.delete(cacheName))
-    );
-  });
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys().then((keys) => {
+      return Promise.all(keys.map((key) => caches.delete(key)));
+    }).then(() => {
+      return self.clients.claim();
+    })
+  );
+});
 
-  // Unregister this service worker
-  self.registration.unregister();
-
-  // Take control and reload all clients
-  self.clients.claim();
+// DO NOT intercept any fetch requests
+self.addEventListener('fetch', (event) => {
+  // Do nothing - let all requests pass through
+  return;
 });
