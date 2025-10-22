@@ -42,14 +42,15 @@ export default function RootLayout({
         </AuthProvider>
         <PWAInstallPrompt />
 
-        {/* Service Worker Registration */}
+        {/* Service Worker - DISABLED - Unregister old broken SW */}
         <script dangerouslySetInnerHTML={{
           __html: `
             if ('serviceWorker' in navigator) {
-              window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js')
-                  .then(reg => console.log('SW registered:', reg))
-                  .catch(err => console.error('SW registration failed:', err));
+              navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                for(let registration of registrations) {
+                  registration.unregister();
+                  console.log('Service worker unregistered');
+                }
               });
             }
           `
