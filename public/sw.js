@@ -15,6 +15,18 @@ self.addEventListener('install', (event) => {
 
 // Fetch event
 self.addEventListener('fetch', (event) => {
+  // Skip intercepting API requests to the backend
+  const url = new URL(event.request.url);
+  if (url.origin !== location.origin) {
+    // This is a cross-origin request (API call) - don't intercept
+    return;
+  }
+
+  // Skip intercepting DELETE, PUT, PATCH requests
+  if (event.request.method !== 'GET') {
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request)
       .then((response) => {
@@ -24,13 +36,8 @@ self.addEventListener('fetch', (event) => {
         }
 
         return fetch(event.request).then((response) => {
-          // Don't cache non-successful responses or API requests
+          // Don't cache non-successful responses
           if (!response || response.status !== 200) {
-            return response;
-          }
-
-          // Only cache same-origin requests (don't cache API calls to backend)
-          if (response.type !== 'basic') {
             return response;
           }
 
@@ -50,6 +57,8 @@ self.addEventListener('fetch', (event) => {
         if (event.request.mode === 'navigate') {
           return caches.match('/offline.html');
         }
+        // For other failed requests, re-throw to let browser handle
+        return fetch(event.request);
       })
   );
 });
