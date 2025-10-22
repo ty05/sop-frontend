@@ -11,7 +11,7 @@ export interface Document {
   workspace_id: string;
   title: string;
   description?: string;
-  status: 'draft' | 'published' | 'archived';
+  status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
   current_version: number;
   tags: string[];
   created_at: string;

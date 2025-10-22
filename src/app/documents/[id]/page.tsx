@@ -61,7 +61,7 @@ export default function DocumentPage() {
     }
   };
 
-  const handleStatusChange = async (newStatus: 'draft' | 'published' | 'archived') => {
+  const handleStatusChange = async (newStatus: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED') => {
     if (!canEdit) {
       alert('You do not have permission to change document status. Only owners and editors can make changes.');
       return;
@@ -70,7 +70,7 @@ export default function DocumentPage() {
     try {
       await documentsAPI.update(documentId, { status: newStatus });
       setDocument(prev => prev ? { ...prev, status: newStatus } : null);
-      alert(`Document ${newStatus === 'published' ? 'published' : newStatus === 'draft' ? 'set to draft' : 'archived'} successfully! ${newStatus === 'published' ? 'Steps are now searchable.' : ''}`);
+      alert(`Document ${newStatus === 'PUBLISHED' ? 'published' : newStatus === 'DRAFT' ? 'set to draft' : 'archived'} successfully! ${newStatus === 'PUBLISHED' ? 'Steps are now searchable.' : ''}`);
     } catch (error: any) {
       const errorMsg = error.response?.data?.detail || 'Failed to update document status';
       if (errorMsg.includes('permission') || errorMsg.includes('Editor role required')) {
@@ -195,19 +195,19 @@ export default function DocumentPage() {
                 className={`px-3 py-1 rounded-full text-sm font-medium border-2 ${
                   canEdit ? 'cursor-pointer' : 'cursor-not-allowed opacity-75'
                 } ${
-                  document.status === 'published'
+                  document.status === 'PUBLISHED'
                     ? 'bg-green-100 text-green-800 border-green-300'
-                    : document.status === 'draft'
+                    : document.status === 'DRAFT'
                     ? 'bg-yellow-100 text-yellow-800 border-yellow-300'
                     : 'bg-gray-100 text-gray-800 border-gray-300'
                 }`}
                 title={!canEdit ? 'Only owners and editors can change status' : ''}
               >
-                <option value="draft">Draft</option>
-                <option value="published">Published</option>
-                <option value="archived">Archived</option>
+                <option value="DRAFT">Draft</option>
+                <option value="PUBLISHED">Published</option>
+                <option value="ARCHIVED">Archived</option>
               </select>
-              {document.status === 'published' && (
+              {document.status === 'PUBLISHED' && (
                 <span className="text-xs text-green-600" title="Steps are searchable">
                   🔍
                 </span>
@@ -260,7 +260,7 @@ export default function DocumentPage() {
         </div>
 
         {/* Status Notice */}
-        {document.status === 'draft' && (
+        {document.status === 'DRAFT' && (
           <div className="mb-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
             <div className="flex items-start gap-2">
               <span className="text-yellow-600">ℹ️</span>
@@ -274,7 +274,7 @@ export default function DocumentPage() {
           </div>
         )}
 
-        {document.status === 'archived' && (
+        {document.status === 'ARCHIVED' && (
           <div className="mb-6 bg-gray-50 border border-gray-200 rounded-lg p-4">
             <div className="flex items-start gap-2">
               <span className="text-gray-600">📦</span>
