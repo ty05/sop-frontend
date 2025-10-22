@@ -55,7 +55,7 @@ export const documentsAPI = {
   },
 
   create: (data: { title: string; description?: string; workspace_id?: string; folder_id?: string | null }) =>
-    apiClient.post('/documents', data),
+    apiClient.post('/documents/', data),
 
   get: (id: string) => apiClient.get(`/documents/${id}`),
 
@@ -73,10 +73,10 @@ export const documentsAPI = {
 // Steps API
 export const stepsAPI = {
   list: (documentId: string) =>
-    apiClient.get(`/steps?document_id=${documentId}`),
+    apiClient.get(`/steps/?document_id=${documentId}`),
 
   create: (documentId: string, data: any) =>
-    apiClient.post(`/steps?document_id=${documentId}`, data),
+    apiClient.post(`/steps/?document_id=${documentId}`, data),
 
   get: (id: string) => apiClient.get(`/steps/${id}`),
 
@@ -154,7 +154,7 @@ export const foldersAPI = {
     apiClient.get(`/folders/${folderId}`),
 
   create: (data: { workspace_id: string; name: string; description?: string; parent_id?: string | null }) =>
-    apiClient.post('/folders', data),
+    apiClient.post('/folders/', data),
 
   update: (folderId: string, data: { name?: string; description?: string }) =>
     apiClient.patch(`/folders/${folderId}`, data),
