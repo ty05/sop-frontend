@@ -73,10 +73,10 @@ export const documentsAPI = {
 // Steps API
 export const stepsAPI = {
   list: (documentId: string) =>
-    apiClient.get(`/steps/?document_id=${documentId}`),
+    apiClient.get(`/steps?document_id=${documentId}`),
 
   create: (documentId: string, data: any) =>
-    apiClient.post(`/steps/?document_id=${documentId}`, data),
+    apiClient.post(`/steps?document_id=${documentId}`, data),
 
   get: (id: string) => apiClient.get(`/steps/${id}`),
 
