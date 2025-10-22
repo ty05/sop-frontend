@@ -89,6 +89,23 @@ export default function DocumentsPage() {
     }
   };
 
+  const handleDelete = async (documentId: string, documentTitle: string, e: React.MouseEvent) => {
+    // Prevent navigation when clicking delete button
+    e.stopPropagation();
+
+    const confirmed = confirm(`Are you sure you want to delete "${documentTitle}"? This action cannot be undone.`);
+    if (!confirmed) return;
+
+    try {
+      await documentsAPI.delete(documentId);
+      // Reload documents after deletion
+      loadDocuments();
+    } catch (error) {
+      console.error('Failed to delete document:', error);
+      alert('Failed to delete document. Please try again.');
+    }
+  };
+
   // Show error state
   if (workspaceError) {
     return (
@@ -220,8 +237,23 @@ export default function DocumentsPage() {
                     onClick={() => router.push(`/documents/${doc.id}`)}
                     className="bg-white p-4 rounded-lg shadow cursor-pointer hover:shadow-lg transition"
                   >
-                    <h3 className="text-xl font-semibold">{doc.title}</h3>
-                    <p className="text-gray-600 text-sm mt-1">{doc.description}</p>
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <h3 className="text-xl font-semibold">{doc.title}</h3>
+                        <p className="text-gray-600 text-sm mt-1">{doc.description}</p>
+                      </div>
+                      {(doc.status === 'ARCHIVED' || doc.status === 'DRAFT') && (
+                        <button
+                          onClick={(e) => handleDelete(doc.id, doc.title, e)}
+                          className="ml-2 text-red-600 hover:text-red-800 hover:bg-red-50 p-2 rounded transition"
+                          title="Delete document"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+                          </svg>
+                        </button>
+                      )}
+                    </div>
                     <div className="flex gap-2 mt-2">
                       <span className="text-xs bg-gray-200 px-2 py-1 rounded">
                         {doc.status}

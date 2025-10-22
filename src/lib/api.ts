@@ -55,7 +55,7 @@ export const documentsAPI = {
   },
 
   create: (data: { title: string; description?: string; workspace_id?: string; folder_id?: string | null }) =>
-    apiClient.post('/documents/', data),
+    apiClient.post('/documents', data),
 
   get: (id: string) => apiClient.get(`/documents/${id}`),
 
@@ -154,7 +154,7 @@ export const foldersAPI = {
     apiClient.get(`/folders/${folderId}`),
 
   create: (data: { workspace_id: string; name: string; description?: string; parent_id?: string | null }) =>
-    apiClient.post('/folders/', data),
+    apiClient.post('/folders', data),
 
   update: (folderId: string, data: { name?: string; description?: string }) =>
     apiClient.patch(`/folders/${folderId}`, data),
