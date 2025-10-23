@@ -103,6 +103,18 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
     setStagePos({ x: 0, y: 0 });
   };
 
+  // Utility function to convert screen coordinates to canvas coordinates
+  // accounting for zoom (scale) and pan (stagePos)
+  const screenToCanvas = (screenX: number, screenY: number) => {
+    const stage = stageRef.current;
+    if (!stage) return { x: 0, y: 0 };
+
+    return {
+      x: (screenX - stage.x()) / scale,
+      y: (screenY - stage.y()) / scale,
+    };
+  };
+
   const handleWheel = (e: any) => {
     e.evt.preventDefault();
 
@@ -134,7 +146,27 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
     const stage = e.target.getStage();
     const pointerPos = stage.getPointerPosition();
 
-    // Handle panning (Space + drag or middle mouse button)
+    // PRIORITY 1: Check if clicking on a shape in select mode
+    // This must come before pan check so shapes can be selected even with Space held
+    if (tool === 'select') {
+      const clickedOnShape = e.target !== stage && e.target.getType() !== 'Image';
+
+      if (clickedOnShape) {
+        // Let the shape's onClick handler handle selection
+        // Don't start panning even if Space is pressed
+        return;
+      }
+
+      // Deselect when clicking on empty space or the background image
+      const clickedOnEmpty = e.target === stage || e.target.getType() === 'Image';
+      if (clickedOnEmpty) {
+        setSelectedId(null);
+      }
+      return;
+    }
+
+    // PRIORITY 2: Handle panning (Space + drag or middle mouse button)
+    // Only allow panning when not in select mode or when clicking on empty space
     if (spacePressed || e.evt.button === 1) {
       e.evt.preventDefault();
       setIsPanning(true);
@@ -142,20 +174,8 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
       return;
     }
 
-    if (tool === 'select') {
-      // Deselect when clicking on empty space or the background image
-      const clickedOnEmpty = e.target === e.target.getStage() || e.target.getType() === 'Image';
-      if (clickedOnEmpty) {
-        setSelectedId(null);
-      }
-      return;
-    }
-
     // Convert screen coordinates to canvas coordinates (accounting for zoom and pan)
-    const pos = {
-      x: (pointerPos.x - stage.x()) / scale,
-      y: (pointerPos.y - stage.y()) / scale,
-    };
+    const pos = screenToCanvas(pointerPos.x, pointerPos.y);
 
     // Text tool: show inline text input at click position
     if (tool === 'text') {
@@ -206,10 +226,7 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
     if (!isDrawing || !currentElement) return;
 
     // Convert screen coordinates to canvas coordinates (accounting for zoom and pan)
-    const pos = {
-      x: (pointerPos.x - stage.x()) / scale,
-      y: (pointerPos.y - stage.y()) / scale,
-    };
+    const pos = screenToCanvas(pointerPos.x, pointerPos.y);
 
     if (tool === 'arrow') {
       setCurrentElement({
@@ -377,8 +394,6 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
           const points = el.points;
           const minX = Math.min(points[0], points[2]);
           const minY = Math.min(points[1], points[3]);
-          const deltaX = newX - minX;
-          const deltaY = newY - minY;
           const relativePoints = [
             points[0] - minX,
             points[1] - minY,
@@ -435,6 +450,16 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
     node.position({ x: 0, y: 0 });
   };
 
+  // Dynamic cursor based on current state and mode
+  const getCursor = () => {
+    if (isPanning) return 'grabbing';
+    if (spacePressed && tool !== 'select') return 'grab';
+    if (tool === 'text') return 'text';
+    if (tool === 'arrow' || tool === 'rect' || tool === 'circle' || tool === 'mosaic' || tool === 'spotlight') return 'crosshair';
+    // In select mode, individual shapes will change cursor on hover
+    return 'default';
+  };
+
   const renderElement = (el: DrawElement, isDraggable = false) => {
     const isSelected = selectedId === el.id;
     const canDrag = isDraggable && tool === 'select';
@@ -446,7 +471,7 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
       onDragEnd: (e: any) => handleElementDragEnd(e, el.id),
       onTransformEnd: (e: any) => handleTransformEnd(e, el.id),
       onMouseEnter: (e: any) => {
-        if (canDrag) {
+        if (canDrag && !isPanning && !spacePressed) {
           const stage = e.target.getStage();
           if (stage) {
             stage.container().style.cursor = 'move';
@@ -456,7 +481,7 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
       onMouseLeave: (e: any) => {
         const stage = e.target.getStage();
         if (stage) {
-          stage.container().style.cursor = tool === 'select' ? 'default' : 'crosshair';
+          stage.container().style.cursor = getCursor();
         }
       },
       // Visual feedback for selection
@@ -734,7 +759,7 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
             style={{
-              cursor: isPanning ? 'grabbing' : spacePressed ? 'grab' : tool === 'select' ? 'default' : 'crosshair'
+              cursor: getCursor()
             }}
           >
             <Layer>
@@ -765,15 +790,19 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
           <p className="mt-1">
             <strong>Pan:</strong> Hold <kbd className="px-1 bg-gray-200 rounded">Space</kbd> and drag, or use middle mouse button to pan around the canvas.
           </p>
+          <p className="mt-1 text-green-700">
+            <strong>Pro Tip:</strong> In Select mode, you can click on shapes even while holding Space - selection always takes priority over panning!
+          </p>
           {tool === 'select' && (
             <div className="mt-2">
               <p className="font-semibold">Select tool:</p>
               <ul className="list-disc list-inside ml-2">
                 <li>Click any element to select it (shows blue highlight and resize handles)</li>
-                <li>Drag elements to move them around the canvas</li>
+                <li>Drag elements to move them around the canvas (works at any zoom level)</li>
                 <li>Drag the corner/edge handles to resize elements</li>
                 <li>Press Delete or Backspace to remove selected element</li>
                 <li>Click on empty space to deselect</li>
+                <li>Selection and editing work seamlessly with zoom and pan</li>
               </ul>
             </div>
           )}
