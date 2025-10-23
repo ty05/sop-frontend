@@ -23,6 +23,11 @@ interface DrawElement {
   height: number;
   text?: string;
   radius?: number;
+  // NEW: support proper resizing
+  fontSize?: number; // for text
+  strokeWidth?: number; // for vector stroke thickness (rect/circle/arrow)
+  pointerLength?: number; // for arrow head size
+  pointerWidth?: number; // for arrow head size
 }
 
 export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorProps) {
@@ -46,69 +51,52 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
   const transformerRef = useRef<any>(null);
   const selectedShapeRef = useRef<any>(null);
 
-  // Attach transformer to selected shape
+  // Attach transformer to selected shape — also when geometry updates
   useEffect(() => {
-    if (selectedId !== null && selectedShapeRef.current) {
-      // Attach transformer to the selected shape
-      if (transformerRef.current) {
-        transformerRef.current.nodes([selectedShapeRef.current]);
-        transformerRef.current.getLayer()?.batchDraw();
-      }
+    if (selectedId !== null && selectedShapeRef.current && transformerRef.current) {
+      transformerRef.current.nodes([selectedShapeRef.current]);
+      transformerRef.current.getLayer()?.batchDraw();
     }
-  }, [selectedId]);
+  }, [selectedId, elements]);
 
   // Handle keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Track space bar for panning
       if (e.code === 'Space' && !isAddingText) {
         e.preventDefault();
         setSpacePressed(true);
       }
-
-      // Delete selected element
       if ((e.key === 'Delete' || e.key === 'Backspace') && selectedId !== null && !isAddingText) {
         e.preventDefault();
-        setElements(elements.filter((el) => el.id !== selectedId));
+        setElements((prev) => prev.filter((el) => el.id !== selectedId));
         setSelectedId(null);
       }
     };
-
     const handleKeyUp = (e: KeyboardEvent) => {
       if (e.code === 'Space') {
         setSpacePressed(false);
         setIsPanning(false);
       }
     };
-
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup', handleKeyUp);
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [selectedId, elements, isAddingText]);
+  }, [selectedId, isAddingText]);
 
   // Zoom functions
-  const handleZoomIn = () => {
-    setScale((prevScale) => Math.min(prevScale + 0.1, 3)); // Max 300%
-  };
-
-  const handleZoomOut = () => {
-    setScale((prevScale) => Math.max(prevScale - 0.1, 0.3)); // Min 30%
-  };
-
+  const handleZoomIn = () => setScale((s) => Math.min(s + 0.1, 3));
+  const handleZoomOut = () => setScale((s) => Math.max(s - 0.1, 0.3));
   const handleZoomReset = () => {
     setScale(1);
     setStagePos({ x: 0, y: 0 });
   };
 
-  // Utility function to convert screen coordinates to canvas coordinates
-  // accounting for zoom (scale) and pan (stagePos)
   const screenToCanvas = (screenX: number, screenY: number) => {
     const stage = stageRef.current;
     if (!stage) return { x: 0, y: 0 };
-
     return {
       x: (screenX - stage.x()) / scale,
       y: (screenY - stage.y()) / scale,
@@ -117,56 +105,34 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
 
   const handleWheel = (e: any) => {
     e.evt.preventDefault();
-
     const stage = stageRef.current;
     const oldScale = stage.scaleX();
     const pointer = stage.getPointerPosition();
-
     const mousePointTo = {
       x: (pointer.x - stage.x()) / oldScale,
       y: (pointer.y - stage.y()) / oldScale,
     };
-
     const newScale = e.evt.deltaY < 0 ? oldScale * 1.05 : oldScale / 1.05;
-    const clampedScale = Math.max(0.3, Math.min(3, newScale));
-
-    setScale(clampedScale);
-
-    const newPos = {
-      x: pointer.x - mousePointTo.x * clampedScale,
-      y: pointer.y - mousePointTo.y * clampedScale,
-    };
-    setStagePos(newPos);
+    const clamped = Math.max(0.3, Math.min(3, newScale));
+    setScale(clamped);
+    setStagePos({ x: pointer.x - mousePointTo.x * clamped, y: pointer.y - mousePointTo.y * clamped });
   };
 
   const handleMouseDown = (e: any) => {
-    // Don't interfere with text input
     if (isAddingText) return;
-
     const stage = e.target.getStage();
     const pointerPos = stage.getPointerPosition();
 
-    // PRIORITY 1: Check if clicking on a shape in select mode
-    // This must come before pan check so shapes can be selected even with Space held
+    // SELECT first: allow clicking shapes even while holding Space
     if (tool === 'select') {
       const clickedOnShape = e.target !== stage && e.target.getType() !== 'Image';
-
-      if (clickedOnShape) {
-        // Let the shape's onClick handler handle selection
-        // Don't start panning even if Space is pressed
-        return;
-      }
-
-      // Deselect when clicking on empty space or the background image
+      if (clickedOnShape) return; // shape handler will run
       const clickedOnEmpty = e.target === stage || e.target.getType() === 'Image';
-      if (clickedOnEmpty) {
-        setSelectedId(null);
-      }
+      if (clickedOnEmpty) setSelectedId(null);
       return;
     }
 
-    // PRIORITY 2: Handle panning (Space + drag or middle mouse button)
-    // Only allow panning when not in select mode or when clicking on empty space
+    // PAN (Space or middle mouse)
     if (spacePressed || e.evt.button === 1) {
       e.evt.preventDefault();
       setIsPanning(true);
@@ -174,16 +140,13 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
       return;
     }
 
-    // Convert screen coordinates to canvas coordinates (accounting for zoom and pan)
     const pos = screenToCanvas(pointerPos.x, pointerPos.y);
 
-    // Text tool: show inline text input at click position
+    // TEXT: show inline input
     if (tool === 'text') {
-      // Get stage position relative to viewport (use screen coordinates)
       const stageBox = stage.container().getBoundingClientRect();
       const screenX = stageBox.left + pointerPos.x;
       const screenY = stageBox.top + pointerPos.y;
-
       setTextPosition({ x: screenX, y: screenY });
       setTextCanvasPosition({ x: pos.x, y: pos.y });
       setIsAddingText(true);
@@ -191,9 +154,8 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
       return;
     }
 
-    // Other tools: start drawing
+    // START drawing
     setIsDrawing(true);
-
     const newElement: DrawElement = {
       id: Date.now(),
       tool,
@@ -203,10 +165,13 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
       y: pos.y,
       width: 0,
       height: 0,
-      text: undefined,
       radius: 0,
+      text: undefined,
+      fontSize: 32,
+      strokeWidth: 4,
+      pointerLength: 20,
+      pointerWidth: 20,
     };
-
     setCurrentElement(newElement);
   };
 
@@ -214,41 +179,23 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
     const stage = e.target.getStage();
     const pointerPos = stage.getPointerPosition();
 
-    // Handle panning
     if (isPanning) {
-      setStagePos({
-        x: pointerPos.x - panStart.x,
-        y: pointerPos.y - panStart.y,
-      });
+      setStagePos({ x: pointerPos.x - panStart.x, y: pointerPos.y - panStart.y });
       return;
     }
-
     if (!isDrawing || !currentElement) return;
 
-    // Convert screen coordinates to canvas coordinates (accounting for zoom and pan)
     const pos = screenToCanvas(pointerPos.x, pointerPos.y);
 
     if (tool === 'arrow') {
-      setCurrentElement({
-        ...currentElement,
-        points: [currentElement.x, currentElement.y, pos.x, pos.y]
-      });
+      setCurrentElement({ ...currentElement, points: [currentElement.x, currentElement.y, pos.x, pos.y] });
     } else if (tool === 'rect' || tool === 'mosaic' || tool === 'spotlight') {
-      setCurrentElement({
-        ...currentElement,
-        width: pos.x - currentElement.x,
-        height: pos.y - currentElement.y
-      });
+      setCurrentElement({ ...currentElement, width: pos.x - currentElement.x, height: pos.y - currentElement.y });
     } else if (tool === 'circle') {
-      const radiusX = Math.abs(pos.x - currentElement.x);
-      const radiusY = Math.abs(pos.y - currentElement.y);
-      const radius = Math.max(radiusX, radiusY);
-      setCurrentElement({
-        ...currentElement,
-        radius: radius,
-        width: radius * 2,
-        height: radius * 2
-      });
+      const rx = Math.abs(pos.x - currentElement.x);
+      const ry = Math.abs(pos.y - currentElement.y);
+      const r = Math.max(rx, ry);
+      setCurrentElement({ ...currentElement, radius: r, width: r * 2, height: r * 2 });
     }
   };
 
@@ -257,43 +204,30 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
       setIsPanning(false);
       return;
     }
-
     if (!isDrawing) return;
-
     setIsDrawing(false);
     if (currentElement && (currentElement.width !== 0 || currentElement.height !== 0 || currentElement.points)) {
-      setElements([...elements, currentElement]);
+      setElements((prev) => [...prev, currentElement]);
     }
     setCurrentElement(null);
   };
 
   const handleSave = async () => {
     const stage = stageRef.current;
-
-    // Temporarily reset scale and position to export at original size
     const originalScale = stage.scaleX();
     const originalPos = { x: stage.x(), y: stage.y() };
-
     stage.scale({ x: 1, y: 1 });
     stage.position({ x: 0, y: 0 });
-
     const dataURL = stage.toDataURL({ pixelRatio: 2 });
-
-    // Restore zoom and position
     stage.scale({ x: originalScale, y: originalScale });
     stage.position(originalPos);
-
-    // Convert to Blob
     const response = await fetch(dataURL);
     const blob = await response.blob();
-
     onSave(blob);
   };
 
   const handleUndo = () => {
-    if (elements.length > 0) {
-      setElements(elements.slice(0, -1));
-    }
+    setElements((prev) => (prev.length > 0 ? prev.slice(0, -1) : prev));
   };
 
   const handleFinishText = () => {
@@ -304,12 +238,13 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
         color,
         x: textCanvasPosition.x,
         y: textCanvasPosition.y,
-        width: 100,
-        height: 30,
+        width: 0,
+        height: 0,
         text: textValue,
         radius: 0,
+        fontSize: 32,
       };
-      setElements([...elements, textElement]);
+      setElements((prev) => [...prev, textElement]);
     }
     setIsAddingText(false);
     setTextPosition(null);
@@ -324,146 +259,127 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
     setTextValue('');
   };
 
-  const handleElementDragEnd = (e: any, elementId: number) => {
-    const updatedElements = elements.map((el) => {
-      if (el.id === elementId) {
-        // Get the new absolute position (not delta)
-        const newX = e.target.x();
-        const newY = e.target.y();
+  // --- helpers for transforms ---
+  const applyGroupTransformToArrowPoints = (points: number[], node: any, scaleOnly = false) => {
+    // points: absolute coords [x1,y1,x2,y2] in layer space.
+    const minX = Math.min(points[0], points[2]);
+    const minY = Math.min(points[1], points[3]);
+    const rel = [points[0] - minX, points[1] - minY, points[2] - minX, points[3] - minY];
 
-        // For arrows, calculate the actual delta from the Group's original position
-        if (el.tool === 'arrow' && el.points) {
-          const minX = Math.min(el.points[0], el.points[2]);
-          const minY = Math.min(el.points[1], el.points[3]);
-          const deltaX = newX - minX;
-          const deltaY = newY - minY;
-
-          return {
-            ...el,
-            points: [
-              el.points[0] + deltaX,
-              el.points[1] + deltaY,
-              el.points[2] + deltaX,
-              el.points[3] + deltaY,
-            ],
-          };
-        }
-        // For other elements, use the new position directly
-        return {
-          ...el,
-          x: newX,
-          y: newY,
-        };
-      }
-      return el;
-    });
-
-    setElements(updatedElements);
-
-    // Reset the shape position to 0,0 (since we updated the element data)
-    e.target.position({ x: 0, y: 0 });
-
-    // Force redraw
-    const layer = e.target.getLayer();
-    if (layer) {
-      layer.batchDraw();
+    // Use the group's local transform (relative to layer), so it is NOT affected by Stage zoom
+    const tr = node.getTransform().copy();
+    // If we only want translation (drag end), zero out scale/rotation
+    if (scaleOnly === false && node.scaleX() === 1 && node.scaleY() === 1 && node.rotation() === 0) {
+      // drag only — tr already has just translation
     }
+
+    const p1 = tr.point({ x: rel[0], y: rel[1] });
+    const p2 = tr.point({ x: rel[2], y: rel[3] });
+
+    return [p1.x, p1.y, p2.x, p2.y];
+  };
+
+  const handleElementDragEnd = (e: any, elementId: number) => {
+    const node = e.target; // Group for arrow, shape for others
+    setElements((prev) =>
+      prev.map((el) => {
+        if (el.id !== elementId) return el;
+        if (el.tool === 'arrow' && el.points) {
+          const newPoints = applyGroupTransformToArrowPoints(el.points, node, false);
+          // reset node visual transform (we baked it into the points)
+          node.position({ x: 0, y: 0 });
+          node.scale({ x: 1, y: 1 });
+          node.rotation(0);
+          node.getLayer()?.batchDraw();
+          return { ...el, points: newPoints };
+        }
+        // other shapes just use absolute position
+        return { ...el, x: node.x(), y: node.y() };
+      })
+    );
+    // keep node at 0,0 for controlled positioning
+    e.target.position({ x: 0, y: 0 });
+    e.target.getLayer()?.batchDraw();
   };
 
   const handleElementClick = (elementId: number) => {
-    if (tool === 'select') {
-      setSelectedId(elementId);
-    }
+    if (tool === 'select') setSelectedId(elementId);
   };
 
   const handleTransformEnd = (e: any, elementId: number) => {
-    const node = e.target;
-    const scaleX = node.scaleX();
-    const scaleY = node.scaleY();
+    const node = e.target; // Group for arrow, shape for others
+    const sx = node.scaleX();
+    const sy = node.scaleY();
 
-    // Reset scale to 1 and apply it to the dimensions
-    node.scaleX(1);
-    node.scaleY(1);
-
-    const updatedElements = elements.map((el) => {
-      if (el.id === elementId) {
+    setElements((prev) =>
+      prev.map((el) => {
+        if (el.id !== elementId) return el;
         if (el.tool === 'arrow' && el.points) {
-          // For arrows in Group, get the Group's new position and scale
-          const newX = node.x();
-          const newY = node.y();
-          const points = el.points;
-          const minX = Math.min(points[0], points[2]);
-          const minY = Math.min(points[1], points[3]);
-          const relativePoints = [
-            points[0] - minX,
-            points[1] - minY,
-            points[2] - minX,
-            points[3] - minY,
-          ];
+          // Bake full transform (translate/scale/rotate) into points
+          const newPoints = applyGroupTransformToArrowPoints(el.points, node, true);
+          // Optionally scale stroke/arrow head sizes
+          const factor = (Math.abs(sx) + Math.abs(sy)) / 2;
+          const newStroke = Math.max(1, (el.strokeWidth || 4) * factor);
+          const newLen = Math.max(6, (el.pointerLength || 20) * factor);
+          const newWid = Math.max(6, (el.pointerWidth || 20) * factor);
 
-          // Apply scale to relative points, then add back the new position
+          // reset visual transform
+          node.scale({ x: 1, y: 1 });
+          node.rotation(0);
+          node.position({ x: 0, y: 0 });
+          node.getLayer()?.batchDraw();
+
           return {
             ...el,
-            points: [
-              newX + relativePoints[0] * scaleX,
-              newY + relativePoints[1] * scaleY,
-              newX + relativePoints[2] * scaleX,
-              newY + relativePoints[3] * scaleY,
-            ],
+            points: newPoints,
+            strokeWidth: newStroke,
+            pointerLength: newLen,
+            pointerWidth: newWid,
           };
         } else if (el.tool === 'circle') {
-          // For circles, update radius and position
-          return {
-            ...el,
-            x: node.x(),
-            y: node.y(),
-            radius: Math.max(el.radius || 0, 5) * scaleX,
-            width: (el.radius || 0) * 2 * scaleX,
-            height: (el.radius || 0) * 2 * scaleY,
-          };
+          const r = Math.max(5, (el.radius || 0) * Math.max(Math.abs(sx), Math.abs(sy)));
+          const updated = { ...el, x: node.x(), y: node.y(), radius: r, width: r * 2, height: r * 2, strokeWidth: Math.max(1, (el.strokeWidth || 4) * ((Math.abs(sx) + Math.abs(sy)) / 2)) };
+          node.scale({ x: 1, y: 1 });
+          node.position({ x: 0, y: 0 });
+          return updated;
         } else if (el.tool === 'text') {
-          // For text, update position (fontSize can be adjusted separately if needed)
-          return {
-            ...el,
-            x: node.x(),
-            y: node.y(),
-            width: el.width * scaleX,
-            height: el.height * scaleY,
-          };
+          // IMPORTANT: map scale to fontSize so text truly resizes (not blurry)
+          const newFontSize = Math.max(8, (el.fontSize || 32) * Math.abs(sx));
+          const updated = { ...el, x: node.x(), y: node.y(), fontSize: newFontSize };
+          node.scale({ x: 1, y: 1 });
+          node.position({ x: 0, y: 0 });
+          return updated;
         } else {
-          // For rect, mosaic, spotlight
-          return {
+          // rect / mosaic / spotlight
+          const updated = {
             ...el,
             x: node.x(),
             y: node.y(),
-            width: Math.max(5, el.width * scaleX),
-            height: Math.max(5, el.height * scaleY),
+            width: Math.max(5, el.width * Math.abs(sx)),
+            height: Math.max(5, el.height * Math.abs(sy)),
+            strokeWidth: Math.max(1, (el.strokeWidth || 4) * ((Math.abs(sx) + Math.abs(sy)) / 2)),
           };
+          node.scale({ x: 1, y: 1 });
+          node.position({ x: 0, y: 0 });
+          return updated;
         }
-      }
-      return el;
-    });
-
-    setElements(updatedElements);
-
-    // Reset position to (0,0) since we updated the element data
-    node.position({ x: 0, y: 0 });
+      })
+    );
   };
 
-  // Dynamic cursor based on current state and mode
+  // Dynamic cursor based on state
   const getCursor = () => {
     if (isPanning) return 'grabbing';
     if (spacePressed && tool !== 'select') return 'grab';
     if (tool === 'text') return 'text';
     if (tool === 'arrow' || tool === 'rect' || tool === 'circle' || tool === 'mosaic' || tool === 'spotlight') return 'crosshair';
-    // In select mode, individual shapes will change cursor on hover
     return 'default';
   };
 
   const renderElement = (el: DrawElement, isDraggable = false) => {
     const isSelected = selectedId === el.id;
     const canDrag = isDraggable && tool === 'select';
-    const commonProps = {
+    const commonProps: any = {
       ref: isSelected ? selectedShapeRef : null,
       draggable: canDrag,
       onClick: () => handleElementClick(el.id),
@@ -473,53 +389,37 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
       onMouseEnter: (e: any) => {
         if (canDrag && !isPanning && !spacePressed) {
           const stage = e.target.getStage();
-          if (stage) {
-            stage.container().style.cursor = 'move';
-          }
+          if (stage) stage.container().style.cursor = 'move';
         }
       },
       onMouseLeave: (e: any) => {
         const stage = e.target.getStage();
-        if (stage) {
-          stage.container().style.cursor = getCursor();
-        }
+        if (stage) stage.container().style.cursor = getCursor();
       },
-      // Visual feedback for selection
       shadowColor: isSelected ? 'blue' : undefined,
       shadowBlur: isSelected ? 10 : undefined,
     };
-    switch (el.tool) {
-      case 'arrow':
-        // Wrap arrow in a Group for proper dragging
-        // Calculate bounding box for positioning
-        const points = el.points || [0, 0, 0, 0];
-        const minX = Math.min(points[0], points[2]);
-        const minY = Math.min(points[1], points[3]);
-        const relativePoints = [
-          points[0] - minX,
-          points[1] - minY,
-          points[2] - minX,
-          points[3] - minY,
-        ];
 
+    switch (el.tool) {
+      case 'arrow': {
+        const pts = el.points || [0, 0, 0, 0];
+        const minX = Math.min(pts[0], pts[2]);
+        const minY = Math.min(pts[1], pts[3]);
+        const rel = [pts[0] - minX, pts[1] - minY, pts[2] - minX, pts[3] - minY];
         return (
-          <Group
-            key={el.id}
-            x={minX}
-            y={minY}
-            {...commonProps}
-          >
+          <Group key={el.id} x={minX} y={minY} name="arrow-group" {...commonProps}>
             <Arrow
-              points={relativePoints}
+              points={rel}
               stroke={el.color}
               fill={el.color}
-              pointerLength={20}
-              pointerWidth={20}
-              strokeWidth={isSelected ? 6 : 4}
+              pointerLength={el.pointerLength ?? 20}
+              pointerWidth={el.pointerWidth ?? 20}
+              strokeWidth={el.strokeWidth ?? 4}
               listening={false}
             />
           </Group>
         );
+      }
       case 'rect':
         return (
           <Rect
@@ -530,7 +430,7 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
             height={el.height}
             stroke={el.color}
             fill="transparent"
-            strokeWidth={isSelected ? 6 : 4}
+            strokeWidth={el.strokeWidth ?? 4}
             {...commonProps}
           />
         );
@@ -547,49 +447,17 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
             {...commonProps}
           />
         );
-      case 'spotlight':
+      case 'spotlight': {
         const stageWidth = stageRef.current?.width() || 800;
         const stageHeight = stageRef.current?.height() || 600;
-
         return (
-          <Group
-            key={el.id}
-            {...commonProps}
-          >
-            {/* Dark overlay covering entire canvas */}
-            <Rect
-              x={0}
-              y={0}
-              width={stageWidth}
-              height={stageHeight}
-              fill="rgba(0, 0, 0, 0.6)"
-              listening={false}
-            />
-            {/* Bright rectangle to "cut out" spotlight area */}
-            <Rect
-              x={el.x}
-              y={el.y}
-              width={el.width}
-              height={el.height}
-              fill="rgba(0, 0, 0, 0.6)"
-              globalCompositeOperation="destination-out"
-              listening={false}
-            />
-            {/* Border to show spotlight bounds when selected */}
-            {isSelected && (
-              <Rect
-                x={el.x}
-                y={el.y}
-                width={el.width}
-                height={el.height}
-                stroke="yellow"
-                strokeWidth={3}
-                dash={[5, 5]}
-                listening={false}
-              />
-            )}
+          <Group key={el.id} {...commonProps}>
+            <Rect x={0} y={0} width={stageWidth} height={stageHeight} fill="rgba(0, 0, 0, 0.6)" listening={false} />
+            <Rect x={el.x} y={el.y} width={el.width} height={el.height} fill="rgba(0, 0, 0, 0.6)" globalCompositeOperation="destination-out" listening={false} />
+            {isSelected && <Rect x={el.x} y={el.y} width={el.width} height={el.height} stroke="yellow" strokeWidth={3} dash={[5, 5]} listening={false} />}
           </Group>
         );
+      }
       case 'circle':
         return (
           <Circle
@@ -599,7 +467,7 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
             radius={el.radius || 0}
             stroke={el.color}
             fill="transparent"
-            strokeWidth={isSelected ? 6 : 4}
+            strokeWidth={el.strokeWidth ?? 4}
             {...commonProps}
           />
         );
@@ -610,11 +478,9 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
             x={el.x}
             y={el.y}
             text={el.text || ''}
-            fontSize={32}
+            fontSize={el.fontSize ?? 32}
             fill={el.color}
-            fontWeight="bold"
-            stroke={isSelected ? 'blue' : undefined}
-            strokeWidth={isSelected ? 2 : 0}
+            fontStyle="bold"
             {...commonProps}
           />
         );
@@ -628,88 +494,27 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
       <div className="bg-white rounded-lg p-4 max-w-5xl w-full max-h-screen overflow-auto">
         <div className="flex justify-between mb-4">
           <div className="flex gap-2 flex-wrap">
-            <button
-              onClick={() => setTool('select')}
-              className={`px-3 py-2 rounded ${tool === 'select' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
-            >
-              Select
-            </button>
-            <button
-              onClick={() => setTool('arrow')}
-              className={`px-3 py-2 rounded ${tool === 'arrow' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
-            >
-              Arrow →
-            </button>
-            <button
-              onClick={() => setTool('rect')}
-              className={`px-3 py-2 rounded ${tool === 'rect' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
-            >
-              Rectangle
-            </button>
-            <button
-              onClick={() => setTool('circle')}
-              className={`px-3 py-2 rounded ${tool === 'circle' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
-            >
-              Circle
-            </button>
-            <button
-              onClick={() => setTool('text')}
-              className={`px-3 py-2 rounded ${tool === 'text' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
-            >
-              Text
-            </button>
-            <button
-              onClick={() => setTool('mosaic')}
-              className={`px-3 py-2 rounded ${tool === 'mosaic' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
-            >
-              Mosaic
-            </button>
-            <button
-              onClick={() => setTool('spotlight')}
-              className={`px-3 py-2 rounded ${tool === 'spotlight' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
-              title="Highlight an area by dimming everything else"
-            >
-              Spotlight 💡
-            </button>
-
-            <input
-              type="color"
-              value={color}
-              onChange={(e) => setColor(e.target.value)}
-              className="ml-4 w-12 h-10"
-            />
+            <button onClick={() => setTool('select')} className={`px-3 py-2 rounded ${tool === 'select' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}>Select</button>
+            <button onClick={() => setTool('arrow')} className={`px-3 py-2 rounded ${tool === 'arrow' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}>Arrow →</button>
+            <button onClick={() => setTool('rect')} className={`px-3 py-2 rounded ${tool === 'rect' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}>Rectangle</button>
+            <button onClick={() => setTool('circle')} className={`px-3 py-2 rounded ${tool === 'circle' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}>Circle</button>
+            <button onClick={() => setTool('text')} className={`px-3 py-2 rounded ${tool === 'text' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}>Text</button>
+            <button onClick={() => setTool('mosaic')} className={`px-3 py-2 rounded ${tool === 'mosaic' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}>Mosaic</button>
+            <button onClick={() => setTool('spotlight')} className={`px-3 py-2 rounded ${tool === 'spotlight' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`} title="Highlight an area by dimming everything else">Spotlight 💡</button>
+            <input type="color" value={color} onChange={(e) => setColor(e.target.value)} className="ml-4 w-12 h-10" />
           </div>
 
           <div className="flex gap-2 items-center">
-            {/* Zoom controls */}
             <div className="flex items-center gap-1 border-r pr-2">
-              <button
-                onClick={handleZoomOut}
-                className="bg-gray-200 hover:bg-gray-300 px-3 py-2 rounded"
-                title="Zoom out (or use mouse wheel)"
-              >
-                🔍−
-              </button>
-              <button
-                onClick={handleZoomReset}
-                className="bg-gray-200 hover:bg-gray-300 px-3 py-2 rounded text-sm"
-                title="Reset zoom to 100%"
-              >
-                {Math.round(scale * 100)}%
-              </button>
-              <button
-                onClick={handleZoomIn}
-                className="bg-gray-200 hover:bg-gray-300 px-3 py-2 rounded"
-                title="Zoom in (or use mouse wheel)"
-              >
-                🔍+
-              </button>
+              <button onClick={handleZoomOut} className="bg-gray-200 hover:bg-gray-300 px-3 py-2 rounded" title="Zoom out (or use mouse wheel)">🔍−</button>
+              <button onClick={handleZoomReset} className="bg-gray-200 hover:bg-gray-300 px-3 py-2 rounded text-sm" title="Reset zoom to 100%">{Math.round(scale * 100)}%</button>
+              <button onClick={handleZoomIn} className="bg-gray-200 hover:bg-gray-300 px-3 py-2 rounded" title="Zoom in (or use mouse wheel)">🔍+</button>
             </div>
 
             <button
               onClick={() => {
-                if (selectedId) {
-                  setElements(elements.filter((el) => el.id !== selectedId));
+                if (selectedId !== null) {
+                  setElements((prev) => prev.filter((el) => el.id !== selectedId));
                   setSelectedId(null);
                 }
               }}
@@ -719,28 +524,9 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
             >
               Delete
             </button>
-            <button
-              onClick={handleUndo}
-              disabled={elements.length === 0}
-              className="bg-gray-300 px-4 py-2 rounded disabled:opacity-50"
-              title="Undo last action"
-            >
-              Undo
-            </button>
-            <button
-              onClick={handleSave}
-              className="bg-green-600 text-white px-4 py-2 rounded"
-              title="Save edited image"
-            >
-              Save
-            </button>
-            <button
-              onClick={onCancel}
-              className="bg-gray-300 px-4 py-2 rounded"
-              title="Cancel and close editor"
-            >
-              Cancel
-            </button>
+            <button onClick={handleUndo} disabled={elements.length === 0} className="bg-gray-300 px-4 py-2 rounded disabled:opacity-50" title="Undo last action">Undo</button>
+            <button onClick={handleSave} className="bg-green-600 text-white px-4 py-2 rounded" title="Save edited image">Save</button>
+            <button onClick={onCancel} className="bg-gray-300 px-4 py-2 rounded" title="Cancel and close editor">Cancel</button>
           </div>
         </div>
 
@@ -758,9 +544,7 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
-            style={{
-              cursor: getCursor()
-            }}
+            style={{ cursor: getCursor() }}
           >
             <Layer>
               {image && <KonvaImage image={image} />}
@@ -770,10 +554,7 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
                 <Transformer
                   ref={transformerRef}
                   boundBoxFunc={(oldBox, newBox) => {
-                    // Limit resize to minimum size
-                    if (newBox.width < 5 || newBox.height < 5) {
-                      return oldBox;
-                    }
+                    if (newBox.width < 5 || newBox.height < 5) return oldBox;
                     return newBox;
                   }}
                 />
@@ -784,67 +565,19 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
 
         <div className="mt-4 text-sm text-gray-600">
           <p>Tip: Select a tool, then click and drag on the image to draw. Use the color picker to change colors.</p>
-          <p className="mt-1">
-            <strong>Zoom:</strong> Use mouse wheel or zoom buttons (🔍− / 🔍+) to zoom in/out. Click percentage to reset to 100%.
-          </p>
-          <p className="mt-1">
-            <strong>Pan:</strong> Hold <kbd className="px-1 bg-gray-200 rounded">Space</kbd> and drag, or use middle mouse button to pan around the canvas.
-          </p>
-          <p className="mt-1 text-green-700">
-            <strong>Pro Tip:</strong> In Select mode, you can click on shapes even while holding Space - selection always takes priority over panning!
-          </p>
-          {tool === 'select' && (
-            <div className="mt-2">
-              <p className="font-semibold">Select tool:</p>
-              <ul className="list-disc list-inside ml-2">
-                <li>Click any element to select it (shows blue highlight and resize handles)</li>
-                <li>Drag elements to move them around the canvas (works at any zoom level)</li>
-                <li>Drag the corner/edge handles to resize elements</li>
-                <li>Press Delete or Backspace to remove selected element</li>
-                <li>Click on empty space to deselect</li>
-                <li>Selection and editing work seamlessly with zoom and pan</li>
-              </ul>
-            </div>
-          )}
-          {tool === 'text' && (
-            <div className="mt-2">
-              <p className="font-semibold">Text tool:</p>
-              <ul className="list-disc list-inside ml-2">
-                <li>Click where you want to add text</li>
-                <li>Type your text in the input box</li>
-                <li>Press Enter to confirm, Esc to cancel</li>
-              </ul>
-            </div>
-          )}
-          {tool === 'spotlight' && (
-            <div className="mt-2">
-              <p className="font-semibold">Spotlight tool:</p>
-              <ul className="list-disc list-inside ml-2">
-                <li>Click and drag to highlight an important area</li>
-                <li>Everything outside the rectangle will be dimmed</li>
-                <li>Perfect for drawing attention to specific parts</li>
-              </ul>
-            </div>
-          )}
+          <p className="mt-1"><strong>Zoom:</strong> Use mouse wheel or zoom buttons (🔍− / 🔍+) to zoom in/out. Click percentage to reset to 100%.</p>
+          <p className="mt-1"><strong>Pan:</strong> Hold <kbd className="px-1 bg-gray-2 00 rounded">Space</kbd> and drag, or use middle mouse button to pan around the canvas.</p>
+          <p className="mt-1 text-green-700"><strong>Pro Tip:</strong> In Select mode, you can click on shapes even while holding Space - selection always takes priority over panning!</p>
         </div>
       </div>
 
       {/* Inline Text Input */}
       {isAddingText && textPosition && (
         <>
-          {/* Overlay to detect clicks outside */}
-          <div
-            className="fixed inset-0"
-            style={{ zIndex: 9998 }}
-            onClick={handleFinishText}
-          />
+          <div className="fixed inset-0" style={{ zIndex: 9998 }} onClick={handleFinishText} />
           <div
             className="fixed bg-white border-2 border-blue-500 rounded shadow-lg p-2"
-            style={{
-              left: `${textPosition.x}px`,
-              top: `${textPosition.y}px`,
-              zIndex: 9999,
-            }}
+            style={{ left: `${textPosition.x}px`, top: `${textPosition.y}px`, zIndex: 9999 }}
             onClick={(e) => e.stopPropagation()}
           >
             <input
@@ -852,27 +585,15 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
               value={textValue}
               onChange={(e) => setTextValue(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault();
-                  handleFinishText();
-                } else if (e.key === 'Escape') {
-                  e.preventDefault();
-                  handleCancelText();
-                }
+                if (e.key === 'Enter') { e.preventDefault(); handleFinishText(); }
+                else if (e.key === 'Escape') { e.preventDefault(); handleCancelText(); }
               }}
               autoFocus
               placeholder="Type text here..."
               className="border-none outline-none px-2 py-1 text-lg"
-              style={{
-                fontSize: '32px',
-                fontWeight: 'bold',
-                color: color,
-                minWidth: '250px',
-              }}
+              style={{ fontSize: '32px', fontWeight: 'bold', color: color, minWidth: '250px' }}
             />
-            <div className="text-xs text-gray-500 mt-1">
-              Press Enter to add, Esc to cancel, or click outside
-            </div>
+            <div className="text-xs text-gray-500 mt-1">Press Enter to add, Esc to cancel, or click outside</div>
           </div>
         </>
       )}
