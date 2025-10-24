@@ -53,11 +53,20 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
 
   // Attach transformer to selected shape — also when geometry updates
   useEffect(() => {
-    if (selectedId !== null && selectedShapeRef.current && transformerRef.current) {
-      transformerRef.current.nodes([selectedShapeRef.current]);
+    console.log('Selected ID changed:', selectedId);
+    console.log('Selected shape ref:', selectedShapeRef.current);
+
+    if (selectedId !== null && selectedShapeRef.current) {
+      if (transformerRef.current) {
+        transformerRef.current.nodes([selectedShapeRef.current]);
+        transformerRef.current.getLayer()?.batchDraw();
+        console.log('Transformer attached to:', selectedShapeRef.current);
+      }
+    } else if (transformerRef.current) {
+      transformerRef.current.nodes([]);
       transformerRef.current.getLayer()?.batchDraw();
     }
-  }, [selectedId, elements]);
+  }, [selectedId]);
 
   // Handle keyboard shortcuts
   useEffect(() => {
@@ -307,64 +316,83 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
   };
 
   const handleTransformEnd = (e: any, elementId: number) => {
-    const node = e.target; // Group for arrow, shape for others
-    const sx = node.scaleX();
-    const sy = node.scaleY();
+    const node = e.target;
+    const scaleX = node.scaleX();
+    const scaleY = node.scaleY();
 
-    setElements((prev) =>
-      prev.map((el) => {
-        if (el.id !== elementId) return el;
+    // Get the node's current position BEFORE any modifications
+    const nodeX = node.x();
+    const nodeY = node.y();
+
+    // Reset scale to 1
+    node.scaleX(1);
+    node.scaleY(1);
+
+    const updatedElements = elements.map((el) => {
+      if (el.id === elementId) {
         if (el.tool === 'arrow' && el.points) {
-          // Bake full transform (translate/scale/rotate) into points
-          const newPoints = applyGroupTransformToArrowPoints(el.points, node, true);
-          // Optionally scale stroke/arrow head sizes
-          const factor = (Math.abs(sx) + Math.abs(sy)) / 2;
-          const newStroke = Math.max(1, (el.strokeWidth || 4) * factor);
-          const newLen = Math.max(6, (el.pointerLength || 20) * factor);
-          const newWid = Math.max(6, (el.pointerWidth || 20) * factor);
-
-          // reset visual transform
-          node.scale({ x: 1, y: 1 });
-          node.rotation(0);
-          node.position({ x: 0, y: 0 });
-          node.getLayer()?.batchDraw();
+          // For arrows: update points based on transform
+          const points = el.points;
+          const minX = Math.min(points[0], points[2]);
+          const minY = Math.min(points[1], points[3]);
+          const relativePoints = [
+            points[0] - minX,
+            points[1] - minY,
+            points[2] - minX,
+            points[3] - minY,
+          ];
 
           return {
             ...el,
-            points: newPoints,
-            strokeWidth: newStroke,
-            pointerLength: newLen,
-            pointerWidth: newWid,
+            points: [
+              nodeX + relativePoints[0] * scaleX,
+              nodeY + relativePoints[1] * scaleY,
+              nodeX + relativePoints[2] * scaleX,
+              nodeY + relativePoints[3] * scaleY,
+            ],
           };
         } else if (el.tool === 'circle') {
-          const r = Math.max(5, (el.radius || 0) * Math.max(Math.abs(sx), Math.abs(sy)));
-          const updated = { ...el, x: node.x(), y: node.y(), radius: r, width: r * 2, height: r * 2, strokeWidth: Math.max(1, (el.strokeWidth || 4) * ((Math.abs(sx) + Math.abs(sy)) / 2)) };
-          node.scale({ x: 1, y: 1 });
-          node.position({ x: 0, y: 0 });
-          return updated;
-        } else if (el.tool === 'text') {
-          // IMPORTANT: map scale to fontSize so text truly resizes (not blurry)
-          const newFontSize = Math.max(8, (el.fontSize || 32) * Math.abs(sx));
-          const updated = { ...el, x: node.x(), y: node.y(), fontSize: newFontSize };
-          node.scale({ x: 1, y: 1 });
-          node.position({ x: 0, y: 0 });
-          return updated;
-        } else {
-          // rect / mosaic / spotlight
-          const updated = {
+          return {
             ...el,
-            x: node.x(),
-            y: node.y(),
-            width: Math.max(5, el.width * Math.abs(sx)),
-            height: Math.max(5, el.height * Math.abs(sy)),
-            strokeWidth: Math.max(1, (el.strokeWidth || 4) * ((Math.abs(sx) + Math.abs(sy)) / 2)),
+            x: nodeX,
+            y: nodeY,
+            radius: (el.radius || 0) * scaleX,
+            width: (el.radius || 0) * 2 * scaleX,
+            height: (el.radius || 0) * 2 * scaleY,
           };
-          node.scale({ x: 1, y: 1 });
-          node.position({ x: 0, y: 0 });
-          return updated;
+        } else if (el.tool === 'text') {
+          // CRITICAL FIX: For text, keep the transformed position
+          // DO NOT reset node position to (0,0)
+          return {
+            ...el,
+            x: nodeX,
+            y: nodeY,
+            width: el.width * scaleX,
+            height: el.height * scaleY,
+            fontSize: (el.fontSize || 32) * Math.max(scaleX, scaleY),
+          };
+        } else {
+          // For rect, mosaic, spotlight
+          return {
+            ...el,
+            x: nodeX,
+            y: nodeY,
+            width: Math.max(5, el.width * scaleX),
+            height: Math.max(5, el.height * scaleY),
+          };
         }
-      })
-    );
+      }
+      return el;
+    });
+
+    setElements(updatedElements);
+
+    // CRITICAL: Only reset position for arrows (which use Group offset)
+    // DO NOT reset for text, rect, circle
+    if (elements.find(el => el.id === elementId)?.tool === 'arrow') {
+      node.position({ x: 0, y: 0 });
+    }
+    // For other shapes, keep the transformed position
   };
 
   // Dynamic cursor based on state
@@ -407,7 +435,43 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
         const minY = Math.min(pts[1], pts[3]);
         const rel = [pts[0] - minX, pts[1] - minY, pts[2] - minX, pts[3] - minY];
         return (
-          <Group key={el.id} x={minX} y={minY} name="arrow-group" {...commonProps}>
+          <Group
+            key={el.id}
+            id={el.id.toString()}
+            x={minX}
+            y={minY}
+            draggable={canDrag}
+            onClick={(e: any) => {
+              console.log('Arrow clicked:', el.id);
+              e.cancelBubble = true;
+              if (tool === 'select') {
+                setSelectedId(el.id);
+                selectedShapeRef.current = e.currentTarget;
+              }
+            }}
+            onTap={(e: any) => {
+              e.cancelBubble = true;
+              if (tool === 'select') {
+                setSelectedId(el.id);
+                selectedShapeRef.current = e.currentTarget;
+              }
+            }}
+            onDragEnd={(e: any) => handleElementDragEnd(e, el.id)}
+            onTransformEnd={(e: any) => handleTransformEnd(e, el.id)}
+            onMouseEnter={(e: any) => {
+              if (canDrag && !isPanning && !spacePressed) {
+                const stage = e.target.getStage();
+                if (stage) stage.container().style.cursor = 'move';
+              }
+            }}
+            onMouseLeave={(e: any) => {
+              const stage = e.target.getStage();
+              if (stage) stage.container().style.cursor = getCursor();
+            }}
+            shadowColor={isSelected ? 'blue' : undefined}
+            shadowBlur={isSelected ? 10 : undefined}
+            shadowOpacity={isSelected ? 0.6 : undefined}
+          >
             <Arrow
               points={rel}
               stroke={el.color}
@@ -554,9 +618,20 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
                 <Transformer
                   ref={transformerRef}
                   boundBoxFunc={(oldBox, newBox) => {
-                    if (newBox.width < 5 || newBox.height < 5) return oldBox;
+                    // Prevent shapes from becoming too small
+                    if (newBox.width < 5 || newBox.height < 5) {
+                      return oldBox;
+                    }
                     return newBox;
                   }}
+                  enabledAnchors={[
+                    'top-left',
+                    'top-right',
+                    'bottom-left',
+                    'bottom-right',
+                  ]}
+                  rotateEnabled={false}
+                  keepRatio={false}
                 />
               )}
             </Layer>
