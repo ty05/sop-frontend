@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, useState, useEffect } from 'react';
-import { Stage, Layer, Line, Circle, Rect, Text, Arrow, Image as KonvaImage, Group, Transformer } from 'react-konva';
+import { Stage, Layer, Circle, Rect, Text, Arrow, Image as KonvaImage, Group, Transformer } from 'react-konva';
 import useImage from 'use-image';
 
 interface ImageEditorProps {
