@@ -95,13 +95,13 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
     };
   }, [selectedId, isAddingText]);
 
-  // Zoom functions
-  const handleZoomIn = () => setScale((s) => Math.min(s + 0.1, 3));
-  const handleZoomOut = () => setScale((s) => Math.max(s - 0.1, 0.3));
-  const handleZoomReset = () => {
-    setScale(1);
-    setStagePos({ x: 0, y: 0 });
-  };
+  // Zoom functions - TEMPORARILY DISABLED FOR TESTING
+  // const handleZoomIn = () => setScale((s) => Math.min(s + 0.1, 3));
+  // const handleZoomOut = () => setScale((s) => Math.max(s - 0.1, 0.3));
+  // const handleZoomReset = () => {
+  //   setScale(1);
+  //   setStagePos({ x: 0, y: 0 });
+  // };
 
   const screenToCanvas = (screenX: number, screenY: number) => {
     const stage = stageRef.current;
@@ -114,17 +114,19 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
 
   const handleWheel = (e: any) => {
     e.evt.preventDefault();
-    const stage = stageRef.current;
-    const oldScale = stage.scaleX();
-    const pointer = stage.getPointerPosition();
-    const mousePointTo = {
-      x: (pointer.x - stage.x()) / oldScale,
-      y: (pointer.y - stage.y()) / oldScale,
-    };
-    const newScale = e.evt.deltaY < 0 ? oldScale * 1.05 : oldScale / 1.05;
-    const clamped = Math.max(0.3, Math.min(3, newScale));
-    setScale(clamped);
-    setStagePos({ x: pointer.x - mousePointTo.x * clamped, y: pointer.y - mousePointTo.y * clamped });
+
+    // TEMPORARILY DISABLED FOR TESTING
+    // const stage = stageRef.current;
+    // const oldScale = stage.scaleX();
+    // const pointer = stage.getPointerPosition();
+    // const mousePointTo = {
+    //   x: (pointer.x - stage.x()) / oldScale,
+    //   y: (pointer.y - stage.y()) / oldScale,
+    // };
+    // const newScale = e.evt.deltaY < 0 ? oldScale * 1.05 : oldScale / 1.05;
+    // const clamped = Math.max(0.3, Math.min(3, newScale));
+    // setScale(clamped);
+    // setStagePos({ x: pointer.x - mousePointTo.x * clamped, y: pointer.y - mousePointTo.y * clamped });
   };
 
   const handleMouseDown = (e: any) => {
@@ -581,11 +583,12 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
           </div>
 
           <div className="flex gap-2 items-center">
-            <div className="flex items-center gap-1 border-r pr-2">
+            {/* ZOOM BUTTONS TEMPORARILY DISABLED FOR TESTING */}
+            {/* <div className="flex items-center gap-1 border-r pr-2">
               <button onClick={handleZoomOut} className="bg-gray-200 hover:bg-gray-300 px-3 py-2 rounded" title="Zoom out (or use mouse wheel)">🔍−</button>
               <button onClick={handleZoomReset} className="bg-gray-200 hover:bg-gray-300 px-3 py-2 rounded text-sm" title="Reset zoom to 100%">{Math.round(scale * 100)}%</button>
               <button onClick={handleZoomIn} className="bg-gray-200 hover:bg-gray-300 px-3 py-2 rounded" title="Zoom in (or use mouse wheel)">🔍+</button>
-            </div>
+            </div> */}
 
             <button
               onClick={() => {
@@ -652,7 +655,8 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
 
         <div className="mt-4 text-sm text-gray-600">
           <p>Tip: Select a tool, then click and drag on the image to draw. Use the color picker to change colors.</p>
-          <p className="mt-1"><strong>Zoom:</strong> Use mouse wheel or zoom buttons (🔍− / 🔍+) to zoom in/out. Click percentage to reset to 100%.</p>
+          {/* ZOOM TIP TEMPORARILY DISABLED FOR TESTING */}
+          {/* <p className="mt-1"><strong>Zoom:</strong> Use mouse wheel or zoom buttons (🔍− / 🔍+) to zoom in/out. Click percentage to reset to 100%.</p> */}
           <p className="mt-1"><strong>Pan:</strong> Hold <kbd className="px-1 bg-gray-2 00 rounded">Space</kbd> and drag, or use middle mouse button to pan around the canvas.</p>
           <p className="mt-1 text-green-700"><strong>Pro Tip:</strong> In Select mode, you can click on shapes even while holding Space - selection always takes priority over panning!</p>
         </div>
