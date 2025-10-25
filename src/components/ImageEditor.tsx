@@ -271,59 +271,18 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
     setTextValue('');
   };
 
-  // --- helpers for transforms ---
-  const applyGroupTransformToArrowPoints = (points: number[], node: any, scaleOnly = false) => {
-    // points: absolute coords [x1,y1,x2,y2] in layer space.
-    const minX = Math.min(points[0], points[2]);
-    const minY = Math.min(points[1], points[3]);
-    const rel = [points[0] - minX, points[1] - minY, points[2] - minX, points[3] - minY];
-
-    // Use the group's local transform (relative to layer), so it is NOT affected by Stage zoom
-    const tr = node.getTransform().copy();
-    // If we only want translation (drag end), zero out scale/rotation
-    if (scaleOnly === false && node.scaleX() === 1 && node.scaleY() === 1 && node.rotation() === 0) {
-      // drag only — tr already has just translation
-    }
-
-    const p1 = tr.point({ x: rel[0], y: rel[1] });
-    const p2 = tr.point({ x: rel[2], y: rel[3] });
-
-    return [p1.x, p1.y, p2.x, p2.y];
-  };
-
   const handleElementDragEnd = (e: any, elementId: number) => {
     const node = e.target;
+    const newX = node.x();
+    const newY = node.y();
 
     setElements((prev) =>
-      prev.map((el) => {
-        if (el.id !== elementId) return el;
-
-        if (el.tool === 'arrow' && el.points) {
-          // For arrows in Group: apply transform to points
-          const newPoints = applyGroupTransformToArrowPoints(el.points, node, false);
-
-          // Reset Group position ONLY for arrows
-          node.position({ x: 0, y: 0 });
-          node.scale({ x: 1, y: 1 });
-          node.rotation(0);
-
-          return { ...el, points: newPoints };
-        }
-
-        // For ALL other shapes: just update x, y
-        // DO NOT reset their position
-        return { ...el, x: node.x(), y: node.y() };
-      })
+      prev.map((el) =>
+        el.id === elementId
+          ? { ...el, x: newX, y: newY }
+          : el
+      )
     );
-
-    // CRITICAL: Only redraw, don't reset position again
-    e.target.getLayer()?.batchDraw();
-
-    // DO NOT call e.target.position({ x: 0, y: 0 }) here for non-arrows
-  };
-
-  const handleElementClick = (elementId: number) => {
-    if (tool === 'select') setSelectedId(elementId);
   };
 
   const handleTransformEnd = (e: any, elementId: number) => {
@@ -341,28 +300,7 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
 
     const updatedElements = elements.map((el) => {
       if (el.id === elementId) {
-        if (el.tool === 'arrow' && el.points) {
-          // For arrows: update points based on transform
-          const points = el.points;
-          const minX = Math.min(points[0], points[2]);
-          const minY = Math.min(points[1], points[3]);
-          const relativePoints = [
-            points[0] - minX,
-            points[1] - minY,
-            points[2] - minX,
-            points[3] - minY,
-          ];
-
-          return {
-            ...el,
-            points: [
-              nodeX + relativePoints[0] * scaleX,
-              nodeY + relativePoints[1] * scaleY,
-              nodeX + relativePoints[2] * scaleX,
-              nodeY + relativePoints[3] * scaleY,
-            ],
-          };
-        } else if (el.tool === 'circle') {
+        if (el.tool === 'circle') {
           return {
             ...el,
             x: nodeX,
@@ -372,18 +310,16 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
             height: (el.radius || 0) * 2 * scaleY,
           };
         } else if (el.tool === 'text') {
-          // CRITICAL FIX: For text, keep the transformed position
-          // DO NOT reset node position to (0,0)
+          // For text, scale fontSize but don't constrain width
           return {
             ...el,
             x: nodeX,
             y: nodeY,
-            width: (el.width || 200) * scaleX,
-            height: (el.height || 40) * scaleY,
+            // Don't multiply width/height - they're not used in rendering
             fontSize: (el.fontSize || 32) * Math.max(scaleX, scaleY),
           };
         } else {
-          // For rect, mosaic, spotlight
+          // For rect, mosaic, spotlight (arrows handle their own transform)
           return {
             ...el,
             x: nodeX,
@@ -397,13 +333,6 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
     });
 
     setElements(updatedElements);
-
-    // CRITICAL: Only reset position for arrows (which use Group offset)
-    // DO NOT reset for text, rect, circle
-    if (elements.find(el => el.id === elementId)?.tool === 'arrow') {
-      node.position({ x: 0, y: 0 });
-    }
-    // For other shapes, keep the transformed position
   };
 
   // Dynamic cursor based on state
@@ -421,8 +350,20 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
     const commonProps: any = {
       ref: isSelected ? selectedShapeRef : null,
       draggable: canDrag,
-      onClick: () => handleElementClick(el.id),
-      onTap: () => handleElementClick(el.id),
+      onClick: (e: any) => {
+        if (tool === 'select') {
+          e.cancelBubble = true;
+          setSelectedId(el.id);
+          selectedShapeRef.current = e.target;
+        }
+      },
+      onTap: (e: any) => {
+        if (tool === 'select') {
+          e.cancelBubble = true;
+          setSelectedId(el.id);
+          selectedShapeRef.current = e.target;
+        }
+      },
       onDragEnd: (e: any) => handleElementDragEnd(e, el.id),
       onTransformEnd: (e: any) => handleTransformEnd(e, el.id),
       onMouseEnter: (e: any) => {
@@ -441,34 +382,91 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
 
     switch (el.tool) {
       case 'arrow': {
-        const pts = el.points || [0, 0, 0, 0];
-        const minX = Math.min(pts[0], pts[2]);
-        const minY = Math.min(pts[1], pts[3]);
-        const rel = [pts[0] - minX, pts[1] - minY, pts[2] - minX, pts[3] - minY];
+        if (!el.points || el.points.length < 4) return null;
+
         return (
-          <Group
+          <Arrow
             key={el.id}
             id={el.id.toString()}
-            x={minX}
-            y={minY}
+            points={el.points}
+            stroke={el.color}
+            fill={el.color}
+            pointerLength={el.pointerLength ?? 20}
+            pointerWidth={el.pointerWidth ?? 20}
+            strokeWidth={el.strokeWidth ?? 4}
             draggable={canDrag}
             onClick={(e: any) => {
-              console.log('Arrow clicked:', el.id);
-              e.cancelBubble = true;
               if (tool === 'select') {
+                e.cancelBubble = true;
                 setSelectedId(el.id);
-                selectedShapeRef.current = e.currentTarget;
+                selectedShapeRef.current = e.target;
               }
             }}
             onTap={(e: any) => {
-              e.cancelBubble = true;
               if (tool === 'select') {
+                e.cancelBubble = true;
                 setSelectedId(el.id);
-                selectedShapeRef.current = e.currentTarget;
+                selectedShapeRef.current = e.target;
               }
             }}
-            onDragEnd={(e: any) => handleElementDragEnd(e, el.id)}
-            onTransformEnd={(e: any) => handleTransformEnd(e, el.id)}
+            onDragEnd={(e: any) => {
+              // For arrow, just update points by delta
+              const deltaX = e.target.x();
+              const deltaY = e.target.y();
+
+              if (el.points) {
+                setElements((prev) =>
+                  prev.map((item) =>
+                    item.id === el.id
+                      ? {
+                          ...item,
+                          points: [
+                            el.points![0] + deltaX,
+                            el.points![1] + deltaY,
+                            el.points![2] + deltaX,
+                            el.points![3] + deltaY,
+                          ],
+                        }
+                      : item
+                  )
+                );
+              }
+
+              // Reset arrow position
+              e.target.position({ x: 0, y: 0 });
+            }}
+            onTransformEnd={(e: any) => {
+              const node = e.target;
+              const scaleX = node.scaleX();
+              const scaleY = node.scaleY();
+
+              node.scaleX(1);
+              node.scaleY(1);
+
+              if (el.points) {
+                const cx = (el.points[0] + el.points[2]) / 2;
+                const cy = (el.points[1] + el.points[3]) / 2;
+
+                setElements((prev) =>
+                  prev.map((item) =>
+                    item.id === el.id
+                      ? {
+                          ...item,
+                          points: [
+                            cx + (el.points![0] - cx) * scaleX,
+                            cy + (el.points![1] - cy) * scaleY,
+                            cx + (el.points![2] - cx) * scaleX,
+                            cy + (el.points![3] - cy) * scaleY,
+                          ],
+                          pointerLength: (el.pointerLength || 20) * Math.max(scaleX, scaleY),
+                          pointerWidth: (el.pointerWidth || 20) * Math.max(scaleX, scaleY),
+                          strokeWidth: (el.strokeWidth || 4) * Math.max(scaleX, scaleY),
+                        }
+                      : item
+                  )
+                );
+              }
+            }}
             onMouseEnter={(e: any) => {
               if (canDrag && !isPanning && !spacePressed) {
                 const stage = e.target.getStage();
@@ -482,17 +480,7 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
             shadowColor={isSelected ? 'blue' : undefined}
             shadowBlur={isSelected ? 10 : undefined}
             shadowOpacity={isSelected ? 0.6 : undefined}
-          >
-            <Arrow
-              points={rel}
-              stroke={el.color}
-              fill={el.color}
-              pointerLength={el.pointerLength ?? 20}
-              pointerWidth={el.pointerWidth ?? 20}
-              strokeWidth={el.strokeWidth ?? 4}
-              listening={false}
-            />
-          </Group>
+          />
         );
       }
       case 'rect':
@@ -557,8 +545,9 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
             fontSize={el.fontSize ?? 32}
             fill={el.color}
             fontStyle="bold"
-            width={el.width || 200}
-            height={el.height || 40}
+            // Don't set width - let text size naturally
+            wrap="none"
+            ellipsis={false}
             {...commonProps}
           />
         );
