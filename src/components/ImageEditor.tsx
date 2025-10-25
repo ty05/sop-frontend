@@ -247,12 +247,13 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
         color,
         x: textCanvasPosition.x,
         y: textCanvasPosition.y,
-        width: 0,
-        height: 0,
+        width: 200,  // Set default width (was 0)
+        height: 40,  // Set default height (was 0)
         text: textValue,
         radius: 0,
         fontSize: 32,
       };
+      console.log('Creating text element:', textElement);
       setElements((prev) => [...prev, textElement]);
     }
     setIsAddingText(false);
@@ -289,26 +290,34 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
   };
 
   const handleElementDragEnd = (e: any, elementId: number) => {
-    const node = e.target; // Group for arrow, shape for others
+    const node = e.target;
+
     setElements((prev) =>
       prev.map((el) => {
         if (el.id !== elementId) return el;
+
         if (el.tool === 'arrow' && el.points) {
+          // For arrows in Group: apply transform to points
           const newPoints = applyGroupTransformToArrowPoints(el.points, node, false);
-          // reset node visual transform (we baked it into the points)
+
+          // Reset Group position ONLY for arrows
           node.position({ x: 0, y: 0 });
           node.scale({ x: 1, y: 1 });
           node.rotation(0);
-          node.getLayer()?.batchDraw();
+
           return { ...el, points: newPoints };
         }
-        // other shapes just use absolute position
+
+        // For ALL other shapes: just update x, y
+        // DO NOT reset their position
         return { ...el, x: node.x(), y: node.y() };
       })
     );
-    // keep node at 0,0 for controlled positioning
-    e.target.position({ x: 0, y: 0 });
+
+    // CRITICAL: Only redraw, don't reset position again
     e.target.getLayer()?.batchDraw();
+
+    // DO NOT call e.target.position({ x: 0, y: 0 }) here for non-arrows
   };
 
   const handleElementClick = (elementId: number) => {
@@ -367,8 +376,8 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
             ...el,
             x: nodeX,
             y: nodeY,
-            width: el.width * scaleX,
-            height: el.height * scaleY,
+            width: (el.width || 200) * scaleX,
+            height: (el.height || 40) * scaleY,
             fontSize: (el.fontSize || 32) * Math.max(scaleX, scaleY),
           };
         } else {
@@ -539,12 +548,15 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
         return (
           <Text
             key={el.id}
+            id={el.id.toString()}
             x={el.x}
             y={el.y}
             text={el.text || ''}
             fontSize={el.fontSize ?? 32}
             fill={el.color}
             fontStyle="bold"
+            width={el.width || 200}
+            height={el.height || 40}
             {...commonProps}
           />
         );
