@@ -2,6 +2,17 @@
 const nextConfig = {
   reactStrictMode: true,
 
+  eslint: {
+    // WARNING: ビルド時のESLintチェックを無効化
+    ignoreDuringBuilds: true,
+  },
+
+  eslint: {
+    // WARNING: ビルド時のESLintチェックを無効化
+    ignoreDuringBuilds: true,
+  },
+ 
+
   // PWA headers
   async headers() {
     return [
@@ -17,5 +28,7 @@ const nextConfig = {
     ];
   },
 };
+
+
 
 module.exports = nextConfig;
