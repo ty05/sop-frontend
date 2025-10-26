@@ -308,11 +308,12 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
       const blob = await response.blob();
       
       await onSave(blob);
-      // Success - parent will close editor
+      
+      // Success - parent handles closing
     } catch (error) {
       console.error('Save error:', error);
       alert('Failed to save image. Please try again.');
-      setIsSaving(false);
+      setIsSaving(false); // CRITICAL: Reset on error
     }
   };
 
