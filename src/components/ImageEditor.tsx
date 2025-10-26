@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, useState, useEffect } from 'react';
-import { Stage, Layer, Arrow, Rect, Circle, Text, Image as KonvaImage, Transformer } from 'react-konva';
+import { Stage, Layer, Line, Rect, Circle, Text, Image as KonvaImage, Transformer, Group } from 'react-konva';
 import useImage from 'use-image';
 
 interface ImageEditorProps {
@@ -16,7 +16,6 @@ interface DrawElement {
   id: number;
   tool: Tool;
   color: string;
-  points?: number[];
   x: number;
   y: number;
   width: number;
@@ -24,6 +23,8 @@ interface DrawElement {
   text?: string;
   radius?: number;
   fontSize?: number;
+  // For arrow - store as x,y,width,height box
+  // Arrow draws from (0,0) to (width, height) within the box
 }
 
 export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorProps) {
@@ -167,29 +168,16 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
     setIsDrawing(true);
     const pos = getRelativePointerPosition();
 
-    if (tool === 'arrow') {
-      setCurrentElement({
-        id: Date.now(),
-        tool: 'arrow',
-        color,
-        points: [pos.x, pos.y, pos.x, pos.y],
-        x: 0,
-        y: 0,
-        width: 0,
-        height: 0,
-      });
-    } else {
-      setCurrentElement({
-        id: Date.now(),
-        tool,
-        color,
-        x: pos.x,
-        y: pos.y,
-        width: 0,
-        height: 0,
-        radius: 0,
-      });
-    }
+    setCurrentElement({
+      id: Date.now(),
+      tool,
+      color,
+      x: pos.x,
+      y: pos.y,
+      width: 0,
+      height: 0,
+      radius: 0,
+    });
   };
 
   const handleMouseMove = (e: any) => {
@@ -207,12 +195,7 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
 
     const pos = getRelativePointerPosition();
 
-    if (tool === 'arrow' && currentElement.points) {
-      setCurrentElement({
-        ...currentElement,
-        points: [currentElement.points[0], currentElement.points[1], pos.x, pos.y],
-      });
-    } else if (tool === 'rect' || tool === 'mosaic' || tool === 'spotlight') {
+    if (tool === 'arrow' || tool === 'rect' || tool === 'mosaic' || tool === 'spotlight') {
       setCurrentElement({
         ...currentElement,
         width: pos.x - currentElement.x,
@@ -249,120 +232,58 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
   };
 
   const handleDragEnd = (e: any, id: number) => {
-  if (tool !== 'select') return;
-  
-  const node = e.target;
-  const newX = node.x();
-  const newY = node.y();
-  
-  setElements(prev =>
-    prev.map(el => {
-      if (el.id !== id) return el;
-      
-      if (el.tool === 'arrow' && el.points) {
-        // Calculate delta from last saved position
-        const lastArrowPos = {
-          x: Math.min(el.points[0], el.points[2]),
-          y: Math.min(el.points[1], el.points[3])
-        };
-        
-        const dx = newX - lastArrowPos.x;
-        const dy = newY - lastArrowPos.y;
-        
-        return {
-          ...el,
-          points: [
-            el.points[0] + dx,
-            el.points[1] + dy,
-            el.points[2] + dx,
-            el.points[3] + dy,
-          ],
-        };
-      }
-      
-      // For other shapes
-      return { ...el, x: newX, y: newY };
-    })
-  );
+    if (tool !== 'select') return;
+    
+    const node = e.target;
+    const newX = node.x();
+    const newY = node.y();
+    
+    setElements(prev =>
+      prev.map(el =>
+        el.id === id ? { ...el, x: newX, y: newY } : el
+      )
+    );
   };
 
-
   const handleTransformEnd = (e: any, id: number) => {
-  const node = e.target;
-  const scaleX = node.scaleX();
-  const scaleY = node.scaleY();
-  
-  // Reset scale
-  node.scaleX(1);
-  node.scaleY(1);
+    const node = e.target;
+    const scaleX = node.scaleX();
+    const scaleY = node.scaleY();
+    
+    // Reset scale
+    node.scaleX(1);
+    node.scaleY(1);
 
-  setElements(prev =>
-    prev.map(el => {
-      if (el.id !== id) return el;
+    setElements(prev =>
+      prev.map(el => {
+        if (el.id !== id) return el;
 
-      if (el.tool === 'arrow' && el.points) {
-        // Get the arrow's current position (from dragging or previous transforms)
-        const currentX = node.x();
-        const currentY = node.y();
-        
-        // Calculate the original bounding box position
-        const origMinX = Math.min(el.points[0], el.points[2]);
-        const origMinY = Math.min(el.points[1], el.points[3]);
-        
-        // Calculate center point in ORIGINAL coordinates
-        const origCenterX = (el.points[0] + el.points[2]) / 2;
-        const origCenterY = (el.points[1] + el.points[3]) / 2;
-        
-        // Calculate offset from bounding box origin to center
-        const centerOffsetX = origCenterX - origMinX;
-        const centerOffsetY = origCenterY - origMinY;
-        
-        // The new center in absolute coordinates
-        const newCenterX = currentX + centerOffsetX;
-        const newCenterY = currentY + centerOffsetY;
-        
-        // Scale points around the new center
-        const newPoints = [
-          newCenterX + (el.points[0] - origCenterX) * scaleX,
-          newCenterY + (el.points[1] - origCenterY) * scaleY,
-          newCenterX + (el.points[2] - origCenterX) * scaleX,
-          newCenterY + (el.points[3] - origCenterY) * scaleY,
-        ];
-        
-        // Reset node position to match new bounding box
-        const newMinX = Math.min(newPoints[0], newPoints[2]);
-        const newMinY = Math.min(newPoints[1], newPoints[3]);
-        node.position({ x: newMinX, y: newMinY });
-        
-        return {
-          ...el,
-          points: newPoints,
-        };
-      } else if (el.tool === 'circle') {
-        return {
-          ...el,
-          x: node.x(),
-          y: node.y(),
-          radius: (el.radius || 0) * scaleX,
-        };
-      } else if (el.tool === 'text') {
-        return {
-          ...el,
-          x: node.x(),
-          y: node.y(),
-          fontSize: (el.fontSize || 32) * scaleX,
-        };
-      } else {
-        return {
-          ...el,
-          x: node.x(),
-          y: node.y(),
-          width: el.width * scaleX,
-          height: el.height * scaleY,
-        };
-      }
-    })
-  );
+        if (el.tool === 'arrow' || el.tool === 'rect' || el.tool === 'mosaic' || el.tool === 'spotlight') {
+          return {
+            ...el,
+            x: node.x(),
+            y: node.y(),
+            width: Math.max(5, el.width * scaleX),
+            height: Math.max(5, el.height * scaleY),
+          };
+        } else if (el.tool === 'circle') {
+          return {
+            ...el,
+            x: node.x(),
+            y: node.y(),
+            radius: Math.max(5, (el.radius || 0) * scaleX),
+          };
+        } else if (el.tool === 'text') {
+          return {
+            ...el,
+            x: node.x(),
+            y: node.y(),
+            fontSize: Math.max(8, (el.fontSize || 32) * scaleX),
+          };
+        }
+        return el;
+      })
+    );
   };
 
   const handleSave = async () => {
@@ -444,12 +365,51 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
                   onTransformEnd: (e: any) => handleTransformEnd(e, el.id),
                 };
 
-                if (el.tool === 'arrow' && el.points) {
-                  return <Arrow {...shapeProps} points={el.points} stroke={el.color} fill={el.color} strokeWidth={4} pointerLength={20} pointerWidth={20} />;
+                if (el.tool === 'arrow') {
+                  // Draw arrow as a line with arrowhead in a Group
+                  const arrowHeadSize = 15;
+                  
+                  return (
+                    <Group {...shapeProps} x={el.x} y={el.y}>
+                      {/* Arrow line */}
+                      <Line
+                        points={[0, 0, el.width, el.height]}
+                        stroke={el.color}
+                        strokeWidth={4}
+                        lineCap="round"
+                        lineJoin="round"
+                      />
+                      {/* Arrow head */}
+                      <Line
+                        points={[
+                          el.width,
+                          el.height,
+                          el.width - arrowHeadSize * Math.cos(Math.atan2(el.height, el.width) - Math.PI / 6),
+                          el.height - arrowHeadSize * Math.sin(Math.atan2(el.height, el.width) - Math.PI / 6),
+                          el.width,
+                          el.height,
+                          el.width - arrowHeadSize * Math.cos(Math.atan2(el.height, el.width) + Math.PI / 6),
+                          el.height - arrowHeadSize * Math.sin(Math.atan2(el.height, el.width) + Math.PI / 6),
+                        ]}
+                        stroke={el.color}
+                        strokeWidth={4}
+                        fill={el.color}
+                        closed
+                        lineCap="round"
+                        lineJoin="round"
+                      />
+                    </Group>
+                  );
                 } else if (el.tool === 'rect') {
                   return <Rect {...shapeProps} x={el.x} y={el.y} width={el.width} height={el.height} stroke={el.color} strokeWidth={4} />;
                 } else if (el.tool === 'mosaic') {
                   return <Rect {...shapeProps} x={el.x} y={el.y} width={el.width} height={el.height} fill="rgba(0,0,0,0.7)" />;
+                } else if (el.tool === 'spotlight') {
+                  return (
+                    <Group {...shapeProps} x={el.x} y={el.y}>
+                      <Rect x={0} y={0} width={el.width} height={el.height} stroke="yellow" strokeWidth={2} dash={[5, 5]} />
+                    </Group>
+                  );
                 } else if (el.tool === 'circle') {
                   return <Circle {...shapeProps} x={el.x} y={el.y} radius={el.radius} stroke={el.color} strokeWidth={4} />;
                 } else if (el.tool === 'text') {
@@ -459,12 +419,43 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
               })}
 
               {currentElement && (() => {
-                if (currentElement.tool === 'arrow' && currentElement.points) {
-                  return <Arrow key="current" points={currentElement.points} stroke={currentElement.color} strokeWidth={4} pointerLength={20} pointerWidth={20} />;
+                if (currentElement.tool === 'arrow') {
+                  const arrowHeadSize = 15;
+                  return (
+                    <Group key="current" x={currentElement.x} y={currentElement.y}>
+                      <Line
+                        points={[0, 0, currentElement.width, currentElement.height]}
+                        stroke={currentElement.color}
+                        strokeWidth={4}
+                        lineCap="round"
+                        lineJoin="round"
+                      />
+                      <Line
+                        points={[
+                          currentElement.width,
+                          currentElement.height,
+                          currentElement.width - arrowHeadSize * Math.cos(Math.atan2(currentElement.height, currentElement.width) - Math.PI / 6),
+                          currentElement.height - arrowHeadSize * Math.sin(Math.atan2(currentElement.height, currentElement.width) - Math.PI / 6),
+                          currentElement.width,
+                          currentElement.height,
+                          currentElement.width - arrowHeadSize * Math.cos(Math.atan2(currentElement.height, currentElement.width) + Math.PI / 6),
+                          currentElement.height - arrowHeadSize * Math.sin(Math.atan2(currentElement.height, currentElement.width) + Math.PI / 6),
+                        ]}
+                        stroke={currentElement.color}
+                        strokeWidth={4}
+                        fill={currentElement.color}
+                        closed
+                        lineCap="round"
+                        lineJoin="round"
+                      />
+                    </Group>
+                  );
                 } else if (currentElement.tool === 'rect') {
                   return <Rect key="current" x={currentElement.x} y={currentElement.y} width={currentElement.width} height={currentElement.height} stroke={currentElement.color} strokeWidth={4} />;
                 } else if (currentElement.tool === 'mosaic') {
                   return <Rect key="current" x={currentElement.x} y={currentElement.y} width={currentElement.width} height={currentElement.height} fill="rgba(0,0,0,0.7)" />;
+                } else if (currentElement.tool === 'spotlight') {
+                  return <Rect key="current" x={currentElement.x} y={currentElement.y} width={currentElement.width} height={currentElement.height} stroke="yellow" strokeWidth={2} dash={[5, 5]} />;
                 } else if (currentElement.tool === 'circle') {
                   return <Circle key="current" x={currentElement.x} y={currentElement.y} radius={currentElement.radius} stroke={currentElement.color} strokeWidth={4} />;
                 }
