@@ -249,101 +249,120 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
   };
 
   const handleDragEnd = (e: any, id: number) => {
-    if (tool !== 'select') return;
-    
-    const node = e.target;
-    
-    setElements(prev =>
-      prev.map(el => {
-        if (el.id !== id) return el;
+  if (tool !== 'select') return;
+  
+  const node = e.target;
+  const newX = node.x();
+  const newY = node.y();
+  
+  setElements(prev =>
+    prev.map(el => {
+      if (el.id !== id) return el;
+      
+      if (el.tool === 'arrow' && el.points) {
+        // Calculate delta from last saved position
+        const lastArrowPos = {
+          x: Math.min(el.points[0], el.points[2]),
+          y: Math.min(el.points[1], el.points[3])
+        };
         
-        // CRITICAL FIX: For arrows, update points, but DON'T reset position
-        if (el.tool === 'arrow' && el.points) {
-          const dx = node.x();
-          const dy = node.y();
-          
-          // DON'T reset position for arrows
-          // node.position({ x: 0, y: 0 }); // ← REMOVED
-          
-          return {
-            ...el,
-            points: [
-              el.points[0] + dx,
-              el.points[1] + dy,
-              el.points[2] + dx,
-              el.points[3] + dy,
-            ],
-          };
-        }
+        const dx = newX - lastArrowPos.x;
+        const dy = newY - lastArrowPos.y;
         
-        // For other shapes, just update position
-        return { ...el, x: node.x(), y: node.y() };
-      })
-    );
+        return {
+          ...el,
+          points: [
+            el.points[0] + dx,
+            el.points[1] + dy,
+            el.points[2] + dx,
+            el.points[3] + dy,
+          ],
+        };
+      }
+      
+      // For other shapes
+      return { ...el, x: newX, y: newY };
+    })
+  );
   };
 
+
   const handleTransformEnd = (e: any, id: number) => {
-    const node = e.target;
-    const scaleX = node.scaleX();
-    const scaleY = node.scaleY();
-    
-    // Reset scale
-    node.scaleX(1);
-    node.scaleY(1);
+  const node = e.target;
+  const scaleX = node.scaleX();
+  const scaleY = node.scaleY();
+  
+  // Reset scale
+  node.scaleX(1);
+  node.scaleY(1);
 
-    setElements(prev =>
-      prev.map(el => {
-        if (el.id !== id) return el;
+  setElements(prev =>
+    prev.map(el => {
+      if (el.id !== id) return el;
 
-        if (el.tool === 'arrow' && el.points) {
-          // Get current arrow position
-          const arrowX = node.x();
-          const arrowY = node.y();
-          
-          // Calculate center point
-          const cx = (el.points[0] + el.points[2]) / 2;
-          const cy = (el.points[1] + el.points[3]) / 2;
-          
-          // Apply scale around center, then add position offset
-          const newPoints = [
-            arrowX + cx + (el.points[0] - cx) * scaleX,
-            arrowY + cy + (el.points[1] - cy) * scaleY,
-            arrowX + cx + (el.points[2] - cx) * scaleX,
-            arrowY + cy + (el.points[3] - cy) * scaleY,
-          ];
-          
-          // Reset arrow position since we baked it into points
-          node.position({ x: 0, y: 0 });
-          
-          return {
-            ...el,
-            points: newPoints,
-          };
-        } else if (el.tool === 'circle') {
-          return {
-            ...el,
-            x: node.x(),
-            y: node.y(),
-            radius: (el.radius || 0) * scaleX,
-          };
-        } else if (el.tool === 'text') {
-          return {
-            ...el,
-            x: node.x(),
-            y: node.y(),
-            fontSize: (el.fontSize || 32) * scaleX,
-          };
-        } else {
-          return {
-            ...el,
-            x: node.x(),
-            y: node.y(),
-            width: el.width * scaleX,
-            height: el.height * scaleY,
-          };
-        }
-      })
-    );
+      if (el.tool === 'arrow' && el.points) {
+        // Get the arrow's current position (from dragging or previous transforms)
+        const currentX = node.x();
+        const currentY = node.y();
+        
+        // Calculate the original bounding box position
+        const origMinX = Math.min(el.points[0], el.points[2]);
+        const origMinY = Math.min(el.points[1], el.points[3]);
+        
+        // Calculate center point in ORIGINAL coordinates
+        const origCenterX = (el.points[0] + el.points[2]) / 2;
+        const origCenterY = (el.points[1] + el.points[3]) / 2;
+        
+        // Calculate offset from bounding box origin to center
+        const centerOffsetX = origCenterX - origMinX;
+        const centerOffsetY = origCenterY - origMinY;
+        
+        // The new center in absolute coordinates
+        const newCenterX = currentX + centerOffsetX;
+        const newCenterY = currentY + centerOffsetY;
+        
+        // Scale points around the new center
+        const newPoints = [
+          newCenterX + (el.points[0] - origCenterX) * scaleX,
+          newCenterY + (el.points[1] - origCenterY) * scaleY,
+          newCenterX + (el.points[2] - origCenterX) * scaleX,
+          newCenterY + (el.points[3] - origCenterY) * scaleY,
+        ];
+        
+        // Reset node position to match new bounding box
+        const newMinX = Math.min(newPoints[0], newPoints[2]);
+        const newMinY = Math.min(newPoints[1], newPoints[3]);
+        node.position({ x: newMinX, y: newMinY });
+        
+        return {
+          ...el,
+          points: newPoints,
+        };
+      } else if (el.tool === 'circle') {
+        return {
+          ...el,
+          x: node.x(),
+          y: node.y(),
+          radius: (el.radius || 0) * scaleX,
+        };
+      } else if (el.tool === 'text') {
+        return {
+          ...el,
+          x: node.x(),
+          y: node.y(),
+          fontSize: (el.fontSize || 32) * scaleX,
+        };
+      } else {
+        return {
+          ...el,
+          x: node.x(),
+          y: node.y(),
+          width: el.width * scaleX,
+          height: el.height * scaleY,
+        };
+      }
+    })
+  );
   };
 
   const handleSave = async () => {
