@@ -40,6 +40,8 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
   const [isPanning, setIsPanning] = useState(false);
   const [panStart, setPanStart] = useState({ x: 0, y: 0 });
   const [spacePressed, setSpacePressed] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
 
   const stageRef = useRef<any>(null);
   const transformerRef = useRef<any>(null);
@@ -287,21 +289,31 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
   };
 
   const handleSave = async () => {
-    const stage = stageRef.current;
-    const originalScale = { x: stage.scaleX(), y: stage.scaleY() };
-    const originalPos = { x: stage.x(), y: stage.y() };
+    setIsSaving(true);
     
-    stage.scale({ x: 1, y: 1 });
-    stage.position({ x: 0, y: 0 });
-    
-    const dataURL = stage.toDataURL({ pixelRatio: 2 });
-    
-    stage.scale(originalScale);
-    stage.position(originalPos);
-    
-    const response = await fetch(dataURL);
-    const blob = await response.blob();
-    onSave(blob);
+    try {
+      const stage = stageRef.current;
+      const originalScale = { x: stage.scaleX(), y: stage.scaleY() };
+      const originalPos = { x: stage.x(), y: stage.y() };
+      
+      stage.scale({ x: 1, y: 1 });
+      stage.position({ x: 0, y: 0 });
+      
+      const dataURL = stage.toDataURL({ pixelRatio: 2 });
+      
+      stage.scale(originalScale);
+      stage.position(originalPos);
+      
+      const response = await fetch(dataURL);
+      const blob = await response.blob();
+      
+      await onSave(blob);
+      // Success - parent will close editor
+    } catch (error) {
+      console.error('Save error:', error);
+      alert('Failed to save image. Please try again.');
+      setIsSaving(false);
+    }
   };
 
   const getCursor = () => {
@@ -471,6 +483,16 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
           <p>Hold <kbd className="px-1 bg-gray-200 rounded">Space</kbd> or middle mouse button to pan. Use mouse wheel to zoom.</p>
         </div>
       </div>
+       {isSaving && (
+          <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-[60]">
+            <div className="bg-white rounded-lg p-8 max-w-md text-center">
+              <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mx-auto mb-4"></div>
+              <h3 className="text-xl font-bold mb-2">Saving Image...</h3>
+              <p className="text-gray-600">Please wait while we process and save your edited image.</p>
+              <p className="text-sm text-gray-500 mt-4">This may take a few seconds.</p>
+            </div>
+          </div>
+        )}
     </div>
   );
 }

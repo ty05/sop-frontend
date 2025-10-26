@@ -173,42 +173,72 @@ export default function StepEditor({ step, onUpdate, readOnly = false }: StepEdi
   };
 
   const handleImageSave = async (blob: Blob) => {
-    setUploading(true);
     try {
-      // Upload edited image as new asset
-      const fileName = `edited_${Date.now()}.png`;
-      const response = await assetsAPI.getUploadURL(fileName, 'image/png', 'image');
-      const { asset_id, upload_url } = response.data;
+      console.log('Saving edited image for step:', step.id);
+      
+      setUploading(true);
 
-      await fetch(upload_url, {
-        method: 'PUT',
-        body: blob,
+      // 1. Upload new image using existing upload flow
+      const formData = new FormData();
+      formData.append('file', blob, 'edited-image.png');
+      formData.append('type', 'image');
+
+      const uploadResponse = await fetch('/api/assets/upload', {
+        method: 'POST',
         headers: {
-          'Content-Type': 'image/png',
+          'Authorization': `Bearer ${session?.access_token}`,
         },
+        body: formData,
       });
 
-      // Mark upload as complete
-      await assetsAPI.complete(asset_id);
+      if (!uploadResponse.ok) {
+        throw new Error('Upload failed');
+      }
 
-      // Update step with new image ID
-      const currentImageIds = step.image_ids || [];
+      const uploadData = await uploadResponse.json();
+      const newImageId = uploadData.id;
+      console.log('New image uploaded:', newImageId);
+
+      // 2. Get old image IDs (to delete later)
+      const oldImageIds = step.image_ids || [];
+      console.log('Old image IDs:', oldImageIds);
+
+      // 3. Update step with ONLY the new image (replace, not append)
       await stepsAPI.update(step.id, {
-        image_ids: [...currentImageIds, asset_id],
+        image_ids: [newImageId], // CRITICAL: Replace array, not append
       });
 
-      // Clean up blob URL
+      console.log('Step updated with new image');
+
+      // 4. Delete old images from storage
+      if (oldImageIds.length > 0) {
+        for (const oldId of oldImageIds) {
+          try {
+            await assetsAPI.delete(oldId);
+            console.log('Deleted old image:', oldId);
+          } catch (err) {
+            console.warn('Failed to delete old image:', oldId, err);
+            // Continue even if delete fails
+          }
+        }
+      }
+
+      // 5. Clean up and refresh
       if (editingImageUrl && editingImageUrl.startsWith('blob:')) {
         URL.revokeObjectURL(editingImageUrl);
       }
-
+      
       setShowImageEditor(false);
       setEditingImageUrl(null);
+      setUploading(false);
+      
+      // Refresh parent to show new image
       onUpdate();
+      
+      console.log('Image save complete');
     } catch (error) {
       console.error('Failed to save edited image:', error);
-      alert('Failed to save edited image');
-    } finally {
+      alert('Failed to save edited image. Please try again.');
       setUploading(false);
     }
   };
