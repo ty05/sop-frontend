@@ -252,14 +252,19 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
     if (tool !== 'select') return;
     
     const node = e.target;
+    
     setElements(prev =>
       prev.map(el => {
         if (el.id !== id) return el;
         
+        // CRITICAL FIX: For arrows, update points, but DON'T reset position
         if (el.tool === 'arrow' && el.points) {
           const dx = node.x();
           const dy = node.y();
-          node.position({ x: 0, y: 0 });
+          
+          // DON'T reset position for arrows
+          // node.position({ x: 0, y: 0 }); // ← REMOVED
+          
           return {
             ...el,
             points: [
@@ -271,6 +276,7 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
           };
         }
         
+        // For other shapes, just update position
         return { ...el, x: node.x(), y: node.y() };
       })
     );
@@ -280,6 +286,8 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
     const node = e.target;
     const scaleX = node.scaleX();
     const scaleY = node.scaleY();
+    
+    // Reset scale
     node.scaleX(1);
     node.scaleY(1);
 
@@ -288,16 +296,28 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
         if (el.id !== id) return el;
 
         if (el.tool === 'arrow' && el.points) {
+          // Get current arrow position
+          const arrowX = node.x();
+          const arrowY = node.y();
+          
+          // Calculate center point
           const cx = (el.points[0] + el.points[2]) / 2;
           const cy = (el.points[1] + el.points[3]) / 2;
+          
+          // Apply scale around center, then add position offset
+          const newPoints = [
+            arrowX + cx + (el.points[0] - cx) * scaleX,
+            arrowY + cy + (el.points[1] - cy) * scaleY,
+            arrowX + cx + (el.points[2] - cx) * scaleX,
+            arrowY + cy + (el.points[3] - cy) * scaleY,
+          ];
+          
+          // Reset arrow position since we baked it into points
+          node.position({ x: 0, y: 0 });
+          
           return {
             ...el,
-            points: [
-              cx + (el.points[0] - cx) * scaleX,
-              cy + (el.points[1] - cy) * scaleY,
-              cx + (el.points[2] - cx) * scaleX,
-              cy + (el.points[3] - cy) * scaleY,
-            ],
+            points: newPoints,
           };
         } else if (el.tool === 'circle') {
           return {
@@ -421,13 +441,13 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
 
               {currentElement && (() => {
                 if (currentElement.tool === 'arrow' && currentElement.points) {
-                  return <Arrow points={currentElement.points} stroke={currentElement.color} strokeWidth={4} pointerLength={20} pointerWidth={20} />;
+                  return <Arrow key="current" points={currentElement.points} stroke={currentElement.color} strokeWidth={4} pointerLength={20} pointerWidth={20} />;
                 } else if (currentElement.tool === 'rect') {
-                  return <Rect x={currentElement.x} y={currentElement.y} width={currentElement.width} height={currentElement.height} stroke={currentElement.color} strokeWidth={4} />;
+                  return <Rect key="current" x={currentElement.x} y={currentElement.y} width={currentElement.width} height={currentElement.height} stroke={currentElement.color} strokeWidth={4} />;
                 } else if (currentElement.tool === 'mosaic') {
-                  return <Rect x={currentElement.x} y={currentElement.y} width={currentElement.width} height={currentElement.height} fill="rgba(0,0,0,0.7)" />;
+                  return <Rect key="current" x={currentElement.x} y={currentElement.y} width={currentElement.width} height={currentElement.height} fill="rgba(0,0,0,0.7)" />;
                 } else if (currentElement.tool === 'circle') {
-                  return <Circle x={currentElement.x} y={currentElement.y} radius={currentElement.radius} stroke={currentElement.color} strokeWidth={4} />;
+                  return <Circle key="current" x={currentElement.x} y={currentElement.y} radius={currentElement.radius} stroke={currentElement.color} strokeWidth={4} />;
                 }
                 return null;
               })()}
