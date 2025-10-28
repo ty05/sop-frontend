@@ -657,19 +657,60 @@ function InviteModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validation
+    if (!email?.trim()) {
+      alert('Please enter an email address');
+      return;
+    }
+
+    if (!email.includes('@')) {
+      alert('Please enter a valid email address');
+      return;
+    }
+
+    if (!role) {
+      alert('Please select a role');
+      return;
+    }
+
     setLoading(true);
 
     try {
-      await apiClient.post('/invitations/', {
+      // Send invitation to backend
+      const response = await apiClient.post('/invitations/', {
         workspace_id: workspaceId,
-        email,
+        email: email.trim().toLowerCase(),
         role
       });
 
-      alert('Invitation sent! Check backend console for the link.');
+      console.log('✅ Invitation created successfully:', response);
+
+      // SUCCESS - Show success message
+      alert(
+        `✅ Invitation sent to ${email}!\n\n` +
+        `They will receive an email with a link to join your workspace.`
+      );
+
+      // Reset form and close modal
+      setEmail('');
+      setRole('viewer');
       onSuccess();
+
     } catch (error: any) {
-      alert(error.response?.data?.detail || 'Failed to send invitation');
+      // ERROR - Show specific error message
+      console.error('❌ Failed to send invitation:', error);
+
+      let errorMessage = 'Failed to send invitation. Please try again.';
+
+      if (error.response?.data?.detail) {
+        errorMessage = error.response.data.detail;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+
+      alert(`❌ Error: ${errorMessage}`);
+
     } finally {
       setLoading(false);
     }
@@ -718,10 +759,36 @@ function InviteModal({
             </button>
             <button
               type="submit"
-              disabled={loading}
-              className="px-4 py-2 bg-blue-600 text-white rounded disabled:bg-gray-400"
+              disabled={loading || !email.trim() || !role}
+              className="px-4 py-2 bg-blue-600 text-white rounded disabled:bg-gray-400 flex items-center gap-2"
             >
-              {loading ? 'Sending...' : 'Send Invitation'}
+              {loading ? (
+                <>
+                  <svg
+                    className="animate-spin h-4 w-4"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    />
+                  </svg>
+                  Sending...
+                </>
+              ) : (
+                'Send Invitation'
+              )}
             </button>
           </div>
         </form>
