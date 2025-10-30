@@ -45,12 +45,18 @@ export default function StepEditor({ step, onUpdate, readOnly = false }: StepEdi
     if (step.type === 'image' && step.images && step.images.length > 0) {
       const newBlobUrls: Record<string, string> = {};
 
+      console.log('📸 Loading images for step:', step.id);
+      console.log('  image_ids:', step.image_ids);
+      console.log('  images array:', step.images);
+
       // Use embedded image data - no API calls needed!
       for (const image of step.images) {
         newBlobUrls[image.id] = image.cdn_url;
+        console.log(`  Mapping ${image.id} -> ${image.cdn_url}`);
       }
 
       setImageBlobUrls(newBlobUrls);
+      console.log('  Final imageBlobUrls:', newBlobUrls);
     }
 
     // Cleanup blob URLs on unmount (only for blob: URLs)
@@ -467,28 +473,33 @@ export default function StepEditor({ step, onUpdate, readOnly = false }: StepEdi
 
           {step.image_ids && step.image_ids.length > 0 ? (
             <div className="grid grid-cols-1 gap-4">
-              {step.image_ids.map((imageId, index) => (
-                <div key={imageId} className="relative border rounded-lg overflow-hidden">
-                  {imageBlobUrls[imageId] ? (
-                    <img
-                      src={imageBlobUrls[imageId]}
-                      alt={`Image ${index + 1}`}
-                      className="w-full h-auto"
-                    />
-                  ) : (
-                    <div className="w-full h-64 bg-gray-200 flex items-center justify-center">
-                      <p className="text-gray-500">Loading image...</p>
-                    </div>
-                  )}
-                  {!readOnly && (
-                    <div className="absolute top-2 right-2 flex gap-2">
-                      <button
-                        onClick={() => handleImageEdit(imageId)}
-                        className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700"
-                        disabled={!imageBlobUrls[imageId]}
-                      >
-                        Edit
-                      </button>
+              {step.image_ids.map((imageId, index) => {
+                console.log(`🖼️ Rendering image ${index + 1}:`, { imageId, url: imageBlobUrls[imageId] });
+                return (
+                  <div key={imageId} className="relative border rounded-lg overflow-hidden">
+                    {imageBlobUrls[imageId] ? (
+                      <img
+                        src={imageBlobUrls[imageId]}
+                        alt={`Image ${index + 1}`}
+                        className="w-full h-auto"
+                      />
+                    ) : (
+                      <div className="w-full h-64 bg-gray-200 flex items-center justify-center">
+                        <p className="text-gray-500">Loading image...</p>
+                      </div>
+                    )}
+                    {!readOnly && (
+                      <div className="absolute top-2 right-2 flex gap-2">
+                        <button
+                          onClick={() => {
+                            console.log(`✏️ Editing image: ${imageId}`);
+                            handleImageEdit(imageId);
+                          }}
+                          className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700"
+                          disabled={!imageBlobUrls[imageId]}
+                        >
+                          Edit
+                        </button>
                       <button
                         onClick={() => handleRemoveImage(imageId)}
                         className="bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700"
@@ -498,7 +509,8 @@ export default function StepEditor({ step, onUpdate, readOnly = false }: StepEdi
                     </div>
                   )}
                 </div>
-              ))}
+                );
+              })}
             </div>
           ) : (
             <div className="text-gray-500 italic text-center py-8 border-2 border-dashed rounded">
