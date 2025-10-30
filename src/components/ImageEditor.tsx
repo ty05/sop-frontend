@@ -442,9 +442,38 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
                 } else if (el.tool === 'mosaic') {
                   return <Rect {...shapeProps} x={el.x} y={el.y} width={el.width} height={el.height} fill="rgba(0,0,0,0.7)" />;
                 } else if (el.tool === 'spotlight') {
+                  // Spotlight: dark overlay with cutout for highlighted area
                   return (
-                    <Group {...shapeProps} x={el.x} y={el.y}>
-                      <Rect x={0} y={0} width={el.width} height={el.height} stroke="yellow" strokeWidth={2} dash={[5, 5]} />
+                    <Group {...shapeProps} key={`spotlight-${el.id}`}>
+                      {/* Dark overlay covering entire image */}
+                      <Rect
+                        x={-el.x}
+                        y={-el.y}
+                        width={image?.width || 10000}
+                        height={image?.height || 10000}
+                        fill="rgba(0, 0, 0, 0.7)"
+                        listening={false}
+                      />
+                      {/* Cut out the spotlight area using destination-out */}
+                      <Rect
+                        x={0}
+                        y={0}
+                        width={el.width}
+                        height={el.height}
+                        fill="black"
+                        globalCompositeOperation="destination-out"
+                        listening={false}
+                      />
+                      {/* Yellow border to show spotlight boundary */}
+                      <Rect
+                        x={0}
+                        y={0}
+                        width={el.width}
+                        height={el.height}
+                        stroke="yellow"
+                        strokeWidth={2}
+                        dash={[5, 5]}
+                      />
                     </Group>
                   );
                 } else if (el.tool === 'circle') {
@@ -492,7 +521,39 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
                 } else if (currentElement.tool === 'mosaic') {
                   return <Rect key="current" x={currentElement.x} y={currentElement.y} width={currentElement.width} height={currentElement.height} fill="rgba(0,0,0,0.7)" />;
                 } else if (currentElement.tool === 'spotlight') {
-                  return <Rect key="current" x={currentElement.x} y={currentElement.y} width={currentElement.width} height={currentElement.height} stroke="yellow" strokeWidth={2} dash={[5, 5]} />;
+                  return (
+                    <Group key="current" x={currentElement.x} y={currentElement.y}>
+                      {/* Dark overlay covering entire image */}
+                      <Rect
+                        x={-currentElement.x}
+                        y={-currentElement.y}
+                        width={image?.width || 10000}
+                        height={image?.height || 10000}
+                        fill="rgba(0, 0, 0, 0.7)"
+                        listening={false}
+                      />
+                      {/* Cut out the spotlight area */}
+                      <Rect
+                        x={0}
+                        y={0}
+                        width={currentElement.width}
+                        height={currentElement.height}
+                        fill="black"
+                        globalCompositeOperation="destination-out"
+                        listening={false}
+                      />
+                      {/* Yellow border */}
+                      <Rect
+                        x={0}
+                        y={0}
+                        width={currentElement.width}
+                        height={currentElement.height}
+                        stroke="yellow"
+                        strokeWidth={2}
+                        dash={[5, 5]}
+                      />
+                    </Group>
+                  );
                 } else if (currentElement.tool === 'circle') {
                   return <Circle key="current" x={currentElement.x} y={currentElement.y} radius={currentElement.radius} stroke={currentElement.color} strokeWidth={4} />;
                 }

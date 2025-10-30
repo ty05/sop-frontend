@@ -27,6 +27,7 @@ export default function StepEditor({ step, onUpdate, readOnly = false }: StepEdi
   const [showVideoUpload, setShowVideoUpload] = useState(false);
   const [showOverlayEditor, setShowOverlayEditor] = useState(false);
   const [editingImageUrl, setEditingImageUrl] = useState<string | null>(null);
+  const [editingImageId, setEditingImageId] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [imageBlobUrls, setImageBlobUrls] = useState<Record<string, string>>({});
   const [videoDuration, setVideoDuration] = useState<number>(0);
@@ -164,6 +165,7 @@ export default function StepEditor({ step, onUpdate, readOnly = false }: StepEdi
       const blob = await response.blob();
       const blobUrl = URL.createObjectURL(blob);
 
+      setEditingImageId(imageId); // Track which image is being edited
       setEditingImageUrl(blobUrl);
       setShowImageEditor(true);
     } catch (error) {
@@ -175,7 +177,8 @@ export default function StepEditor({ step, onUpdate, readOnly = false }: StepEdi
   const handleImageSave = async (blob: Blob) => {
     try {
       console.log('Saving edited image for step:', step.id);
-      
+      console.log('Editing image ID:', editingImageId);
+
       setUploading(true);
 
       // 1. Create a File from Blob
@@ -211,28 +214,31 @@ export default function StepEditor({ step, onUpdate, readOnly = false }: StepEdi
 
       console.log('Upload marked complete');
 
-      // 5. Get old image IDs (to delete later)
-      const oldImageIds = step.image_ids || [];
-      console.log('Old image IDs to delete:', oldImageIds);
+      // 5. Get current image IDs and replace only the edited one
+      const currentImageIds = step.image_ids || [];
+      const updatedImageIds = editingImageId
+        ? currentImageIds.map(id => id === editingImageId ? asset_id : id)
+        : [...currentImageIds, asset_id]; // If no editingImageId, append (shouldn't happen)
 
-      // 6. Update step with ONLY the new image (replace, not append)
+      console.log('Old image IDs:', currentImageIds);
+      console.log('Updated image IDs:', updatedImageIds);
+
+      // 6. Update step with the new image array (replace specific image)
       await stepsAPI.update(step.id, {
-        image_ids: [asset_id], // CRITICAL: Replace array, not append
+        image_ids: updatedImageIds,
       });
 
       console.log('Step updated with new image ID:', asset_id);
 
-      // 7. Delete old images from storage
-      if (oldImageIds.length > 0) {
-        console.log('Deleting old images...');
-        for (const oldId of oldImageIds) {
-          try {
-            await assetsAPI.delete(oldId);
-            console.log('Deleted old image:', oldId);
-          } catch (err) {
-            console.warn('Failed to delete old image:', oldId, err);
-            // Continue even if delete fails
-          }
+      // 7. Delete the old edited image from storage
+      if (editingImageId && editingImageId !== asset_id) {
+        console.log('Deleting old image:', editingImageId);
+        try {
+          await assetsAPI.delete(editingImageId);
+          console.log('Deleted old image:', editingImageId);
+        } catch (err) {
+          console.warn('Failed to delete old image:', editingImageId, err);
+          // Continue even if delete fails
         }
       }
 
@@ -240,29 +246,31 @@ export default function StepEditor({ step, onUpdate, readOnly = false }: StepEdi
       if (editingImageUrl && editingImageUrl.startsWith('blob:')) {
         URL.revokeObjectURL(editingImageUrl);
       }
-      
+
       // 9. Close editor and refresh
       setShowImageEditor(false);
       setEditingImageUrl(null);
+      setEditingImageId(null);
       setUploading(false);
-      
+
       // Refresh parent to show new image
       onUpdate();
-      
+
       console.log('✅ Image save complete');
     } catch (error) {
       console.error('❌ Failed to save edited image:', error);
       alert('Failed to save edited image. Please try again.');
-      
+
       // Reset state on error
       setUploading(false);
       setShowImageEditor(false);
-      
+
       // Clean up blob URL even on error
       if (editingImageUrl && editingImageUrl.startsWith('blob:')) {
         URL.revokeObjectURL(editingImageUrl);
       }
       setEditingImageUrl(null);
+      setEditingImageId(null);
     }
   };
 
@@ -600,6 +608,7 @@ export default function StepEditor({ step, onUpdate, readOnly = false }: StepEdi
             }
             setShowImageEditor(false);
             setEditingImageUrl(null);
+            setEditingImageId(null);
           }}
         />
       )}
