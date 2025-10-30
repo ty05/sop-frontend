@@ -1,12 +1,12 @@
 'use client';
 
-import { useRef, useState, useEffect } from 'react';
-import { Stage, Layer, Line, Rect, Circle, Text, Image as KonvaImage, Transformer, Group } from 'react-konva';
+import { useRef, useState, useEffect, useMemo } from 'react';
+import { Stage, Layer, Line, Rect, Circle, Text, Image as KonvaImage, Transformer, Group, Arrow } from 'react-konva';
 import useImage from 'use-image';
 
 interface ImageEditorProps {
   imageUrl: string;
-  onSave: (blob: Blob) => void;
+  onSave: (blob: Blob) => void; // 親側で必ずユニークURLに保存 or キャッシュバスターを付与
   onCancel: () => void;
 }
 
@@ -23,8 +23,7 @@ interface DrawElement {
   text?: string;
   radius?: number;
   fontSize?: number;
-  // For arrow - store as x,y,width,height box
-  // Arrow draws from (0,0) to (width, height) within the box
+  rotation?: number; // ★ new
 }
 
 export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorProps) {
@@ -36,57 +35,46 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
   const [currentElement, setCurrentElement] = useState<DrawElement | null>(null);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [scale, setScale] = useState(1);
+  const [fitScale, setFitScale] = useState(1); // ★ new
   const [stagePos, setStagePos] = useState({ x: 0, y: 0 });
   const [isPanning, setIsPanning] = useState(false);
   const [panStart, setPanStart] = useState({ x: 0, y: 0 });
   const [spacePressed, setSpacePressed] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
-
   const stageRef = useRef<any>(null);
   const transformerRef = useRef<any>(null);
 
-  // Fit image to viewport when it loads
+  // 画像をビューポートにフィット
   useEffect(() => {
-    if (image) {
-      // Calculate available viewport space
-      // Container has max-h-[70vh] (70% of viewport height)
-      const viewportHeight = window.innerHeight * 0.7;
-      const viewportWidth = Math.min(window.innerWidth * 0.9, 1280); // max-w-5xl ≈ 1280px
-
-      // Account for padding, borders, and header (approximately 150px total)
-      const availableHeight = viewportHeight - 150;
-      const availableWidth = viewportWidth - 100;
-
-      // Calculate scale to fit both dimensions
-      const scaleToFitHeight = availableHeight / image.height;
-      const scaleToFitWidth = availableWidth / image.width;
-
-      // Use smaller scale to ensure entire image fits, but don't scale up beyond 1
-      const fitScale = Math.min(scaleToFitHeight, scaleToFitWidth, 1);
-
-      setScale(fitScale);
-      setStagePos({ x: 0, y: 0 });
-    }
+    if (!image) return;
+    const viewportHeight = window.innerHeight * 0.7;
+    const viewportWidth = Math.min(window.innerWidth * 0.9, 1280);
+    const availableHeight = viewportHeight - 150;
+    const availableWidth = viewportWidth - 100;
+    const sH = availableHeight / image.height;
+    const sW = availableWidth / image.width;
+    const fit = Math.min(sH, sW, 1);
+    setScale(fit);
+    setFitScale(fit);
+    setStagePos({ x: 0, y: 0 });
   }, [image]);
 
-  // Attach transformer
+  // Transformer のアタッチ
   useEffect(() => {
-    if (selectedId !== null) {
-      const stage = stageRef.current;
-      if (!stage) return;
-
-      const selectedNode = stage.findOne(`#shape-${selectedId}`);
-      if (selectedNode && transformerRef.current) {
-        transformerRef.current.nodes([selectedNode]);
-        transformerRef.current.getLayer()?.batchDraw();
-      }
-    } else if (transformerRef.current) {
-      transformerRef.current.nodes([]);
+    const stage = stageRef.current;
+    if (!stage || selectedId === null) {
+      transformerRef.current?.nodes([]);
+      return;
+    }
+    const node = stage.findOne(`#shape-${selectedId}`);
+    if (node && transformerRef.current) {
+      transformerRef.current.nodes([node]);
+      transformerRef.current.getLayer()?.batchDraw();
     }
   }, [selectedId, elements]);
 
-  // Keyboard
+  // キーボード
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.code === 'Space') {
@@ -113,11 +101,11 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
     };
   }, [selectedId]);
 
-  // Zoom
+  // ズーム
   const handleZoomIn = () => setScale(s => Math.min(s + 0.1, 3));
   const handleZoomOut = () => setScale(s => Math.max(s - 0.1, 0.3));
   const handleZoomReset = () => {
-    setScale(1);
+    setScale(fitScale); // ★ フィットに戻す
     setStagePos({ x: 0, y: 0 });
   };
 
@@ -146,8 +134,10 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
     return transform.point(pointer);
   };
 
+  // マウス操作
   const handleMouseDown = (e: any) => {
     const stage = e.target.getStage();
+    if (!stage) return;
 
     // Pan
     if (spacePressed || e.evt.button === 1) {
@@ -158,20 +148,18 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
       return;
     }
 
-    // Select mode
+    // Select
     if (tool === 'select') {
       const clickedOnEmpty = e.target === stage || e.target.getType() === 'Image';
-      if (clickedOnEmpty) {
-        setSelectedId(null);
-      }
+      if (clickedOnEmpty) setSelectedId(null);
       return;
     }
 
-    // Text tool
+    // Text
     if (tool === 'text') {
       const pos = getRelativePointerPosition();
-      const text = prompt('Enter text:');
-      if (text) {
+      const txt = prompt('Enter text:');
+      if (txt) {
         setElements(prev => [
           ...prev,
           {
@@ -182,18 +170,18 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
             y: pos.y,
             width: 0,
             height: 0,
-            text,
+            text: txt,
             fontSize: 32,
+            rotation: 0,
           },
         ]);
       }
       return;
     }
 
-    // Drawing
+    // Drawing start
     setIsDrawing(true);
     const pos = getRelativePointerPosition();
-
     setCurrentElement({
       id: Date.now(),
       tool,
@@ -203,6 +191,7 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
       width: 0,
       height: 0,
       radius: 0,
+      rotation: 0,
     });
   };
 
@@ -216,33 +205,23 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
       });
       return;
     }
-
     if (!isDrawing || !currentElement) return;
 
     const pos = getRelativePointerPosition();
-
-    if (tool === 'arrow' || tool === 'rect' || tool === 'mosaic' || tool === 'spotlight') {
+    if (['arrow','rect','mosaic','spotlight'].includes(tool)) {
       setCurrentElement({
         ...currentElement,
         width: pos.x - currentElement.x,
         height: pos.y - currentElement.y,
       });
     } else if (tool === 'circle') {
-      const radius = Math.sqrt(
-        Math.pow(pos.x - currentElement.x, 2) + Math.pow(pos.y - currentElement.y, 2)
-      );
-      setCurrentElement({
-        ...currentElement,
-        radius,
-      });
+      const r = Math.hypot(pos.x - currentElement.x, pos.y - currentElement.y);
+      setCurrentElement({ ...currentElement, radius: r });
     }
   };
 
   const handleMouseUp = () => {
-    if (isPanning) {
-      setIsPanning(false);
-      return;
-    }
+    if (isPanning) { setIsPanning(false); return; }
     if (!isDrawing) return;
     setIsDrawing(false);
     if (currentElement) {
@@ -251,93 +230,81 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
     }
   };
 
+  // 選択
   const handleShapeClick = (id: number) => {
-    if (tool === 'select') {
-      setSelectedId(id);
-    }
+    if (tool === 'select') setSelectedId(id);
   };
 
-  const handleDragEnd = (e: any, id: number) => {
+  // ドラッグ（Spotlight の見た目即時反映のため move 中も更新）
+  const handleDragMove = (e: any, id: number) => {
     if (tool !== 'select') return;
-    
     const node = e.target;
     const newX = node.x();
     const newY = node.y();
-    
-    setElements(prev =>
-      prev.map(el =>
-        el.id === id ? { ...el, x: newX, y: newY } : el
-      )
-    );
+    setElements(prev => prev.map(el => el.id === id ? { ...el, x: newX, y: newY } : el));
   };
+  const handleDragEnd = handleDragMove;
 
-  const handleTransformEnd = (e: any, id: number) => {
+  // 変形
+  const handleTransform = (e: any, id: number) => {
+    if (tool !== 'select') return;
     const node = e.target;
     const scaleX = node.scaleX();
     const scaleY = node.scaleY();
-    
-    // Reset scale
+    setElements(prev => prev.map(el => {
+      if (el.id !== id) return el;
+      if (el.tool === 'circle') {
+        const base = el.radius || 0;
+        const avg = (scaleX + scaleY) / 2;
+        return { ...el, x: node.x(), y: node.y(), radius: Math.max(5, base * avg), rotation: node.rotation() };
+      } else if (el.tool === 'text') {
+        const base = el.fontSize || 32;
+        return { ...el, x: node.x(), y: node.y(), fontSize: Math.max(8, base * scaleX), rotation: node.rotation() };
+      } else {
+        return {
+          ...el,
+          x: node.x(),
+          y: node.y(),
+          width: Math.max(5, el.width * scaleX),
+          height: Math.max(5, el.height * scaleY),
+          rotation: node.rotation(),
+        };
+      }
+    }));
+  };
+  const handleTransformEnd = (e: any, id: number) => {
+    // スケールをリセット（見た目を state へ反映済み）
+    const node = e.target;
     node.scaleX(1);
     node.scaleY(1);
-
-    setElements(prev =>
-      prev.map(el => {
-        if (el.id !== id) return el;
-
-        if (el.tool === 'arrow' || el.tool === 'rect' || el.tool === 'mosaic' || el.tool === 'spotlight') {
-          return {
-            ...el,
-            x: node.x(),
-            y: node.y(),
-            width: Math.max(5, el.width * scaleX),
-            height: Math.max(5, el.height * scaleY),
-          };
-        } else if (el.tool === 'circle') {
-          return {
-            ...el,
-            x: node.x(),
-            y: node.y(),
-            radius: Math.max(5, (el.radius || 0) * scaleX),
-          };
-        } else if (el.tool === 'text') {
-          return {
-            ...el,
-            x: node.x(),
-            y: node.y(),
-            fontSize: Math.max(8, (el.fontSize || 32) * scaleX),
-          };
-        }
-        return el;
-      })
-    );
   };
 
+  // 保存
   const handleSave = async () => {
+    if (!image) return;
     setIsSaving(true);
-    
     try {
       const stage = stageRef.current;
       const originalScale = { x: stage.scaleX(), y: stage.scaleY() };
       const originalPos = { x: stage.x(), y: stage.y() };
-      
       stage.scale({ x: 1, y: 1 });
       stage.position({ x: 0, y: 0 });
-      
+
+      // 画像サイズで出力されるようにステージサイズは画像に合わせる
+      stage.width(image.width);
+      stage.height(image.height);
+
       const dataURL = stage.toDataURL({ pixelRatio: 2 });
-      
       stage.scale(originalScale);
       stage.position(originalPos);
-      
-      const response = await fetch(dataURL);
-      const blob = await response.blob();
-      
-      await onSave(blob);
-      
-      // Success - parent handles closing
-    } catch (error) {
-      console.error('Save error:', error);
+
+      const resp = await fetch(dataURL);
+      const blob = await resp.blob();
+      await onSave(blob); // ★ 親側でユニーク保存 or キャッシュバスター付与
+    } catch (err) {
+      console.error('Save error:', err);
       alert('Failed to save image. Please try again.');
-      setIsSaving(false); // CRITICAL: Reset on error
+      setIsSaving(false);
     }
   };
 
@@ -348,6 +315,9 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
     if (tool !== 'select') return 'crosshair';
     return 'default';
   };
+
+  const spotlights = useMemo(() => elements.filter(e => e.tool === 'spotlight'), [elements]);
+  const nonSpotlight = useMemo(() => elements.filter(e => e.tool !== 'spotlight'), [elements]);
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
@@ -367,8 +337,12 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
             <button onClick={handleZoomOut} className="bg-gray-200 px-3 py-2 rounded">−</button>
             <button onClick={handleZoomReset} className="bg-gray-200 px-3 py-2 rounded text-sm">{Math.round(scale * 100)}%</button>
             <button onClick={handleZoomIn} className="bg-gray-200 px-3 py-2 rounded">+</button>
-            <button onClick={() => { if (selectedId) { setElements(prev => prev.filter(el => el.id !== selectedId)); setSelectedId(null); } }} disabled={!selectedId} className="bg-red-500 text-white px-4 py-2 rounded disabled:opacity-50">Delete</button>
-            <button onClick={handleSave} className="bg-green-600 text-white px-4 py-2 rounded">Save</button>
+            <button
+              onClick={() => { if (selectedId !== null) { setElements(prev => prev.filter(el => el.id !== selectedId)); setSelectedId(null); } }}
+              disabled={selectedId === null}
+              className="bg-red-500 text-white px-4 py-2 rounded disabled:opacity-50"
+            >Delete</button>
+            <button onClick={handleSave} disabled={!image} className="bg-green-600 text-white px-4 py-2 rounded disabled:opacity-50">Save</button>
             <button onClick={onCancel} className="bg-gray-300 px-4 py-2 rounded">Cancel</button>
           </div>
         </div>
@@ -388,177 +362,100 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
             onMouseUp={handleMouseUp}
             style={{ cursor: getCursor() }}
           >
+            {/* 1) 背景画像 */}
             <Layer>
-              {image && <KonvaImage image={image} />}
+              {image && <KonvaImage image={image} listening={false} />}
+            </Layer>
 
-              {elements.map(el => {
-                const shapeProps = {
+            {/* 2) Spotlight マスク（暗幕＋穴）: 画像の上に一度だけ */}
+            {image && spotlights.length > 0 && (
+              <Layer listening={false}>
+                <Group>
+                  <Rect
+                    x={0}
+                    y={0}
+                    width={image.width}
+                    height={image.height}
+                    fill="rgba(0,0,0,0.7)"
+                  />
+                  {spotlights.map(s => (
+                    <Rect
+                      key={`mask-${s.id}`}
+                      x={s.x}
+                      y={s.y}
+                      width={s.width}
+                      height={s.height}
+                      fill="black"
+                      globalCompositeOperation="destination-out"
+                    />
+                  ))}
+                </Group>
+              </Layer>
+            )}
+
+            {/* 3) 注釈（Spotlight はここでは枠のみ） */}
+            <Layer>
+              {nonSpotlight.map(el => {
+                const common = {
                   id: `shape-${el.id}`,
                   key: el.id,
                   draggable: tool === 'select',
+                  rotation: el.rotation || 0,
                   onClick: () => handleShapeClick(el.id),
                   onTap: () => handleShapeClick(el.id),
+                  onDragMove: (e: any) => handleDragMove(e, el.id),
                   onDragEnd: (e: any) => handleDragEnd(e, el.id),
+                  onTransform: (e: any) => handleTransform(e, el.id),
                   onTransformEnd: (e: any) => handleTransformEnd(e, el.id),
                 };
 
                 if (el.tool === 'arrow') {
-                  // Draw arrow as a line with arrowhead in a Group
-                  const arrowHeadSize = 15;
-                  
                   return (
-                    <Group {...shapeProps} x={el.x} y={el.y}>
-                      {/* Arrow line */}
-                      <Line
-                        points={[0, 0, el.width, el.height]}
-                        stroke={el.color}
-                        strokeWidth={4}
-                        lineCap="round"
-                        lineJoin="round"
-                      />
-                      {/* Arrow head */}
-                      <Line
-                        points={[
-                          el.width,
-                          el.height,
-                          el.width - arrowHeadSize * Math.cos(Math.atan2(el.height, el.width) - Math.PI / 6),
-                          el.height - arrowHeadSize * Math.sin(Math.atan2(el.height, el.width) - Math.PI / 6),
-                          el.width,
-                          el.height,
-                          el.width - arrowHeadSize * Math.cos(Math.atan2(el.height, el.width) + Math.PI / 6),
-                          el.height - arrowHeadSize * Math.sin(Math.atan2(el.height, el.width) + Math.PI / 6),
-                        ]}
-                        stroke={el.color}
-                        strokeWidth={4}
-                        fill={el.color}
-                        closed
-                        lineCap="round"
-                        lineJoin="round"
-                      />
-                    </Group>
+                    <Arrow
+                      {...common}
+                      x={el.x}
+                      y={el.y}
+                      points={[0,0, el.width, el.height]}
+                      stroke={el.color}
+                      fill={el.color}
+                      strokeWidth={4}
+                      pointerLength={15}
+                      pointerWidth={15}
+                    />
                   );
                 } else if (el.tool === 'rect') {
-                  return <Rect {...shapeProps} x={el.x} y={el.y} width={el.width} height={el.height} stroke={el.color} strokeWidth={4} />;
+                  return <Rect {...common} x={el.x} y={el.y} width={el.width} height={el.height} stroke={el.color} strokeWidth={4} />;
                 } else if (el.tool === 'mosaic') {
-                  return <Rect {...shapeProps} x={el.x} y={el.y} width={el.width} height={el.height} fill="rgba(0,0,0,0.7)" />;
-                } else if (el.tool === 'spotlight') {
-                  // Spotlight: dark overlay with cutout for highlighted area
-                  return (
-                    <Group {...shapeProps} key={`spotlight-${el.id}`}>
-                      {/* Dark overlay covering entire image */}
-                      <Rect
-                        x={-el.x}
-                        y={-el.y}
-                        width={image?.width || 10000}
-                        height={image?.height || 10000}
-                        fill="rgba(0, 0, 0, 0.7)"
-                        listening={false}
-                      />
-                      {/* Cut out the spotlight area using destination-out */}
-                      <Rect
-                        x={0}
-                        y={0}
-                        width={el.width}
-                        height={el.height}
-                        fill="black"
-                        globalCompositeOperation="destination-out"
-                        listening={false}
-                      />
-                      {/* Yellow border to show spotlight boundary */}
-                      <Rect
-                        x={0}
-                        y={0}
-                        width={el.width}
-                        height={el.height}
-                        stroke="yellow"
-                        strokeWidth={2}
-                        dash={[5, 5]}
-                      />
-                    </Group>
-                  );
+                  return <Rect {...common} x={el.x} y={el.y} width={el.width} height={el.height} fill="rgba(0,0,0,0.7)" />;
                 } else if (el.tool === 'circle') {
-                  return <Circle {...shapeProps} x={el.x} y={el.y} radius={el.radius} stroke={el.color} strokeWidth={4} />;
+                  return <Circle {...common} x={el.x} y={el.y} radius={el.radius || 0} stroke={el.color} strokeWidth={4} />;
                 } else if (el.tool === 'text') {
-                  return <Text {...shapeProps} x={el.x} y={el.y} text={el.text} fontSize={el.fontSize} fill={el.color} fontStyle="bold" />;
+                  return <Text {...common} x={el.x} y={el.y} text={el.text || ''} fontSize={el.fontSize || 32} fill={el.color} fontStyle="bold" />;
                 }
                 return null;
               })}
 
-              {currentElement && (() => {
-                if (currentElement.tool === 'arrow') {
-                  const arrowHeadSize = 15;
-                  return (
-                    <Group key="current" x={currentElement.x} y={currentElement.y}>
-                      <Line
-                        points={[0, 0, currentElement.width, currentElement.height]}
-                        stroke={currentElement.color}
-                        strokeWidth={4}
-                        lineCap="round"
-                        lineJoin="round"
-                      />
-                      <Line
-                        points={[
-                          currentElement.width,
-                          currentElement.height,
-                          currentElement.width - arrowHeadSize * Math.cos(Math.atan2(currentElement.height, currentElement.width) - Math.PI / 6),
-                          currentElement.height - arrowHeadSize * Math.sin(Math.atan2(currentElement.height, currentElement.width) - Math.PI / 6),
-                          currentElement.width,
-                          currentElement.height,
-                          currentElement.width - arrowHeadSize * Math.cos(Math.atan2(currentElement.height, currentElement.width) + Math.PI / 6),
-                          currentElement.height - arrowHeadSize * Math.sin(Math.atan2(currentElement.height, currentElement.width) + Math.PI / 6),
-                        ]}
-                        stroke={currentElement.color}
-                        strokeWidth={4}
-                        fill={currentElement.color}
-                        closed
-                        lineCap="round"
-                        lineJoin="round"
-                      />
-                    </Group>
-                  );
-                } else if (currentElement.tool === 'rect') {
-                  return <Rect key="current" x={currentElement.x} y={currentElement.y} width={currentElement.width} height={currentElement.height} stroke={currentElement.color} strokeWidth={4} />;
-                } else if (currentElement.tool === 'mosaic') {
-                  return <Rect key="current" x={currentElement.x} y={currentElement.y} width={currentElement.width} height={currentElement.height} fill="rgba(0,0,0,0.7)" />;
-                } else if (currentElement.tool === 'spotlight') {
-                  return (
-                    <Group key="current" x={currentElement.x} y={currentElement.y}>
-                      {/* Dark overlay covering entire image */}
-                      <Rect
-                        x={-currentElement.x}
-                        y={-currentElement.y}
-                        width={image?.width || 10000}
-                        height={image?.height || 10000}
-                        fill="rgba(0, 0, 0, 0.7)"
-                        listening={false}
-                      />
-                      {/* Cut out the spotlight area */}
-                      <Rect
-                        x={0}
-                        y={0}
-                        width={currentElement.width}
-                        height={currentElement.height}
-                        fill="black"
-                        globalCompositeOperation="destination-out"
-                        listening={false}
-                      />
-                      {/* Yellow border */}
-                      <Rect
-                        x={0}
-                        y={0}
-                        width={currentElement.width}
-                        height={currentElement.height}
-                        stroke="yellow"
-                        strokeWidth={2}
-                        dash={[5, 5]}
-                      />
-                    </Group>
-                  );
-                } else if (currentElement.tool === 'circle') {
-                  return <Circle key="current" x={currentElement.x} y={currentElement.y} radius={currentElement.radius} stroke={currentElement.color} strokeWidth={4} />;
-                }
-                return null;
-              })()}
+              {/* Spotlight 枠(操作用の透明矩形+黄色枠) */}
+              {spotlights.map(el => {
+                const common = {
+                  id: `shape-${el.id}`,
+                  key: el.id,
+                  draggable: tool === 'select',
+                  rotation: el.rotation || 0,
+                  onClick: () => handleShapeClick(el.id),
+                  onTap: () => handleShapeClick(el.id),
+                  onDragMove: (e: any) => handleDragMove(e, el.id),
+                  onDragEnd: (e: any) => handleDragEnd(e, el.id),
+                  onTransform: (e: any) => handleTransform(e, el.id),
+                  onTransformEnd: (e: any) => handleTransformEnd(e, el.id),
+                };
+                return (
+                  <Group {...common} x={el.x} y={el.y}>
+                    <Rect width={el.width} height={el.height} fill="rgba(0,0,0,0)" />
+                    <Rect width={el.width} height={el.height} stroke="yellow" strokeWidth={2} dash={[5,5]} listening={false} />
+                  </Group>
+                );
+              })}
 
               <Transformer ref={transformerRef} />
             </Layer>
@@ -569,16 +466,17 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
           <p>Hold <kbd className="px-1 bg-gray-200 rounded">Space</kbd> or middle mouse button to pan. Use mouse wheel to zoom.</p>
         </div>
       </div>
-       {isSaving && (
-          <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-[60]">
-            <div className="bg-white rounded-lg p-8 max-w-md text-center">
-              <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mx-auto mb-4"></div>
-              <h3 className="text-xl font-bold mb-2">Saving Image...</h3>
-              <p className="text-gray-600">Please wait while we process and save your edited image.</p>
-              <p className="text-sm text-gray-500 mt-4">This may take a few seconds.</p>
-            </div>
+
+      {isSaving && (
+        <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-[60]">
+          <div className="bg-white rounded-lg p-8 max-w-md text-center">
+            <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mx-auto mb-4"></div>
+            <h3 className="text-xl font-bold mb-2">Saving Image...</h3>
+            <p className="text-gray-600">Please wait while we process and save your edited image.</p>
+            <p className="text-sm text-gray-500 mt-4">This may take a few seconds.</p>
           </div>
-        )}
+        </div>
+      )}
     </div>
   );
 }
