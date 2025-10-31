@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect, useMemo } from 'react';
 import { Stage, Layer, Line, Rect, Circle, Text, Image as KonvaImage, Transformer, Group } from 'react-konva';
 import useImage from 'use-image';
 
@@ -23,8 +23,7 @@ interface DrawElement {
   text?: string;
   radius?: number;
   fontSize?: number;
-  // For arrow - store as x,y,width,height box
-  // Arrow draws from (0,0) to (width, height) within the box
+  rotation?: number;
 }
 
 export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorProps) {
@@ -36,33 +35,54 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
   const [currentElement, setCurrentElement] = useState<DrawElement | null>(null);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [scale, setScale] = useState(1);
+  const [fitScale, setFitScale] = useState(1);
   const [stagePos, setStagePos] = useState({ x: 0, y: 0 });
   const [isPanning, setIsPanning] = useState(false);
   const [panStart, setPanStart] = useState({ x: 0, y: 0 });
   const [spacePressed, setSpacePressed] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-
+  const [isResizingArrow, setIsResizingArrow] = useState<'start' | 'end' | null>(null);
 
   const stageRef = useRef<any>(null);
   const transformerRef = useRef<any>(null);
 
-  // Attach transformer
+  // 画像をビューポートにフィット
   useEffect(() => {
-    if (selectedId !== null) {
-      const stage = stageRef.current;
-      if (!stage) return;
+    if (!image) return;
+    const viewportHeight = window.innerHeight * 0.7;
+    const viewportWidth = Math.min(window.innerWidth * 0.9, 1280);
+    const availableHeight = viewportHeight - 150;
+    const availableWidth = viewportWidth - 100;
+    const sH = availableHeight / image.height;
+    const sW = availableWidth / image.width;
+    const fit = Math.min(sH, sW, 1);
+    setScale(fit);
+    setFitScale(fit);
+    setStagePos({ x: 0, y: 0 });
+  }, [image]);
 
-      const selectedNode = stage.findOne(`#shape-${selectedId}`);
-      if (selectedNode && transformerRef.current) {
-        transformerRef.current.nodes([selectedNode]);
-        transformerRef.current.getLayer()?.batchDraw();
-      }
-    } else if (transformerRef.current) {
-      transformerRef.current.nodes([]);
+  // Transformer のアタッチ (exclude arrows)
+  useEffect(() => {
+    const stage = stageRef.current;
+    if (!stage || selectedId === null) {
+      transformerRef.current?.nodes([]);
+      return;
+    }
+
+    const selectedElement = elements.find(el => el.id === selectedId);
+    if (selectedElement?.tool === 'arrow') {
+      transformerRef.current?.nodes([]);
+      return;
+    }
+
+    const node = stage.findOne(`#shape-${selectedId}`);
+    if (node && transformerRef.current) {
+      transformerRef.current.nodes([node]);
+      transformerRef.current.getLayer()?.batchDraw();
     }
   }, [selectedId, elements]);
 
-  // Keyboard
+  // キーボード
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.code === 'Space') {
@@ -89,11 +109,11 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
     };
   }, [selectedId]);
 
-  // Zoom
+  // ズーム
   const handleZoomIn = () => setScale(s => Math.min(s + 0.1, 3));
   const handleZoomOut = () => setScale(s => Math.max(s - 0.1, 0.3));
   const handleZoomReset = () => {
-    setScale(1);
+    setScale(fitScale);
     setStagePos({ x: 0, y: 0 });
   };
 
@@ -122,8 +142,10 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
     return transform.point(pointer);
   };
 
+  // マウス操作
   const handleMouseDown = (e: any) => {
     const stage = e.target.getStage();
+    if (!stage) return;
 
     // Pan
     if (spacePressed || e.evt.button === 1) {
@@ -134,20 +156,18 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
       return;
     }
 
-    // Select mode
+    // Select
     if (tool === 'select') {
       const clickedOnEmpty = e.target === stage || e.target.getType() === 'Image';
-      if (clickedOnEmpty) {
-        setSelectedId(null);
-      }
+      if (clickedOnEmpty) setSelectedId(null);
       return;
     }
 
-    // Text tool
+    // Text
     if (tool === 'text') {
       const pos = getRelativePointerPosition();
-      const text = prompt('Enter text:');
-      if (text) {
+      const txt = prompt('Enter text:');
+      if (txt) {
         setElements(prev => [
           ...prev,
           {
@@ -158,18 +178,18 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
             y: pos.y,
             width: 0,
             height: 0,
-            text,
+            text: txt,
             fontSize: 32,
+            rotation: 0,
           },
         ]);
       }
       return;
     }
 
-    // Drawing
+    // Drawing start
     setIsDrawing(true);
     const pos = getRelativePointerPosition();
-
     setCurrentElement({
       id: Date.now(),
       tool,
@@ -179,6 +199,7 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
       width: 0,
       height: 0,
       radius: 0,
+      rotation: 0,
     });
   };
 
@@ -192,33 +213,23 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
       });
       return;
     }
-
     if (!isDrawing || !currentElement) return;
 
     const pos = getRelativePointerPosition();
-
-    if (tool === 'arrow' || tool === 'rect' || tool === 'mosaic' || tool === 'spotlight') {
+    if (['arrow','rect','mosaic','spotlight'].includes(tool)) {
       setCurrentElement({
         ...currentElement,
         width: pos.x - currentElement.x,
         height: pos.y - currentElement.y,
       });
     } else if (tool === 'circle') {
-      const radius = Math.sqrt(
-        Math.pow(pos.x - currentElement.x, 2) + Math.pow(pos.y - currentElement.y, 2)
-      );
-      setCurrentElement({
-        ...currentElement,
-        radius,
-      });
+      const r = Math.hypot(pos.x - currentElement.x, pos.y - currentElement.y);
+      setCurrentElement({ ...currentElement, radius: r });
     }
   };
 
   const handleMouseUp = () => {
-    if (isPanning) {
-      setIsPanning(false);
-      return;
-    }
+    if (isPanning) { setIsPanning(false); return; }
     if (!isDrawing) return;
     setIsDrawing(false);
     if (currentElement) {
@@ -227,94 +238,82 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
     }
   };
 
+  // 選択
   const handleShapeClick = (id: number) => {
-    if (tool === 'select') {
-      setSelectedId(id);
-    }
+    if (tool === 'select') setSelectedId(id);
   };
 
-  const handleDragEnd = (e: any, id: number) => {
+  // ドラッグ
+  const handleDragMove = (e: any, id: number) => {
     if (tool !== 'select') return;
-    
     const node = e.target;
     const newX = node.x();
     const newY = node.y();
-    
-    setElements(prev =>
-      prev.map(el =>
-        el.id === id ? { ...el, x: newX, y: newY } : el
-      )
-    );
+    setElements(prev => prev.map(el => el.id === id ? { ...el, x: newX, y: newY } : el));
   };
+  const handleDragEnd = handleDragMove;
 
-  const handleTransformEnd = (e: any, id: number) => {
+  // 変形
+  const handleTransform = (e: any, id: number) => {
+    if (tool !== 'select') return;
     const node = e.target;
     const scaleX = node.scaleX();
     const scaleY = node.scaleY();
-    
-    // Reset scale
+    setElements(prev => prev.map(el => {
+      if (el.id !== id) return el;
+      if (el.tool === 'circle') {
+        const base = el.radius || 0;
+        const avg = (scaleX + scaleY) / 2;
+        return { ...el, x: node.x(), y: node.y(), radius: Math.max(5, base * avg), rotation: node.rotation() };
+      } else if (el.tool === 'text') {
+        const base = el.fontSize || 32;
+        return { ...el, x: node.x(), y: node.y(), fontSize: Math.max(8, base * scaleX), rotation: node.rotation() };
+      } else {
+        return {
+          ...el,
+          x: node.x(),
+          y: node.y(),
+          width: Math.max(5, el.width * scaleX),
+          height: Math.max(5, el.height * scaleY),
+          rotation: node.rotation(),
+        };
+      }
+    }));
+  };
+  const handleTransformEnd = (e: any, id: number) => {
+    const node = e.target;
     node.scaleX(1);
     node.scaleY(1);
-
-    setElements(prev =>
-      prev.map(el => {
-        if (el.id !== id) return el;
-
-        if (el.tool === 'arrow' || el.tool === 'rect' || el.tool === 'mosaic' || el.tool === 'spotlight') {
-          return {
-            ...el,
-            x: node.x(),
-            y: node.y(),
-            width: Math.max(5, el.width * scaleX),
-            height: Math.max(5, el.height * scaleY),
-          };
-        } else if (el.tool === 'circle') {
-          return {
-            ...el,
-            x: node.x(),
-            y: node.y(),
-            radius: Math.max(5, (el.radius || 0) * scaleX),
-          };
-        } else if (el.tool === 'text') {
-          return {
-            ...el,
-            x: node.x(),
-            y: node.y(),
-            fontSize: Math.max(8, (el.fontSize || 32) * scaleX),
-          };
-        }
-        return el;
-      })
-    );
   };
 
+  // 保存
   const handleSave = async () => {
-  setIsSaving(true);
-  
-  try {
-    const stage = stageRef.current;
-    const originalScale = { x: stage.scaleX(), y: stage.scaleY() };
-    const originalPos = { x: stage.x(), y: stage.y() };
-    
-    stage.scale({ x: 1, y: 1 });
-    stage.position({ x: 0, y: 0 });
-    
-    const dataURL = stage.toDataURL({ pixelRatio: 2 });
-    
-    stage.scale(originalScale);
-    stage.position(originalPos);
-    
-    const response = await fetch(dataURL);
-    const blob = await response.blob();
-    
-    await onSave(blob);
-  } catch (error) {
-    console.error('Save error:', error);
-    alert('Failed to save image. Please try again.');
-    setIsSaving(false); // Only reset on error
-  }
-  // Don't reset isSaving on success - parent will close the editor
-};
+    if (!image) return;
+    setIsSaving(true);
+    try {
+      const stage = stageRef.current;
+      const originalScale = { x: stage.scaleX(), y: stage.scaleY() };
+      const originalPos = { x: stage.x(), y: stage.y() };
+      
+      stage.scale({ x: 1, y: 1 });
+      stage.position({ x: 0, y: 0 });
+      stage.width(image.width);
+      stage.height(image.height);
+
+      const dataURL = stage.toDataURL({ pixelRatio: 2 });
+      
+      stage.scale(originalScale);
+      stage.position(originalPos);
+
+      const resp = await fetch(dataURL);
+      const blob = await resp.blob();
+      await onSave(blob);
+    } catch (err) {
+      console.error('Save error:', err);
+      alert('Failed to save image. Please try again.');
+      setIsSaving(false);
+    }
+  };
 
   const getCursor = () => {
     if (isPanning) return 'grabbing';
@@ -323,6 +322,9 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
     if (tool !== 'select') return 'crosshair';
     return 'default';
   };
+
+  const spotlights = useMemo(() => elements.filter(e => e.tool === 'spotlight'), [elements]);
+  const nonSpotlight = useMemo(() => elements.filter(e => e.tool !== 'spotlight'), [elements]);
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
@@ -342,8 +344,12 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
             <button onClick={handleZoomOut} className="bg-gray-200 px-3 py-2 rounded">−</button>
             <button onClick={handleZoomReset} className="bg-gray-200 px-3 py-2 rounded text-sm">{Math.round(scale * 100)}%</button>
             <button onClick={handleZoomIn} className="bg-gray-200 px-3 py-2 rounded">+</button>
-            <button onClick={() => { if (selectedId) { setElements(prev => prev.filter(el => el.id !== selectedId)); setSelectedId(null); } }} disabled={!selectedId} className="bg-red-500 text-white px-4 py-2 rounded disabled:opacity-50">Delete</button>
-            <button onClick={handleSave} className="bg-green-600 text-white px-4 py-2 rounded">Save</button>
+            <button
+              onClick={() => { if (selectedId !== null) { setElements(prev => prev.filter(el => el.id !== selectedId)); setSelectedId(null); } }}
+              disabled={selectedId === null}
+              className="bg-red-500 text-white px-4 py-2 rounded disabled:opacity-50"
+            >Delete</button>
+            <button onClick={handleSave} disabled={!image} className="bg-green-600 text-white px-4 py-2 rounded disabled:opacity-50">Save</button>
             <button onClick={onCancel} className="bg-gray-300 px-4 py-2 rounded">Cancel</button>
           </div>
         </div>
@@ -363,116 +369,197 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
             onMouseUp={handleMouseUp}
             style={{ cursor: getCursor() }}
           >
+            {/* 1) 背景画像 */}
             <Layer>
-              {image && <KonvaImage image={image} />}
+              {image && <KonvaImage image={image} listening={false} />}
+            </Layer>
 
-              {elements.map(el => {
-                const shapeProps = {
+            {/* 2) Spotlight マスク */}
+            {image && spotlights.length > 0 && (
+              <Layer listening={false}>
+                <Group>
+                  <Rect
+                    x={0}
+                    y={0}
+                    width={image.width}
+                    height={image.height}
+                    fill="rgba(0,0,0,0.7)"
+                  />
+                  {spotlights.map(s => (
+                    <Rect
+                      key={`mask-${s.id}`}
+                      x={s.x}
+                      y={s.y}
+                      width={s.width}
+                      height={s.height}
+                      fill="black"
+                      globalCompositeOperation="destination-out"
+                    />
+                  ))}
+                </Group>
+              </Layer>
+            )}
+
+            {/* 3) 注釈 */}
+            <Layer>
+              {nonSpotlight.map(el => {
+                const common = {
                   id: `shape-${el.id}`,
-                  key: el.id,
                   draggable: tool === 'select',
+                  rotation: el.rotation || 0,
                   onClick: () => handleShapeClick(el.id),
                   onTap: () => handleShapeClick(el.id),
+                  onDragMove: (e: any) => handleDragMove(e, el.id),
                   onDragEnd: (e: any) => handleDragEnd(e, el.id),
+                  onTransform: (e: any) => handleTransform(e, el.id),
                   onTransformEnd: (e: any) => handleTransformEnd(e, el.id),
                 };
 
                 if (el.tool === 'arrow') {
-                  // Draw arrow as a line with arrowhead in a Group
-                  const arrowHeadSize = 15;
-                  
+                  const isSelected = selectedId === el.id;
+                  const toX = el.x + el.width;
+                  const toY = el.y + el.height;
+                  const headlen = 15;
+                  const angle = Math.atan2(el.height, el.width);
+
                   return (
-                    <Group {...shapeProps} x={el.x} y={el.y}>
-                      {/* Arrow line */}
+                    <Group key={el.id}>
+                      {/* Main arrow line */}
                       <Line
-                        points={[0, 0, el.width, el.height]}
+                        id={`shape-${el.id}`}
+                        points={[el.x, el.y, toX, toY]}
                         stroke={el.color}
                         strokeWidth={4}
                         lineCap="round"
                         lineJoin="round"
+                        draggable={tool === 'select' && !isResizingArrow}
+                        onClick={() => handleShapeClick(el.id)}
+                        onTap={() => handleShapeClick(el.id)}
+                        onDragMove={(e: any) => handleDragMove(e, el.id)}
+                        onDragEnd={(e: any) => handleDragEnd(e, el.id)}
                       />
-                      {/* Arrow head */}
+                      {/* Arrowhead line 1 */}
                       <Line
                         points={[
-                          el.width,
-                          el.height,
-                          el.width - arrowHeadSize * Math.cos(Math.atan2(el.height, el.width) - Math.PI / 6),
-                          el.height - arrowHeadSize * Math.sin(Math.atan2(el.height, el.width) - Math.PI / 6),
-                          el.width,
-                          el.height,
-                          el.width - arrowHeadSize * Math.cos(Math.atan2(el.height, el.width) + Math.PI / 6),
-                          el.height - arrowHeadSize * Math.sin(Math.atan2(el.height, el.width) + Math.PI / 6),
+                          toX, toY,
+                          toX - headlen * Math.cos(angle - Math.PI / 6),
+                          toY - headlen * Math.sin(angle - Math.PI / 6)
                         ]}
                         stroke={el.color}
                         strokeWidth={4}
-                        fill={el.color}
-                        closed
                         lineCap="round"
                         lineJoin="round"
+                        listening={false}
                       />
+                      {/* Arrowhead line 2 */}
+                      <Line
+                        points={[
+                          toX, toY,
+                          toX - headlen * Math.cos(angle + Math.PI / 6),
+                          toY - headlen * Math.sin(angle + Math.PI / 6)
+                        ]}
+                        stroke={el.color}
+                        strokeWidth={4}
+                        lineCap="round"
+                        lineJoin="round"
+                        listening={false}
+                      />
+                      
+                      {/* Endpoint handles - only show when selected */}
+                      {isSelected && (
+                        <>
+                          {/* Start point handle */}
+                          <Circle
+                            x={el.x}
+                            y={el.y}
+                            radius={6}
+                            fill="#FFFFFF"
+                            stroke="#3B82F6"
+                            strokeWidth={2}
+                            draggable={tool === 'select'}
+                            onDragStart={() => setIsResizingArrow('start')}
+                            onDragEnd={() => setIsResizingArrow(null)}
+                            onDragMove={(e: any) => {
+                              if (isResizingArrow === 'start') {
+                                const newX = e.target.x();
+                                const newY = e.target.y();
+                                setElements(prev => prev.map(elem =>
+                                  elem.id === el.id
+                                    ? {
+                                        ...elem,
+                                        x: newX,
+                                        y: newY,
+                                        width: toX - newX,
+                                        height: toY - newY
+                                      }
+                                    : elem
+                                ));
+                              }
+                            }}
+                          />
+                          {/* End point handle */}
+                          <Circle
+                            x={toX}
+                            y={toY}
+                            radius={6}
+                            fill="#FFFFFF"
+                            stroke="#3B82F6"
+                            strokeWidth={2}
+                            draggable={tool === 'select'}
+                            onDragStart={() => setIsResizingArrow('end')}
+                            onDragEnd={() => setIsResizingArrow(null)}
+                            onDragMove={(e: any) => {
+                              if (isResizingArrow === 'end') {
+                                const newX = e.target.x();
+                                const newY = e.target.y();
+                                setElements(prev => prev.map(elem =>
+                                  elem.id === el.id
+                                    ? {
+                                        ...elem,
+                                        width: newX - elem.x,
+                                        height: newY - elem.y
+                                      }
+                                    : elem
+                                ));
+                              }
+                            }}
+                          />
+                        </>
+                      )}
                     </Group>
                   );
                 } else if (el.tool === 'rect') {
-                  return <Rect {...shapeProps} x={el.x} y={el.y} width={el.width} height={el.height} stroke={el.color} strokeWidth={4} />;
+                  return <Rect key={el.id} {...common} x={el.x} y={el.y} width={el.width} height={el.height} stroke={el.color} strokeWidth={4} />;
                 } else if (el.tool === 'mosaic') {
-                  return <Rect {...shapeProps} x={el.x} y={el.y} width={el.width} height={el.height} fill="rgba(0,0,0,0.7)" />;
-                } else if (el.tool === 'spotlight') {
-                  return (
-                    <Group {...shapeProps} x={el.x} y={el.y}>
-                      <Rect x={0} y={0} width={el.width} height={el.height} stroke="yellow" strokeWidth={2} dash={[5, 5]} />
-                    </Group>
-                  );
+                  return <Rect key={el.id} {...common} x={el.x} y={el.y} width={el.width} height={el.height} fill="rgba(0,0,0,0.7)" />;
                 } else if (el.tool === 'circle') {
-                  return <Circle {...shapeProps} x={el.x} y={el.y} radius={el.radius} stroke={el.color} strokeWidth={4} />;
+                  return <Circle key={el.id} {...common} x={el.x} y={el.y} radius={el.radius || 0} stroke={el.color} strokeWidth={4} />;
                 } else if (el.tool === 'text') {
-                  return <Text {...shapeProps} x={el.x} y={el.y} text={el.text} fontSize={el.fontSize} fill={el.color} fontStyle="bold" />;
+                  return <Text key={el.id} {...common} x={el.x} y={el.y} text={el.text || ''} fontSize={el.fontSize || 32} fill={el.color} fontStyle="bold" />;
                 }
                 return null;
               })}
 
-              {currentElement && (() => {
-                if (currentElement.tool === 'arrow') {
-                  const arrowHeadSize = 15;
-                  return (
-                    <Group key="current" x={currentElement.x} y={currentElement.y}>
-                      <Line
-                        points={[0, 0, currentElement.width, currentElement.height]}
-                        stroke={currentElement.color}
-                        strokeWidth={4}
-                        lineCap="round"
-                        lineJoin="round"
-                      />
-                      <Line
-                        points={[
-                          currentElement.width,
-                          currentElement.height,
-                          currentElement.width - arrowHeadSize * Math.cos(Math.atan2(currentElement.height, currentElement.width) - Math.PI / 6),
-                          currentElement.height - arrowHeadSize * Math.sin(Math.atan2(currentElement.height, currentElement.width) - Math.PI / 6),
-                          currentElement.width,
-                          currentElement.height,
-                          currentElement.width - arrowHeadSize * Math.cos(Math.atan2(currentElement.height, currentElement.width) + Math.PI / 6),
-                          currentElement.height - arrowHeadSize * Math.sin(Math.atan2(currentElement.height, currentElement.width) + Math.PI / 6),
-                        ]}
-                        stroke={currentElement.color}
-                        strokeWidth={4}
-                        fill={currentElement.color}
-                        closed
-                        lineCap="round"
-                        lineJoin="round"
-                      />
-                    </Group>
-                  );
-                } else if (currentElement.tool === 'rect') {
-                  return <Rect key="current" x={currentElement.x} y={currentElement.y} width={currentElement.width} height={currentElement.height} stroke={currentElement.color} strokeWidth={4} />;
-                } else if (currentElement.tool === 'mosaic') {
-                  return <Rect key="current" x={currentElement.x} y={currentElement.y} width={currentElement.width} height={currentElement.height} fill="rgba(0,0,0,0.7)" />;
-                } else if (currentElement.tool === 'spotlight') {
-                  return <Rect key="current" x={currentElement.x} y={currentElement.y} width={currentElement.width} height={currentElement.height} stroke="yellow" strokeWidth={2} dash={[5, 5]} />;
-                } else if (currentElement.tool === 'circle') {
-                  return <Circle key="current" x={currentElement.x} y={currentElement.y} radius={currentElement.radius} stroke={currentElement.color} strokeWidth={4} />;
-                }
-                return null;
-              })()}
+              {/* Spotlight 枠 */}
+              {spotlights.map(el => {
+                const common = {
+                  id: `shape-${el.id}`,
+                  draggable: tool === 'select',
+                  rotation: el.rotation || 0,
+                  onClick: () => handleShapeClick(el.id),
+                  onTap: () => handleShapeClick(el.id),
+                  onDragMove: (e: any) => handleDragMove(e, el.id),
+                  onDragEnd: (e: any) => handleDragEnd(e, el.id),
+                  onTransform: (e: any) => handleTransform(e, el.id),
+                  onTransformEnd: (e: any) => handleTransformEnd(e, el.id),
+                };
+                return (
+                  <Group key={el.id} {...common} x={el.x} y={el.y}>
+                    <Rect width={el.width} height={el.height} fill="rgba(0,0,0,0)" />
+                    <Rect width={el.width} height={el.height} stroke="yellow" strokeWidth={2} dash={[5,5]} listening={false} />
+                  </Group>
+                );
+              })}
 
               <Transformer ref={transformerRef} />
             </Layer>
@@ -483,16 +570,17 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
           <p>Hold <kbd className="px-1 bg-gray-200 rounded">Space</kbd> or middle mouse button to pan. Use mouse wheel to zoom.</p>
         </div>
       </div>
-       {isSaving && (
-          <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-[60]">
-            <div className="bg-white rounded-lg p-8 max-w-md text-center">
-              <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mx-auto mb-4"></div>
-              <h3 className="text-xl font-bold mb-2">Saving Image...</h3>
-              <p className="text-gray-600">Please wait while we process and save your edited image.</p>
-              <p className="text-sm text-gray-500 mt-4">This may take a few seconds.</p>
-            </div>
+
+      {isSaving && (
+        <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-[60]">
+          <div className="bg-white rounded-lg p-8 max-w-md text-center">
+            <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mx-auto mb-4"></div>
+            <h3 className="text-xl font-bold mb-2">Saving Image...</h3>
+            <p className="text-gray-600">Please wait while we process and save your edited image.</p>
+            <p className="text-sm text-gray-500 mt-4">This may take a few seconds.</p>
           </div>
-        )}
+        </div>
+      )}
     </div>
   );
 }
