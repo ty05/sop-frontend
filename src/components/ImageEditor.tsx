@@ -41,6 +41,8 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
   const [panStart, setPanStart] = useState({ x: 0, y: 0 });
   const [spacePressed, setSpacePressed] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isResizingArrow, setIsResizingArrow] = useState<'start' | 'end' | null>(null);
+  const [resizingArrowId, setResizingArrowId] = useState<number | null>(null);
 
   const stageRef = useRef<any>(null);
   const transformerRef = useRef<any>(null);
@@ -60,13 +62,21 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
     setStagePos({ x: 0, y: 0 });
   }, [image]);
 
-  // Transformer のアタッチ
+  // Transformer のアタッチ (exclude arrows - they have custom handles)
   useEffect(() => {
     const stage = stageRef.current;
     if (!stage || selectedId === null) {
       transformerRef.current?.nodes([]);
       return;
     }
+
+    // Don't use Transformer for arrows - they have custom endpoint handles
+    const selectedElement = elements.find(el => el.id === selectedId);
+    if (selectedElement?.tool === 'arrow') {
+      transformerRef.current?.nodes([]);
+      return;
+    }
+
     const node = stage.findOne(`#shape-${selectedId}`);
     if (node && transformerRef.current) {
       transformerRef.current.nodes([node]);
@@ -410,18 +420,104 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
                 };
 
                 if (el.tool === 'arrow') {
+                  const isSelected = selectedId === el.id;
+                  const toX = el.x + el.width;
+                  const toY = el.y + el.height;
+
                   return (
-                    <Arrow
-                      {...common}
-                      x={el.x}
-                      y={el.y}
-                      points={[0,0, el.width, el.height]}
-                      stroke={el.color}
-                      fill={el.color}
-                      strokeWidth={4}
-                      pointerLength={15}
-                      pointerWidth={15}
-                    />
+                    <Group key={el.id}>
+                      <Arrow
+                        id={`shape-${el.id}`}
+                        x={el.x}
+                        y={el.y}
+                        points={[0, 0, el.width, el.height]}
+                        stroke={el.color}
+                        fill={el.color}
+                        strokeWidth={4}
+                        pointerLength={15}
+                        pointerWidth={15}
+                        draggable={tool === 'select' && !isResizingArrow}
+                        onClick={() => handleShapeClick(el.id)}
+                        onTap={() => handleShapeClick(el.id)}
+                        onDragMove={(e: any) => handleDragMove(e, el.id)}
+                        onDragEnd={(e: any) => handleDragEnd(e, el.id)}
+                      />
+                      {/* Arrow endpoint handles - only show when selected */}
+                      {isSelected && (
+                        <>
+                          {/* Start point handle */}
+                          <Circle
+                            x={el.x}
+                            y={el.y}
+                            radius={6}
+                            fill="#FFFFFF"
+                            stroke="#3B82F6"
+                            strokeWidth={2}
+                            draggable={tool === 'select'}
+                            onMouseDown={() => {
+                              setIsResizingArrow('start');
+                              setResizingArrowId(el.id);
+                            }}
+                            onMouseUp={() => {
+                              setIsResizingArrow(null);
+                              setResizingArrowId(null);
+                            }}
+                            onDragMove={(e: any) => {
+                              if (isResizingArrow === 'start' && resizingArrowId === el.id) {
+                                const newX = e.target.x();
+                                const newY = e.target.y();
+                                // Keep end point fixed, move start point
+                                setElements(prev => prev.map(elem =>
+                                  elem.id === el.id
+                                    ? {
+                                        ...elem,
+                                        x: newX,
+                                        y: newY,
+                                        width: toX - newX,
+                                        height: toY - newY
+                                      }
+                                    : elem
+                                ));
+                              }
+                            }}
+                          />
+                          {/* End point handle */}
+                          <Circle
+                            x={toX}
+                            y={toY}
+                            radius={6}
+                            fill="#FFFFFF"
+                            stroke="#3B82F6"
+                            strokeWidth={2}
+                            draggable={tool === 'select'}
+                            onMouseDown={() => {
+                              setIsResizingArrow('end');
+                              setResizingArrowId(el.id);
+                            }}
+                            onMouseUp={() => {
+                              setIsResizingArrow(null);
+                              setResizingArrowId(null);
+                            }}
+                            onDragMove={(e: any) => {
+                              if (isResizingArrow === 'end' && resizingArrowId === el.id) {
+                                const newX = e.target.x();
+                                const newY = e.target.y();
+                                // Keep start point fixed, move end point
+                                setElements(prev => prev.map(elem =>
+                                  elem.id === el.id
+                                    ? {
+                                        ...elem,
+                                        width: newX - elem.x,
+                                        height: newY - elem.y
+                                      }
+                                    : elem
+                                ));
+                              }
+                            }}
+                          />
+                        </>
+                      )}
+                    </Group>
                   );
                 } else if (el.tool === 'rect') {
                   return <Rect {...common} x={el.x} y={el.y} width={el.width} height={el.height} stroke={el.color} strokeWidth={4} />;
