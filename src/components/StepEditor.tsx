@@ -158,8 +158,12 @@ export default function StepEditor({ step, onUpdate, readOnly = false }: StepEdi
   const handleImageEdit = async (imageId: string) => {
     try {
       // Use proxy URL to avoid CORS issues with canvas toBlob()
-      const proxyUrl = `${API_URL}/assets/${imageId}/proxy`;
+      // Remove trailing slash from API_URL to avoid double slashes
+      const baseUrl = API_URL.replace(/\/$/, '');
+      const proxyUrl = `${baseUrl}/assets/${imageId}/proxy`;
 
+      console.log('API_URL:', API_URL);
+      console.log('Base URL:', baseUrl);
       console.log('Opening ImageEditor with proxy URL:', proxyUrl);
 
       // Pass proxy URL to ImageEditor - avoids CORS taint issues
