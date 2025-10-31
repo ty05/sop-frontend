@@ -182,9 +182,46 @@ export default function VideoOverlayEditor({
   };
 
   const drawOverlay = (ctx: CanvasRenderingContext2D, overlay: Overlay, isSelected: boolean) => {
+    // Draw selection highlight first (if selected)
+    if (isSelected) {
+      ctx.save();
+      ctx.strokeStyle = '#3B82F6'; // Blue selection color
+      ctx.lineWidth = 3;
+      ctx.setLineDash([8, 4]); // Dashed outline
+
+      switch (overlay.type) {
+        case 'text':
+          if (overlay.text) {
+            ctx.font = `${overlay.fontSize || 24}px Arial`;
+            const metrics = ctx.measureText(overlay.text);
+            const textWidth = metrics.width;
+            const textHeight = overlay.fontSize || 24;
+            ctx.strokeRect(overlay.x - 8, overlay.y - textHeight - 8, textWidth + 16, textHeight + 16);
+          }
+          break;
+        case 'rectangle':
+          if (overlay.width && overlay.height) {
+            ctx.strokeRect(overlay.x - 5, overlay.y - 5, overlay.width + 10, overlay.height + 10);
+          }
+          break;
+        case 'circle':
+          if (overlay.width) {
+            const radius = overlay.width / 2;
+            ctx.beginPath();
+            ctx.arc(overlay.x + radius, overlay.y + radius, radius + 5, 0, 2 * Math.PI);
+            ctx.stroke();
+          }
+          break;
+      }
+
+      ctx.setLineDash([]); // Reset dash
+      ctx.restore();
+    }
+
+    // Draw the actual overlay
     ctx.strokeStyle = overlay.color;
     ctx.fillStyle = overlay.color;
-    ctx.lineWidth = isSelected ? 3 : 2;
+    ctx.lineWidth = isSelected ? 4 : 2;
 
     switch (overlay.type) {
       case 'text':
@@ -791,10 +828,16 @@ export default function VideoOverlayEditor({
   };
 
   const handleDeleteOverlay = () => {
-    if (!selectedOverlay) return;
+    if (!selectedOverlay) {
+      console.log('⚠️ No overlay selected');
+      return;
+    }
     if (confirm('Delete this overlay?')) {
-      saveToHistory(overlays.filter(o => o.id !== selectedOverlay));
+      console.log('🗑️ Deleting overlay:', selectedOverlay);
+      const newOverlays = overlays.filter(o => o.id !== selectedOverlay);
+      saveToHistory(newOverlays);
       setSelectedOverlay(null);
+      console.log('✅ Overlay deleted');
     }
   };
 
@@ -829,15 +872,28 @@ export default function VideoOverlayEditor({
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
+      // Ignore if typing in text input
+      if (isAddingText || e.target instanceof HTMLInputElement) {
+        return;
+      }
+
       // Undo with Ctrl+Z or Cmd+Z
-      if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !isAddingText) {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
         e.preventDefault();
         handleUndo();
         return;
       }
 
-      // Only handle spacebar if not typing in an input
-      if (e.code === 'Space' && !isAddingText && e.target instanceof HTMLElement && e.target.tagName !== 'INPUT') {
+      // Delete with Delete or Backspace
+      if ((e.key === 'Delete' || e.key === 'Backspace') && selectedOverlay) {
+        e.preventDefault();
+        console.log('🔑 Delete key pressed, overlay:', selectedOverlay);
+        handleDeleteOverlay();
+        return;
+      }
+
+      // Spacebar for play/pause
+      if (e.code === 'Space' && e.target instanceof HTMLElement && e.target.tagName !== 'INPUT') {
         e.preventDefault();
         togglePlayPause();
       }
@@ -845,7 +901,7 @@ export default function VideoOverlayEditor({
 
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [isAddingText, overlayHistory, overlays]);
+  }, [isAddingText, overlayHistory, overlays, selectedOverlay]);
 
   const selectedOverlayData = overlays.find(o => o.id === selectedOverlay);
 
@@ -916,6 +972,52 @@ export default function VideoOverlayEditor({
                 </div>
               )}
 
+              {/* Overlays List */}
+              {overlays.length > 0 && (
+                <div className="pt-3 border-t mt-4">
+                  <h4 className="text-sm font-semibold mb-2">Overlays ({overlays.length})</h4>
+                  <div className="space-y-1 max-h-48 overflow-y-auto">
+                    {overlays.map((overlay, index) => (
+                      <div
+                        key={overlay.id}
+                        onClick={() => setSelectedOverlay(overlay.id)}
+                        className={`p-2 rounded text-xs cursor-pointer flex items-center justify-between ${
+                          selectedOverlay === overlay.id
+                            ? 'bg-blue-100 border border-blue-300'
+                            : 'bg-gray-50 hover:bg-gray-100'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                          <span>
+                            {overlay.type === 'text' && '📝'}
+                            {overlay.type === 'rectangle' && '▢'}
+                            {overlay.type === 'circle' && '○'}
+                            {overlay.type === 'arrow' && '→'}
+                          </span>
+                          <span className="font-medium truncate">
+                            {overlay.type === 'text'
+                              ? (overlay.text?.substring(0, 15) || 'Text')
+                              : overlay.type.charAt(0).toUpperCase() + overlay.type.slice(1)
+                            }
+                          </span>
+                        </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedOverlay(overlay.id);
+                            setTimeout(() => handleDeleteOverlay(), 0);
+                          }}
+                          className="text-red-500 hover:text-red-700 p-1 ml-2"
+                          title="Delete"
+                        >
+                          🗑️
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {selectedOverlayData && (
                 <>
                   <div className="pt-3 border-t">
@@ -961,8 +1063,10 @@ export default function VideoOverlayEditor({
                     </div>
                     <button
                       onClick={handleDeleteOverlay}
-                      className="w-full mt-3 bg-red-600 text-white px-3 py-2 rounded hover:bg-red-700"
+                      className="w-full mt-3 bg-red-600 text-white px-3 py-2 rounded hover:bg-red-700 flex items-center justify-center gap-2 font-semibold shadow-md"
+                      title="Delete selected overlay (Delete/Backspace)"
                     >
+                      <span className="text-lg">🗑️</span>
                       Delete Overlay
                     </button>
                   </div>
@@ -1078,7 +1182,20 @@ export default function VideoOverlayEditor({
                 <span className="text-xl">↶</span>
                 Undo
               </button>
-              <span className="text-sm text-gray-600">Spacebar: play/pause | Ctrl/Cmd+Z: undo</span>
+              <button
+                onClick={handleDeleteOverlay}
+                disabled={selectedOverlay === null}
+                className={`px-6 py-3 rounded-lg flex items-center gap-2 font-semibold shadow-md ${
+                  selectedOverlay === null
+                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                    : 'bg-red-600 text-white hover:bg-red-700'
+                }`}
+                title={selectedOverlay ? 'Delete selected overlay (Delete/Backspace)' : 'Select an overlay to delete'}
+              >
+                <span className="text-lg">🗑️</span>
+                Delete
+              </button>
+              <span className="text-sm text-gray-600">Spacebar: play/pause | Ctrl/Cmd+Z: undo | Delete/Backspace: delete overlay</span>
             </div>
 
             {/* Timeline */}
