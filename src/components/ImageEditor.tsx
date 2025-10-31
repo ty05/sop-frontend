@@ -6,7 +6,7 @@ import useImage from 'use-image';
 
 interface ImageEditorProps {
   imageUrl: string;
-  onSave: (blob: Blob) => void;
+  onSave: (blob: Blob) => void | Promise<void>;
   onCancel: () => void;
 }
 
@@ -291,23 +291,109 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
     if (!image) return;
     setIsSaving(true);
     try {
-      const stage = stageRef.current;
-      const originalScale = { x: stage.scaleX(), y: stage.scaleY() };
-      const originalPos = { x: stage.x(), y: stage.y() };
-      
-      stage.scale({ x: 1, y: 1 });
-      stage.position({ x: 0, y: 0 });
-      stage.width(image.width);
-      stage.height(image.height);
+      // Create off-screen canvas for proper compositing
+      const canvas = document.createElement('canvas');
+      canvas.width = image.width * 2; // 2x for high DPI
+      canvas.height = image.height * 2;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) throw new Error('Failed to get canvas context');
 
-      const dataURL = stage.toDataURL({ pixelRatio: 2 });
-      
-      stage.scale(originalScale);
-      stage.position(originalPos);
+      // Scale context for high DPI
+      ctx.scale(2, 2);
 
-      const resp = await fetch(dataURL);
-      const blob = await resp.blob();
+      // 1. Draw background image
+      ctx.drawImage(image, 0, 0, image.width, image.height);
+
+      // 2. Draw spotlight mask if exists
+      if (spotlights.length > 0) {
+        // Draw dark overlay
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+        ctx.fillRect(0, 0, image.width, image.height);
+
+        // Cut out spotlight areas
+        ctx.globalCompositeOperation = 'destination-out';
+        spotlights.forEach(s => {
+          ctx.fillStyle = 'black';
+          ctx.fillRect(s.x, s.y, s.width, s.height);
+        });
+        // Reset composite operation
+        ctx.globalCompositeOperation = 'source-over';
+      }
+
+      // 3. Draw annotations (non-spotlight elements)
+      nonSpotlight.forEach(el => {
+        ctx.save();
+
+        if (el.rotation) {
+          const centerX = el.tool === 'circle' ? el.x : el.x + el.width / 2;
+          const centerY = el.tool === 'circle' ? el.y : el.y + el.height / 2;
+          ctx.translate(centerX, centerY);
+          ctx.rotate(el.rotation);
+          ctx.translate(-centerX, -centerY);
+        }
+
+        if (el.tool === 'arrow') {
+          const toX = el.x + el.width;
+          const toY = el.y + el.height;
+          const headlen = 15;
+          const angle = Math.atan2(el.height, el.width);
+
+          ctx.strokeStyle = el.color;
+          ctx.lineWidth = 4;
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
+
+          // Main line
+          ctx.beginPath();
+          ctx.moveTo(el.x, el.y);
+          ctx.lineTo(toX, toY);
+          ctx.stroke();
+
+          // Arrowhead
+          ctx.beginPath();
+          ctx.moveTo(toX, toY);
+          ctx.lineTo(
+            toX - headlen * Math.cos(angle - Math.PI / 6),
+            toY - headlen * Math.sin(angle - Math.PI / 6)
+          );
+          ctx.moveTo(toX, toY);
+          ctx.lineTo(
+            toX - headlen * Math.cos(angle + Math.PI / 6),
+            toY - headlen * Math.sin(angle + Math.PI / 6)
+          );
+          ctx.stroke();
+        } else if (el.tool === 'rect') {
+          ctx.strokeStyle = el.color;
+          ctx.lineWidth = 4;
+          ctx.strokeRect(el.x, el.y, el.width, el.height);
+        } else if (el.tool === 'mosaic') {
+          ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+          ctx.fillRect(el.x, el.y, el.width, el.height);
+        } else if (el.tool === 'circle') {
+          ctx.strokeStyle = el.color;
+          ctx.lineWidth = 4;
+          ctx.beginPath();
+          ctx.arc(el.x, el.y, el.radius || 0, 0, 2 * Math.PI);
+          ctx.stroke();
+        } else if (el.tool === 'text') {
+          ctx.fillStyle = el.color;
+          ctx.font = `bold ${el.fontSize || 32}px sans-serif`;
+          ctx.fillText(el.text || '', el.x, el.y);
+        }
+
+        ctx.restore();
+      });
+
+      // Convert canvas to blob
+      const blob = await new Promise<Blob>((resolve, reject) => {
+        canvas.toBlob(
+          (b) => b ? resolve(b) : reject(new Error('Failed to create blob')),
+          'image/png'
+        );
+      });
+
       await onSave(blob);
+      // Success - isSaving will be reset by parent component
     } catch (err) {
       console.error('Save error:', err);
       alert('Failed to save image. Please try again.');
