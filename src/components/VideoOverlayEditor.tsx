@@ -50,6 +50,8 @@ export default function VideoOverlayEditor({
   const [textPosition, setTextPosition] = useState<{ x: number; y: number } | null>(null);
   const [videoBlobUrl, setVideoBlobUrl] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [textResizeStartFontSize, setTextResizeStartFontSize] = useState<number | null>(null);
+  const [textResizeStartX, setTextResizeStartX] = useState<number | null>(null);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -324,7 +326,7 @@ export default function VideoOverlayEditor({
 
           // Draw arrowhead
           const headlen = 15;
-          const angle = Math.atan2(toY - overlay.y, toX - overlay.x);
+          const angle = Math.atan2(overlay.height, overlay.width);
           ctx.beginPath();
           ctx.moveTo(toX, toY);
           ctx.lineTo(toX - headlen * Math.cos(angle - Math.PI / 6),
@@ -381,6 +383,11 @@ export default function VideoOverlayEditor({
             const handle = isPointNearResizeHandle(x, y, selectedOverlayData);
             if (handle) {
               setIsResizing(handle);
+              // Store initial values for text resize
+              if (selectedOverlayData.type === 'text') {
+                setTextResizeStartFontSize(selectedOverlayData.fontSize || 24);
+                setTextResizeStartX(x);
+              }
               return;
             }
           }
@@ -408,6 +415,11 @@ export default function VideoOverlayEditor({
           const handle = isPointNearResizeHandle(x, y, clickedOverlay);
           if (handle) {
             setIsResizing(handle);
+            // Store initial values for text resize
+            if (clickedOverlay.type === 'text') {
+              setTextResizeStartFontSize(clickedOverlay.fontSize || 24);
+              setTextResizeStartX(x);
+            }
             return;
           }
         }
@@ -501,16 +513,10 @@ export default function VideoOverlayEditor({
               height: newWidth
             };
           } else if (overlay.type === 'text') {
-            // For text, adjust font size based on drag distance
-            const ctx = canvas.getContext('2d');
-            if (ctx) {
-              ctx.font = `${overlay.fontSize || 24}px Arial`;
-              const metrics = ctx.measureText(overlay.text || '');
-              const initialWidth = metrics.width;
-
-              const dragDistance = x - (overlay.x + initialWidth + 5);
-              const newFontSize = Math.max(12, Math.min(72, (overlay.fontSize || 24) + dragDistance * 0.5));
-
+            // For text, adjust font size based on drag distance from initial position
+            if (textResizeStartFontSize && textResizeStartX !== null) {
+              const dragDistance = x - textResizeStartX;
+              const newFontSize = Math.max(12, Math.min(72, textResizeStartFontSize + dragDistance * 0.5));
               return { ...overlay, fontSize: Math.round(newFontSize) };
             }
           }
@@ -589,6 +595,8 @@ export default function VideoOverlayEditor({
     if (isResizing) {
       saveToHistory([...overlays]);
       setIsResizing(null);
+      setTextResizeStartFontSize(null);
+      setTextResizeStartX(null);
       return;
     }
 
