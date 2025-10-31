@@ -71,61 +71,32 @@ export default function VideoOverlayEditor({
     };
   }, [videoBlobUrl]);
 
-  // Setup video element (no auto-play)
+  // Setup video element and force load
   useEffect(() => {
     const video = videoRef.current;
-    if (!video) {
-      console.log('⚠️ Video ref not available');
-      return;
-    }
+    if (!video || !videoBlobUrl) return;
 
-    if (!videoBlobUrl) {
-      console.log('⚠️ videoBlobUrl is empty/null:', videoBlobUrl);
-      return;
-    }
+    console.log('🎬 Setting video src:', videoBlobUrl);
 
-    console.log('🎬 Setting up video element');
-    console.log('🎬 Video source will be:', videoBlobUrl);
+    // Set src directly and force load
+    video.src = videoBlobUrl;
+    video.load();
+
+    console.log('✅ video.load() called');
 
     const handleLoadedData = () => {
-      console.log('✅ Video loadeddata event fired');
-      console.log('📹 Video duration:', video.duration);
-      console.log('📹 Video readyState:', video.readyState);
-      console.log('📹 Video width:', video.videoWidth);
-      console.log('📹 Video height:', video.videoHeight);
+      console.log('✅ Video loaded successfully');
     };
 
     const handleError = (e: any) => {
-      console.error('❌ Video error event fired');
-      console.error('❌ Error:', e);
-      console.error('❌ Video error code:', video.error?.code);
-      console.error('❌ Video error message:', video.error?.message);
+      console.error('❌ Video error:', video.error?.code, video.error?.message);
     };
 
-    const handleLoadStart = () => {
-      console.log('🔄 Video loadstart event fired');
-    };
-
-    const handleLoadedMetadata = () => {
-      console.log('✅ Video loadedmetadata event fired');
-      console.log('📹 Duration:', video.duration);
-    };
-
-    const handleCanPlay = () => {
-      console.log('✅ Video canplay event fired');
-    };
-
-    video.addEventListener('loadstart', handleLoadStart);
-    video.addEventListener('loadedmetadata', handleLoadedMetadata);
     video.addEventListener('loadeddata', handleLoadedData);
-    video.addEventListener('canplay', handleCanPlay);
     video.addEventListener('error', handleError);
 
     return () => {
-      video.removeEventListener('loadstart', handleLoadStart);
-      video.removeEventListener('loadedmetadata', handleLoadedMetadata);
       video.removeEventListener('loadeddata', handleLoadedData);
-      video.removeEventListener('canplay', handleCanPlay);
       video.removeEventListener('error', handleError);
     };
   }, [videoBlobUrl]);
@@ -143,103 +114,44 @@ export default function VideoOverlayEditor({
 
   const loadVideoBlob = async () => {
     try {
-      console.log('========================================');
-      console.log('🔍 Starting video load');
-      console.log('📹 Video ID:', videoId);
-      console.log('🔑 Session exists:', !!session);
-      console.log('🔑 Access token exists:', !!session?.access_token);
-      console.log('========================================');
-
-      // Step 1: Get asset metadata
-      console.log('📡 Fetching asset metadata...');
       const assetResponse = await assetsAPI.get(videoId);
-      console.log('✅ Asset response received:', assetResponse);
-      console.log('📦 Asset data:', JSON.stringify(assetResponse.data, null, 2));
-
       const asset = assetResponse.data;
-      console.log('🔗 cdn_url value:', asset.cdn_url);
-      console.log('🔗 cdn_url type:', typeof asset.cdn_url);
-      console.log('🔗 playback_url value:', asset.playback_url);
-      console.log('🔗 playback_url type:', typeof asset.playback_url);
 
-      // Step 2: Determine which URL to use
       if (asset.cdn_url) {
-        console.log('✅ Using CDN URL');
-        console.log('🎬 Setting video URL to:', asset.cdn_url);
+        console.log('Using CDN URL:', asset.cdn_url);
         setVideoBlobUrl(asset.cdn_url);
-        console.log('✅ videoBlobUrl state updated with CDN URL');
-        return; // Exit early
+        return;
       }
 
       if (asset.playback_url) {
-        console.log('✅ Using playback URL');
-        console.log('🎬 Setting video URL to:', asset.playback_url);
+        console.log('Using playback URL:', asset.playback_url);
         setVideoBlobUrl(asset.playback_url);
-        console.log('✅ videoBlobUrl state updated with playback URL');
-        return; // Exit early
+        return;
       }
 
-      // Step 3: Fallback to backend streaming
-      console.log('⚠️ No direct URL found, using backend streaming');
-
+      // Fallback to backend streaming
       const token = session?.access_token;
       if (!token) {
-        console.error('❌ No access token available');
         throw new Error('Authentication required');
       }
-      console.log('✅ Access token available');
 
       const apiUrl = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/$/, '');
-      const streamUrl = `${apiUrl}/assets/${videoId}/stream`;
-      console.log('🔄 Streaming URL:', streamUrl);
-      console.log('🔄 Starting fetch...');
-
-      const response = await fetch(streamUrl, {
+      const response = await fetch(`${apiUrl}/assets/${videoId}/stream`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
 
-      console.log('📡 Fetch completed');
-      console.log('📡 Response status:', response.status);
-      console.log('📡 Response OK:', response.ok);
-      console.log('📡 Response headers:', Object.fromEntries(response.headers.entries()));
-
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error('❌ Response not OK. Status:', response.status);
-        console.error('❌ Error body:', errorText);
-        throw new Error(`Failed to load video: ${response.status} ${response.statusText}`);
+        throw new Error('Failed to load video');
       }
 
-      console.log('🔄 Converting to blob...');
       const blob = await response.blob();
-      console.log('✅ Blob created');
-      console.log('📦 Blob size:', blob.size, 'bytes');
-      console.log('📦 Blob type:', blob.type);
-
-      if (blob.size === 0) {
-        console.error('❌ Blob is empty!');
-        throw new Error('Received empty video blob');
-      }
-
-      console.log('🔄 Creating blob URL...');
       const blobUrl = URL.createObjectURL(blob);
-      console.log('✅ Blob URL created:', blobUrl);
-
       setVideoBlobUrl(blobUrl);
-      console.log('✅ videoBlobUrl state updated with blob URL');
-      console.log('========================================');
-      console.log('✅ Video load completed successfully');
-      console.log('========================================');
 
     } catch (error: any) {
-      console.error('========================================');
-      console.error('❌ VIDEO LOAD FAILED');
-      console.error('❌ Error type:', error?.constructor?.name);
-      console.error('❌ Error message:', error?.message);
-      console.error('❌ Full error:', error);
-      console.error('========================================');
+      console.error('Failed to load video:', error);
       alert(`Failed to load video: ${error?.message || error}`);
     }
   };
@@ -281,34 +193,10 @@ export default function VideoOverlayEditor({
   const drawCanvas = () => {
     const canvas = canvasRef.current;
     const video = videoRef.current;
-
-    if (!canvas) {
-      console.log('⚠️ Canvas ref not available');
-      return;
-    }
-
-    if (!video) {
-      console.log('⚠️ Video ref not available');
-      return;
-    }
+    if (!canvas || !video) return;
 
     const ctx = canvas.getContext('2d');
-    if (!ctx) {
-      console.log('⚠️ Canvas context not available');
-      return;
-    }
-
-    // Log video state every 60 frames (about once per second at 60fps)
-    if (Math.random() < 0.016) {
-      console.log('📹 Video state check:');
-      console.log('  - readyState:', video.readyState);
-      console.log('  - paused:', video.paused);
-      console.log('  - currentTime:', video.currentTime);
-      console.log('  - duration:', video.duration);
-      console.log('  - videoWidth:', video.videoWidth);
-      console.log('  - videoHeight:', video.videoHeight);
-      console.log('  - src:', video.src?.substring(0, 50) + '...');
-    }
+    if (!ctx) return;
 
     // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -318,7 +206,7 @@ export default function VideoOverlayEditor({
       try {
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
       } catch (e) {
-        console.error('❌ Failed to draw video frame:', e);
+        console.error('Failed to draw video frame:', e);
       }
     } else {
       // Draw placeholder when video is not ready
@@ -327,7 +215,7 @@ export default function VideoOverlayEditor({
       ctx.fillStyle = '#FFFFFF';
       ctx.font = '16px Arial';
       ctx.textAlign = 'center';
-      ctx.fillText(`Loading video... (readyState: ${video.readyState})`, canvas.width / 2, canvas.height / 2);
+      ctx.fillText('Loading video...', canvas.width / 2, canvas.height / 2);
     }
 
     // Draw overlays that are visible at current time
@@ -1134,10 +1022,8 @@ export default function VideoOverlayEditor({
               <div className="relative bg-black inline-block">
                 <video
                   ref={videoRef}
-                  src={videoBlobUrl || ''}
                   className="hidden"
                   onTimeUpdate={(e) => setCurrentTime(e.currentTarget.currentTime)}
-                  onLoadedMetadata={(e) => console.log('Video metadata loaded:', e.currentTarget.duration)}
                   loop
                   muted
                   playsInline
