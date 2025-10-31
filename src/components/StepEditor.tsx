@@ -157,18 +157,33 @@ export default function StepEditor({ step, onUpdate, readOnly = false }: StepEdi
 
   const handleImageEdit = async (imageId: string) => {
     try {
-      // Use proxy URL to avoid CORS issues with canvas toBlob()
-      // Remove trailing slash from API_URL to avoid double slashes
+      // Fetch image through proxy with authentication
       const baseUrl = API_URL.replace(/\/$/, '');
       const proxyUrl = `${baseUrl}/assets/${imageId}/proxy`;
 
-      console.log('API_URL:', API_URL);
-      console.log('Base URL:', baseUrl);
-      console.log('Opening ImageEditor with proxy URL:', proxyUrl);
+      console.log('Fetching image for editing:', proxyUrl);
 
-      // Pass proxy URL to ImageEditor - avoids CORS taint issues
-      setEditingImageId(imageId); // Track which image is being edited
-      setEditingImageUrl(proxyUrl);
+      // Fetch with authentication token
+      const response = await fetch(proxyUrl, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch image: ${response.status}`);
+      }
+
+      // Convert to blob URL
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+
+      console.log('Image loaded, blob URL:', blobUrl);
+
+      // Pass blob URL to ImageEditor - no CORS issues with blob URLs
+      setEditingImageId(imageId);
+      setEditingImageUrl(blobUrl);
       setShowImageEditor(true);
     } catch (error) {
       console.error('Failed to load image for editing:', error);
@@ -246,6 +261,12 @@ export default function StepEditor({ step, onUpdate, readOnly = false }: StepEdi
 
       // 8. Close editor and refresh
       setShowImageEditor(false);
+
+      // Cleanup blob URL if it exists
+      if (editingImageUrl && editingImageUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(editingImageUrl);
+      }
+
       setEditingImageUrl(null);
       setEditingImageId(null);
       setUploading(false);
@@ -259,6 +280,12 @@ export default function StepEditor({ step, onUpdate, readOnly = false }: StepEdi
       // Reset state on error
       setUploading(false);
       setShowImageEditor(false);
+
+      // Cleanup blob URL if it exists
+      if (editingImageUrl && editingImageUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(editingImageUrl);
+      }
+
       setEditingImageUrl(null);
       setEditingImageId(null);
     }
@@ -599,6 +626,12 @@ export default function StepEditor({ step, onUpdate, readOnly = false }: StepEdi
           onSave={handleImageSave}
           onCancel={() => {
             setShowImageEditor(false);
+
+            // Cleanup blob URL if it exists
+            if (editingImageUrl && editingImageUrl.startsWith('blob:')) {
+              URL.revokeObjectURL(editingImageUrl);
+            }
+
             setEditingImageUrl(null);
             setEditingImageId(null);
           }}
