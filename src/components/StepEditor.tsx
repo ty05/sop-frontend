@@ -11,8 +11,6 @@ import VideoTrimmer from './VideoTrimmer';
 import ChapterEditor from './ChapterEditor';
 import VideoOverlayEditor from './VideoOverlayEditor';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-
 interface StepEditorProps {
   step: Step;
   onUpdate: () => void;
@@ -157,26 +155,13 @@ export default function StepEditor({ step, onUpdate, readOnly = false }: StepEdi
 
   const handleImageEdit = async (imageId: string) => {
     try {
-      // Fetch image through proxy with authentication
-      const baseUrl = API_URL.replace(/\/$/, '');
-      const proxyUrl = `${baseUrl}/assets/${imageId}/proxy`;
+      console.log('Fetching image for editing:', imageId);
 
-      console.log('Fetching image for editing:', proxyUrl);
-
-      // Fetch with authentication token
-      const response = await fetch(proxyUrl, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch image: ${response.status}`);
-      }
+      // Fetch image through proxy with authentication (using apiClient)
+      const response = await assetsAPI.proxy(imageId);
+      const blob = response.data;
 
       // Convert to blob URL
-      const blob = await response.blob();
       const blobUrl = URL.createObjectURL(blob);
 
       console.log('Image loaded, blob URL:', blobUrl);

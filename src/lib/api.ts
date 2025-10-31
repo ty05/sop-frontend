@@ -93,6 +93,8 @@ export const assetsAPI = {
 
   get: (id: string) => apiClient.get(`/assets/${id}`),
 
+  proxy: (assetId: string) => apiClient.get(`/assets/${assetId}/proxy`, { responseType: 'blob' }),
+
   complete: (assetId: string) => apiClient.post(`/assets/${assetId}/complete`),
 
   delete: (assetId: string) => apiClient.delete(`/assets/${assetId}`),
