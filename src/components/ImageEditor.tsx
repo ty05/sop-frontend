@@ -560,21 +560,34 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
                   const angle = Math.atan2(el.height, el.width);
 
                   return (
-                    <Group key={el.id}>
+                    <Group
+                      key={el.id}
+                      id={`shape-${el.id}`}
+                      draggable={tool === 'select' && !isResizingArrow}
+                      onClick={() => handleShapeClick(el.id)}
+                      onTap={() => handleShapeClick(el.id)}
+                      onDragMove={(e: any) => {
+                        if (tool === 'select' && !isResizingArrow) {
+                          const node = e.target;
+                          const newX = el.x + node.x();
+                          const newY = el.y + node.y();
+                          setElements(prev => prev.map(elem => elem.id === el.id ? { ...elem, x: newX, y: newY } : elem));
+                          node.position({ x: 0, y: 0 });
+                        }
+                      }}
+                      onDragEnd={(e: any) => {
+                        const node = e.target;
+                        node.position({ x: 0, y: 0 });
+                      }}
+                    >
                       {/* Main arrow line */}
                       <Line
-                        id={`shape-${el.id}`}
                         points={[el.x, el.y, toX, toY]}
                         stroke={el.color}
                         strokeWidth={4}
                         hitStrokeWidth={20}
                         lineCap="round"
                         lineJoin="round"
-                        draggable={tool === 'select' && !isResizingArrow}
-                        onClick={() => handleShapeClick(el.id)}
-                        onTap={() => handleShapeClick(el.id)}
-                        onDragMove={(e: any) => handleDragMove(e, el.id)}
-                        onDragEnd={(e: any) => handleDragEnd(e, el.id)}
                       />
                       {/* Arrowhead line 1 */}
                       <Line
@@ -602,7 +615,7 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
                         lineJoin="round"
                         listening={false}
                       />
-                      
+
                       {/* Endpoint handles - only show when selected */}
                       {isSelected && (
                         <>
