@@ -459,11 +459,35 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
                         draggable={tool === 'select' && !isResizingArrow}
                         onClick={() => handleShapeClick(el.id)}
                         onTap={() => handleShapeClick(el.id)}
-                        onDragMove={(e: any) => handleDragMove(e, el.id)}
-                        onDragEnd={(e: any) => handleDragEnd(e, el.id)}
+                        onDragMove={(e: any) => {
+                          if (tool === 'select' && !isResizingArrow) {
+                            const newX = e.target.x();
+                            const newY = e.target.y();
+                            const deltaX = newX - el.x;
+                            const deltaY = newY - el.y;
+                            setElements(prev => prev.map(elem =>
+                              elem.id === el.id
+                                ? {
+                                    ...elem,
+                                    x: newX,
+                                    y: newY
+                                  }
+                                : elem
+                            ));
+                          }
+                        }}
+                        onDragEnd={(e: any) => {
+                          const newX = e.target.x();
+                          const newY = e.target.y();
+                          // Reset line position to 0,0 after updating element position
+                          e.target.x(el.x);
+                          e.target.y(el.y);
+                        }}
                       />
                       {/* Arrowhead */}
-                      {renderArrowhead(el)}
+                      <Group x={0} y={0} listening={false}>
+                        {renderArrowhead(el)}
+                      </Group>
                       
                       {/* Endpoint handles - only show when selected */}
                       {isSelected && (
@@ -477,30 +501,36 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
                             stroke="#3B82F6"
                             strokeWidth={2}
                             draggable={tool === 'select'}
-                            onMouseDown={() => {
+                            onMouseEnter={(e: any) => {
+                              const stage = e.target.getStage();
+                              stage.container().style.cursor = 'pointer';
+                            }}
+                            onMouseLeave={(e: any) => {
+                              const stage = e.target.getStage();
+                              stage.container().style.cursor = getCursor();
+                            }}
+                            onDragStart={() => {
                               setIsResizingArrow('start');
                               setResizingArrowId(el.id);
                             }}
-                            onMouseUp={() => {
+                            onDragEnd={() => {
                               setIsResizingArrow(null);
                               setResizingArrowId(null);
                             }}
                             onDragMove={(e: any) => {
-                              if (isResizingArrow === 'start' && resizingArrowId === el.id) {
-                                const newX = e.target.x();
-                                const newY = e.target.y();
-                                setElements(prev => prev.map(elem =>
-                                  elem.id === el.id
-                                    ? {
-                                        ...elem,
-                                        x: newX,
-                                        y: newY,
-                                        width: toX - newX,
-                                        height: toY - newY
-                                      }
-                                    : elem
-                                ));
-                              }
+                              const newX = e.target.x();
+                              const newY = e.target.y();
+                              setElements(prev => prev.map(elem =>
+                                elem.id === el.id
+                                  ? {
+                                      ...elem,
+                                      x: newX,
+                                      y: newY,
+                                      width: toX - newX,
+                                      height: toY - newY
+                                    }
+                                  : elem
+                              ));
                             }}
                           />
                           {/* End point handle */}
@@ -512,28 +542,34 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
                             stroke="#3B82F6"
                             strokeWidth={2}
                             draggable={tool === 'select'}
-                            onMouseDown={() => {
+                            onMouseEnter={(e: any) => {
+                              const stage = e.target.getStage();
+                              stage.container().style.cursor = 'pointer';
+                            }}
+                            onMouseLeave={(e: any) => {
+                              const stage = e.target.getStage();
+                              stage.container().style.cursor = getCursor();
+                            }}
+                            onDragStart={() => {
                               setIsResizingArrow('end');
                               setResizingArrowId(el.id);
                             }}
-                            onMouseUp={() => {
+                            onDragEnd={() => {
                               setIsResizingArrow(null);
                               setResizingArrowId(null);
                             }}
                             onDragMove={(e: any) => {
-                              if (isResizingArrow === 'end' && resizingArrowId === el.id) {
-                                const newX = e.target.x();
-                                const newY = e.target.y();
-                                setElements(prev => prev.map(elem =>
-                                  elem.id === el.id
-                                    ? {
-                                        ...elem,
-                                        width: newX - elem.x,
-                                        height: newY - elem.y
-                                      }
-                                    : elem
-                                ));
-                              }
+                              const newX = e.target.x();
+                              const newY = e.target.y();
+                              setElements(prev => prev.map(elem =>
+                                elem.id === el.id
+                                  ? {
+                                      ...elem,
+                                      width: newX - elem.x,
+                                      height: newY - elem.y
+                                    }
+                                  : elem
+                              ));
                             }}
                           />
                         </>
