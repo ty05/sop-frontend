@@ -180,59 +180,52 @@ export default function StepEditor({ step, onUpdate, readOnly = false }: StepEdi
     try {
       console.log('Saving edited image for step:', step.id);
       console.log('Editing image ID:', editingImageId);
+      console.log('Blob size:', blob.size, 'bytes');
+      console.log('Blob type:', blob.type);
+
+      if (blob.size === 0) {
+        throw new Error('Generated blob is empty - canvas export failed');
+      }
 
       setUploading(true);
 
-      // 1. Create a File from Blob
-      const file = new File([blob], 'edited-image.png', { type: 'image/png' });
-
-      // 2. Get presigned upload URL
+      // 1. Get presigned upload URL to create asset record
       const uploadUrlResponse = await assetsAPI.getUploadURL(
-        file.name,
-        file.type,
+        'edited-image.png',
+        'image/png',
         'image'
       );
-      const { asset_id, upload_url } = uploadUrlResponse.data;
+      const { asset_id } = uploadUrlResponse.data;
 
-      console.log('Got upload URL, asset_id:', asset_id);
+      console.log('Created asset record with ID:', asset_id);
 
-      // 3. Upload to R2 directly using presigned URL
-      const uploadResponse = await fetch(upload_url, {
-        method: 'PUT',
-        body: file,
-        headers: {
-          'Content-Type': file.type,
-        },
-      });
+      // 2. Upload to backend (which validates and uploads to R2)
+      const uploadResponse = await assetsAPI.uploadEdited(asset_id, blob);
 
-      if (!uploadResponse.ok) {
-        throw new Error('Failed to upload to R2');
+      console.log('Upload response:', uploadResponse.data);
+      console.log('Uploaded size:', uploadResponse.data.size, 'bytes');
+
+      if (uploadResponse.data.size === 0) {
+        throw new Error('Backend received empty file - canvas export issue');
       }
 
-      console.log('Uploaded to R2 successfully');
-
-      // 4. Mark upload as complete
-      await assetsAPI.complete(asset_id);
-
-      console.log('Upload marked complete');
-
-      // 5. Get current image IDs and replace only the edited one
+      // 3. Get current image IDs and replace only the edited one
       const currentImageIds = step.image_ids || [];
       const updatedImageIds = editingImageId
         ? currentImageIds.map(id => id === editingImageId ? asset_id : id)
-        : [...currentImageIds, asset_id]; // If no editingImageId, append (shouldn't happen)
+        : [...currentImageIds, asset_id];
 
       console.log('Old image IDs:', currentImageIds);
       console.log('Updated image IDs:', updatedImageIds);
 
-      // 6. Update step with the new image array (replace specific image)
+      // 4. Update step with the new image array (replace specific image)
       await stepsAPI.update(step.id, {
         image_ids: updatedImageIds,
       });
 
       console.log('Step updated with new image ID:', asset_id);
 
-      // 7. Delete the old edited image from storage
+      // 5. Delete the old edited image from storage
       if (editingImageId && editingImageId !== asset_id) {
         console.log('Deleting old image:', editingImageId);
         try {

@@ -27,7 +27,7 @@ interface DrawElement {
 }
 
 export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorProps) {
-  const [image] = useImage(imageUrl);
+  const [image, status] = useImage(imageUrl);
   const [tool, setTool] = useState<Tool>('select');
   const [color, setColor] = useState('#ff0000');
   const [elements, setElements] = useState<DrawElement[]>([]);
@@ -48,6 +48,12 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
 
   // 画像をビューポートにフィット
   useEffect(() => {
+    console.log('Image status changed:', status);
+    console.log('Image object:', image);
+    if (image) {
+      console.log('Image loaded! Dimensions:', image.width, 'x', image.height);
+    }
+
     if (!image) return;
     const viewportHeight = window.innerHeight * 0.7;
     const viewportWidth = Math.min(window.innerWidth * 0.9, 1280);
@@ -59,7 +65,7 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
     setScale(fit);
     setFitScale(fit);
     setStagePos({ x: 0, y: 0 });
-  }, [image]);
+  }, [image, status]);
 
   // Transformer のアタッチ (exclude arrows)
   useEffect(() => {
@@ -458,12 +464,34 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
               disabled={selectedId === null}
               className="bg-red-500 text-white px-4 py-2 rounded disabled:opacity-50"
             >Delete</button>
-            <button onClick={handleSave} disabled={!image} className="bg-green-600 text-white px-4 py-2 rounded disabled:opacity-50">Save</button>
+            <button
+              onClick={handleSave}
+              disabled={!image || status === 'loading'}
+              className="bg-green-600 text-white px-4 py-2 rounded disabled:opacity-50"
+            >
+              {status === 'loading' ? 'Loading...' : 'Save'}
+            </button>
             <button onClick={onCancel} className="bg-gray-300 px-4 py-2 rounded">Cancel</button>
           </div>
         </div>
 
-        <div className="border-2 border-gray-300 overflow-auto max-h-[70vh]">
+        <div className="border-2 border-gray-300 overflow-auto max-h-[70vh] relative">
+          {status === 'loading' && (
+            <div className="absolute inset-0 flex items-center justify-center bg-gray-100 z-50">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-blue-600 mx-auto mb-4"></div>
+                <p className="text-gray-600">Loading image...</p>
+              </div>
+            </div>
+          )}
+          {status === 'failed' && (
+            <div className="absolute inset-0 flex items-center justify-center bg-gray-100 z-50">
+              <div className="text-center text-red-600">
+                <p className="font-bold">Failed to load image</p>
+                <p className="text-sm">Please try again</p>
+              </div>
+            </div>
+          )}
           <Stage
             ref={stageRef}
             width={image?.width || 800}

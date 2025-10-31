@@ -95,6 +95,16 @@ export const assetsAPI = {
 
   proxy: (assetId: string) => apiClient.get(`/assets/${assetId}/proxy`, { responseType: 'blob' }),
 
+  uploadEdited: (assetId: string, blob: Blob) => {
+    const formData = new FormData();
+    formData.append('file', blob, 'edited.png');
+    return apiClient.post(`/assets/${assetId}/upload-edited`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  },
+
   complete: (assetId: string) => apiClient.post(`/assets/${assetId}/complete`),
 
   delete: (assetId: string) => apiClient.delete(`/assets/${assetId}`),
