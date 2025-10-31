@@ -11,6 +11,8 @@ import VideoTrimmer from './VideoTrimmer';
 import ChapterEditor from './ChapterEditor';
 import VideoOverlayEditor from './VideoOverlayEditor';
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
 interface StepEditorProps {
   step: Step;
   onUpdate: () => void;
@@ -155,16 +157,14 @@ export default function StepEditor({ step, onUpdate, readOnly = false }: StepEdi
 
   const handleImageEdit = async (imageId: string) => {
     try {
-      // Get image URL from loaded images (already embedded - no API call!)
-      let imageUrl = imageBlobUrls[imageId];
+      // Use proxy URL to avoid CORS issues with canvas toBlob()
+      const proxyUrl = `${API_URL}/assets/${imageId}/proxy`;
 
-      if (!imageUrl) {
-        throw new Error('Image URL not available');
-      }
+      console.log('Opening ImageEditor with proxy URL:', proxyUrl);
 
-      // Pass URL directly to ImageEditor - useImage hook handles loading
+      // Pass proxy URL to ImageEditor - avoids CORS taint issues
       setEditingImageId(imageId); // Track which image is being edited
-      setEditingImageUrl(imageUrl);
+      setEditingImageUrl(proxyUrl);
       setShowImageEditor(true);
     } catch (error) {
       console.error('Failed to load image for editing:', error);

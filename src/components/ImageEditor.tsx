@@ -27,7 +27,7 @@ interface DrawElement {
 }
 
 export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorProps) {
-  const [image] = useImage(imageUrl, 'anonymous');
+  const [image] = useImage(imageUrl);
   const [tool, setTool] = useState<Tool>('select');
   const [color, setColor] = useState('#ff0000');
   const [elements, setElements] = useState<DrawElement[]>([]);
