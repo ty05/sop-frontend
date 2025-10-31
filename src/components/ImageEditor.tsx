@@ -386,7 +386,7 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
           ctx.lineWidth = 4;
           ctx.strokeRect(el.x, el.y, el.width, el.height);
         } else if (el.tool === 'mosaic') {
-          ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+          ctx.fillStyle = 'rgb(0, 0, 0)';
           ctx.fillRect(el.x, el.y, el.width, el.height);
         } else if (el.tool === 'circle') {
           ctx.strokeStyle = el.color;
@@ -567,6 +567,7 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
                         points={[el.x, el.y, toX, toY]}
                         stroke={el.color}
                         strokeWidth={4}
+                        hitStrokeWidth={20}
                         lineCap="round"
                         lineJoin="round"
                         draggable={tool === 'select' && !isResizingArrow}
@@ -668,7 +669,7 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
                 } else if (el.tool === 'rect') {
                   return <Rect key={el.id} {...common} x={el.x} y={el.y} width={el.width} height={el.height} stroke={el.color} strokeWidth={4} />;
                 } else if (el.tool === 'mosaic') {
-                  return <Rect key={el.id} {...common} x={el.x} y={el.y} width={el.width} height={el.height} fill="rgba(0,0,0,0.7)" />;
+                  return <Rect key={el.id} {...common} x={el.x} y={el.y} width={el.width} height={el.height} fill="rgb(0,0,0)" />;
                 } else if (el.tool === 'circle') {
                   return <Circle key={el.id} {...common} x={el.x} y={el.y} radius={el.radius || 0} stroke={el.color} strokeWidth={4} />;
                 } else if (el.tool === 'text') {
