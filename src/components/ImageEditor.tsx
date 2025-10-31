@@ -6,7 +6,7 @@ import useImage from 'use-image';
 
 interface ImageEditorProps {
   imageUrl: string;
-  onSave: (blob: Blob) => void; // 親側で必ずユニークURLに保存 or キャッシュバスターを付与
+  onSave: (blob: Blob) => void;
   onCancel: () => void;
 }
 
@@ -23,7 +23,7 @@ interface DrawElement {
   text?: string;
   radius?: number;
   fontSize?: number;
-  rotation?: number; // ★ new
+  rotation?: number;
 }
 
 export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorProps) {
@@ -35,7 +35,7 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
   const [currentElement, setCurrentElement] = useState<DrawElement | null>(null);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [scale, setScale] = useState(1);
-  const [fitScale, setFitScale] = useState(1); // ★ new
+  const [fitScale, setFitScale] = useState(1);
   const [stagePos, setStagePos] = useState({ x: 0, y: 0 });
   const [isPanning, setIsPanning] = useState(false);
   const [panStart, setPanStart] = useState({ x: 0, y: 0 });
@@ -62,7 +62,7 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
     setStagePos({ x: 0, y: 0 });
   }, [image]);
 
-  // Transformer のアタッチ (exclude arrows - they have custom handles)
+  // Transformer のアタッチ (exclude arrows)
   useEffect(() => {
     const stage = stageRef.current;
     if (!stage || selectedId === null) {
@@ -70,7 +70,6 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
       return;
     }
 
-    // Don't use Transformer for arrows - they have custom endpoint handles
     const selectedElement = elements.find(el => el.id === selectedId);
     if (selectedElement?.tool === 'arrow') {
       transformerRef.current?.nodes([]);
@@ -115,7 +114,7 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
   const handleZoomIn = () => setScale(s => Math.min(s + 0.1, 3));
   const handleZoomOut = () => setScale(s => Math.max(s - 0.1, 0.3));
   const handleZoomReset = () => {
-    setScale(fitScale); // ★ フィットに戻す
+    setScale(fitScale);
     setStagePos({ x: 0, y: 0 });
   };
 
@@ -245,7 +244,7 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
     if (tool === 'select') setSelectedId(id);
   };
 
-  // ドラッグ（Spotlight の見た目即時反映のため move 中も更新）
+  // ドラッグ
   const handleDragMove = (e: any, id: number) => {
     if (tool !== 'select') return;
     const node = e.target;
@@ -283,7 +282,6 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
     }));
   };
   const handleTransformEnd = (e: any, id: number) => {
-    // スケールをリセット（見た目を state へ反映済み）
     const node = e.target;
     node.scaleX(1);
     node.scaleY(1);
@@ -300,7 +298,6 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
       stage.scale({ x: 1, y: 1 });
       stage.position({ x: 0, y: 0 });
 
-      // 画像サイズで出力されるようにステージサイズは画像に合わせる
       stage.width(image.width);
       stage.height(image.height);
 
@@ -310,7 +307,7 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
 
       const resp = await fetch(dataURL);
       const blob = await resp.blob();
-      await onSave(blob); // ★ 親側でユニーク保存 or キャッシュバスター付与
+      await onSave(blob);
     } catch (err) {
       console.error('Save error:', err);
       alert('Failed to save image. Please try again.');
@@ -328,6 +325,32 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
 
   const spotlights = useMemo(() => elements.filter(e => e.tool === 'spotlight'), [elements]);
   const nonSpotlight = useMemo(() => elements.filter(e => e.tool !== 'spotlight'), [elements]);
+
+  // Arrowheadを描画するヘルパー関数
+  const renderArrowhead = (el: DrawElement) => {
+    const toX = el.x + el.width;
+    const toY = el.y + el.height;
+    const headlen = 15;
+    const angle = Math.atan2(el.height, el.width);
+
+    const points1 = [
+      toX, toY,
+      toX - headlen * Math.cos(angle - Math.PI / 6),
+      toY - headlen * Math.sin(angle - Math.PI / 6)
+    ];
+    const points2 = [
+      toX, toY,
+      toX - headlen * Math.cos(angle + Math.PI / 6),
+      toY - headlen * Math.sin(angle + Math.PI / 6)
+    ];
+
+    return (
+      <>
+        <Line points={points1} stroke={el.color} strokeWidth={4} lineCap="round" lineJoin="round" listening={false} />
+        <Line points={points2} stroke={el.color} strokeWidth={4} lineCap="round" lineJoin="round" listening={false} />
+      </>
+    );
+  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
@@ -377,7 +400,7 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
               {image && <KonvaImage image={image} listening={false} />}
             </Layer>
 
-            {/* 2) Spotlight マスク（暗幕＋穴）: 画像の上に一度だけ */}
+            {/* 2) Spotlight マスク */}
             {image && spotlights.length > 0 && (
               <Layer listening={false}>
                 <Group>
@@ -403,7 +426,7 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
               </Layer>
             )}
 
-            {/* 3) 注釈（Spotlight はここでは枠のみ） */}
+            {/* 3) 注釈 */}
             <Layer>
               {nonSpotlight.map(el => {
                 const common = {
@@ -426,23 +449,24 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
 
                   return (
                     <Group key={el.id}>
-                      <Arrow
+                      {/* Main arrow line */}
+                      <Line
                         id={`shape-${el.id}`}
-                        x={el.x}
-                        y={el.y}
-                        points={[0, 0, el.width, el.height]}
+                        points={[el.x, el.y, toX, toY]}
                         stroke={el.color}
-                        fill={el.color}
                         strokeWidth={4}
-                        pointerLength={15}
-                        pointerWidth={15}
+                        lineCap="round"
+                        lineJoin="round"
                         draggable={tool === 'select' && !isResizingArrow}
                         onClick={() => handleShapeClick(el.id)}
                         onTap={() => handleShapeClick(el.id)}
                         onDragMove={(e: any) => handleDragMove(e, el.id)}
                         onDragEnd={(e: any) => handleDragEnd(e, el.id)}
                       />
-                      {/* Arrow endpoint handles - only show when selected */}
+                      {/* Arrowhead */}
+                      {renderArrowhead(el)}
+                      
+                      {/* Endpoint handles - only show when selected */}
                       {isSelected && (
                         <>
                           {/* Start point handle */}
@@ -466,7 +490,6 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
                               if (isResizingArrow === 'start' && resizingArrowId === el.id) {
                                 const newX = e.target.x();
                                 const newY = e.target.y();
-                                // Keep end point fixed, move start point
                                 setElements(prev => prev.map(elem =>
                                   elem.id === el.id
                                     ? {
@@ -502,7 +525,6 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
                               if (isResizingArrow === 'end' && resizingArrowId === el.id) {
                                 const newX = e.target.x();
                                 const newY = e.target.y();
-                                // Keep start point fixed, move end point
                                 setElements(prev => prev.map(elem =>
                                   elem.id === el.id
                                     ? {
@@ -520,18 +542,18 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
                     </Group>
                   );
                 } else if (el.tool === 'rect') {
-                  return <Rect {...common} x={el.x} y={el.y} width={el.width} height={el.height} stroke={el.color} strokeWidth={4} />;
+                  return <Rect key={el.id} {...common} x={el.x} y={el.y} width={el.width} height={el.height} stroke={el.color} strokeWidth={4} />;
                 } else if (el.tool === 'mosaic') {
-                  return <Rect {...common} x={el.x} y={el.y} width={el.width} height={el.height} fill="rgba(0,0,0,0.7)" />;
+                  return <Rect key={el.id} {...common} x={el.x} y={el.y} width={el.width} height={el.height} fill="rgba(0,0,0,0.7)" />;
                 } else if (el.tool === 'circle') {
-                  return <Circle {...common} x={el.x} y={el.y} radius={el.radius || 0} stroke={el.color} strokeWidth={4} />;
+                  return <Circle key={el.id} {...common} x={el.x} y={el.y} radius={el.radius || 0} stroke={el.color} strokeWidth={4} />;
                 } else if (el.tool === 'text') {
-                  return <Text {...common} x={el.x} y={el.y} text={el.text || ''} fontSize={el.fontSize || 32} fill={el.color} fontStyle="bold" />;
+                  return <Text key={el.id} {...common} x={el.x} y={el.y} text={el.text || ''} fontSize={el.fontSize || 32} fill={el.color} fontStyle="bold" />;
                 }
                 return null;
               })}
 
-              {/* Spotlight 枠(操作用の透明矩形+黄色枠) */}
+              {/* Spotlight 枠 */}
               {spotlights.map(el => {
                 const common = {
                   id: `shape-${el.id}`,
