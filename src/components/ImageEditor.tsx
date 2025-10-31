@@ -288,9 +288,18 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
 
   // 保存
   const handleSave = async () => {
-    if (!image) return;
+    if (!image) {
+      console.error('No image loaded');
+      return;
+    }
     setIsSaving(true);
     try {
+      console.log('Starting save process...');
+      console.log('Image dimensions:', image.width, image.height);
+      console.log('Number of elements:', elements.length);
+      console.log('Spotlights:', spotlights.length);
+      console.log('Non-spotlight elements:', nonSpotlight.length);
+
       // Create off-screen canvas for proper compositing
       const canvas = document.createElement('canvas');
       canvas.width = image.width * 2; // 2x for high DPI
@@ -298,11 +307,15 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
       const ctx = canvas.getContext('2d');
       if (!ctx) throw new Error('Failed to get canvas context');
 
+      console.log('Canvas created:', canvas.width, 'x', canvas.height);
+
       // Scale context for high DPI
       ctx.scale(2, 2);
 
       // 1. Draw background image
+      console.log('Drawing background image...');
       ctx.drawImage(image, 0, 0, image.width, image.height);
+      console.log('Background image drawn');
 
       // 2. Draw spotlight mask if exists
       if (spotlights.length > 0) {
@@ -385,14 +398,24 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
       });
 
       // Convert canvas to blob
+      console.log('Converting canvas to blob...');
       const blob = await new Promise<Blob>((resolve, reject) => {
         canvas.toBlob(
-          (b) => b ? resolve(b) : reject(new Error('Failed to create blob')),
+          (b) => {
+            if (b) {
+              console.log('Blob created successfully, size:', b.size, 'bytes');
+              resolve(b);
+            } else {
+              reject(new Error('Failed to create blob'));
+            }
+          },
           'image/png'
         );
       });
 
+      console.log('Calling onSave with blob...');
       await onSave(blob);
+      console.log('Save complete');
       // Success - isSaving will be reset by parent component
     } catch (err) {
       console.error('Save error:', err);
