@@ -46,30 +46,6 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
   const stageRef = useRef<any>(null);
   const transformerRef = useRef<any>(null);
 
-  // Fit image to viewport when it loads
-  useEffect(() => {
-    if (image) {
-      // Calculate available viewport space
-      // Container has max-h-[70vh] (70% of viewport height)
-      const viewportHeight = window.innerHeight * 0.7;
-      const viewportWidth = Math.min(window.innerWidth * 0.9, 1280); // max-w-5xl ≈ 1280px
-
-      // Account for padding, borders, and header (approximately 150px total)
-      const availableHeight = viewportHeight - 150;
-      const availableWidth = viewportWidth - 100;
-
-      // Calculate scale to fit both dimensions
-      const scaleToFitHeight = availableHeight / image.height;
-      const scaleToFitWidth = availableWidth / image.width;
-
-      // Use smaller scale to ensure entire image fits, but don't scale up beyond 1
-      const fitScale = Math.min(scaleToFitHeight, scaleToFitWidth, 1);
-
-      setScale(fitScale);
-      setStagePos({ x: 0, y: 0 });
-    }
-  }, [image]);
-
   // Attach transformer
   useEffect(() => {
     if (selectedId !== null) {
@@ -313,33 +289,32 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
   };
 
   const handleSave = async () => {
-    setIsSaving(true);
+  setIsSaving(true);
+  
+  try {
+    const stage = stageRef.current;
+    const originalScale = { x: stage.scaleX(), y: stage.scaleY() };
+    const originalPos = { x: stage.x(), y: stage.y() };
     
-    try {
-      const stage = stageRef.current;
-      const originalScale = { x: stage.scaleX(), y: stage.scaleY() };
-      const originalPos = { x: stage.x(), y: stage.y() };
-      
-      stage.scale({ x: 1, y: 1 });
-      stage.position({ x: 0, y: 0 });
-      
-      const dataURL = stage.toDataURL({ pixelRatio: 2 });
-      
-      stage.scale(originalScale);
-      stage.position(originalPos);
-      
-      const response = await fetch(dataURL);
-      const blob = await response.blob();
-      
-      await onSave(blob);
-      
-      // Success - parent handles closing
-    } catch (error) {
-      console.error('Save error:', error);
-      alert('Failed to save image. Please try again.');
-      setIsSaving(false); // CRITICAL: Reset on error
-    }
-  };
+    stage.scale({ x: 1, y: 1 });
+    stage.position({ x: 0, y: 0 });
+    
+    const dataURL = stage.toDataURL({ pixelRatio: 2 });
+    
+    stage.scale(originalScale);
+    stage.position(originalPos);
+    
+    const response = await fetch(dataURL);
+    const blob = await response.blob();
+    
+    await onSave(blob);
+  } catch (error) {
+    console.error('Save error:', error);
+    alert('Failed to save image. Please try again.');
+    setIsSaving(false); // Only reset on error
+  }
+  // Don't reset isSaving on success - parent will close the editor
+};
 
   const getCursor = () => {
     if (isPanning) return 'grabbing';
