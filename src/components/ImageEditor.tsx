@@ -431,7 +431,6 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
               {nonSpotlight.map(el => {
                 const common = {
                   id: `shape-${el.id}`,
-                  key: el.id,
                   draggable: tool === 'select',
                   rotation: el.rotation || 0,
                   onClick: () => handleShapeClick(el.id),
@@ -557,7 +556,6 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
               {spotlights.map(el => {
                 const common = {
                   id: `shape-${el.id}`,
-                  key: el.id,
                   draggable: tool === 'select',
                   rotation: el.rotation || 0,
                   onClick: () => handleShapeClick(el.id),
@@ -568,7 +566,7 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
                   onTransformEnd: (e: any) => handleTransformEnd(e, el.id),
                 };
                 return (
-                  <Group {...common} x={el.x} y={el.y}>
+                  <Group key={el.id} {...common} x={el.x} y={el.y}>
                     <Rect width={el.width} height={el.height} fill="rgba(0,0,0,0)" />
                     <Rect width={el.width} height={el.height} stroke="yellow" strokeWidth={2} dash={[5,5]} listening={false} />
                   </Group>
@@ -577,6 +575,7 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
 
               <Transformer ref={transformerRef} />
             </Layer>
+            
           </Stage>
         </div>
 
