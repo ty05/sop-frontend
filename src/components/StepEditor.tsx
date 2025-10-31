@@ -162,17 +162,9 @@ export default function StepEditor({ step, onUpdate, readOnly = false }: StepEdi
         throw new Error('Image URL not available');
       }
 
-      // For editing, we need to convert to blob
-      const response = await fetch(imageUrl);
-      if (!response.ok) {
-        throw new Error('Failed to fetch image');
-      }
-
-      const blob = await response.blob();
-      const blobUrl = URL.createObjectURL(blob);
-
+      // Pass URL directly to ImageEditor - useImage hook handles loading
       setEditingImageId(imageId); // Track which image is being edited
-      setEditingImageUrl(blobUrl);
+      setEditingImageUrl(imageUrl);
       setShowImageEditor(true);
     } catch (error) {
       console.error('Failed to load image for editing:', error);
@@ -248,18 +240,11 @@ export default function StepEditor({ step, onUpdate, readOnly = false }: StepEdi
         }
       }
 
-      // 8. Clean up blob URL
-      if (editingImageUrl && editingImageUrl.startsWith('blob:')) {
-        URL.revokeObjectURL(editingImageUrl);
-      }
-
-      // 9. Close editor and refresh
+      // 8. Close editor and refresh
       setShowImageEditor(false);
       setEditingImageUrl(null);
       setEditingImageId(null);
       setUploading(false);
-
-      // Refresh parent to show new image
       onUpdate();
 
       console.log('✅ Image save complete');
@@ -270,11 +255,6 @@ export default function StepEditor({ step, onUpdate, readOnly = false }: StepEdi
       // Reset state on error
       setUploading(false);
       setShowImageEditor(false);
-
-      // Clean up blob URL even on error
-      if (editingImageUrl && editingImageUrl.startsWith('blob:')) {
-        URL.revokeObjectURL(editingImageUrl);
-      }
       setEditingImageUrl(null);
       setEditingImageId(null);
     }
@@ -614,10 +594,6 @@ export default function StepEditor({ step, onUpdate, readOnly = false }: StepEdi
           imageUrl={editingImageUrl}
           onSave={handleImageSave}
           onCancel={() => {
-            // Clean up blob URL to avoid memory leak
-            if (editingImageUrl.startsWith('blob:')) {
-              URL.revokeObjectURL(editingImageUrl);
-            }
             setShowImageEditor(false);
             setEditingImageUrl(null);
             setEditingImageId(null);
