@@ -84,6 +84,9 @@ export const stepsAPI = {
     apiClient.patch(`/steps/${id}`, data),
 
   delete: (id: string) => apiClient.delete(`/steps/${id}`),
+
+  reorder: (documentId: string, stepIds: string[]) =>
+    apiClient.put(`/steps/reorder?document_id=${documentId}`, { step_ids: stepIds }),
 };
 
 // Assets API

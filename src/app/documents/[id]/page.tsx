@@ -23,6 +23,7 @@ export default function DocumentPage() {
   const [steps, setSteps] = useState<Step[]>([]);
   const [mode, setMode] = useState<Mode>('browse');
   const [loading, setLoading] = useState(true);
+  const [draggedStepIndex, setDraggedStepIndex] = useState<number | null>(null);
 
   // Check if user has edit permission (owner or editor)
   const canEdit = activeWorkspace?.role === 'owner' || activeWorkspace?.role === 'editor';
@@ -137,6 +138,55 @@ export default function DocumentPage() {
       } else {
         alert(errorMsg);
       }
+    }
+  };
+
+  // Drag and drop handlers for reordering steps
+  const handleDragStart = (index: number) => {
+    setDraggedStepIndex(index);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedStepIndex(null);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault(); // Required to allow drop
+  };
+
+  const handleDrop = async (dropIndex: number) => {
+    if (draggedStepIndex === null || draggedStepIndex === dropIndex) {
+      return;
+    }
+
+    // Check permission
+    if (!canEdit) {
+      alert('You do not have permission to edit this document. Only owners and editors can make changes.');
+      return;
+    }
+
+    try {
+      // Reorder steps locally
+      const newSteps = [...steps];
+      const [draggedStep] = newSteps.splice(draggedStepIndex, 1);
+      newSteps.splice(dropIndex, 0, draggedStep);
+
+      // Update local state immediately for better UX
+      setSteps(newSteps);
+      setDraggedStepIndex(null);
+
+      // Send new order to backend
+      const stepIds = newSteps.map(step => step.id);
+      await stepsAPI.reorder(documentId, stepIds);
+    } catch (error: any) {
+      const errorMsg = error.response?.data?.detail || 'Failed to reorder steps';
+      if (errorMsg.includes('permission') || errorMsg.includes('Editor role required')) {
+        alert('You do not have permission to edit this document. Only owners and editors can make changes.');
+      } else {
+        alert(errorMsg);
+      }
+      // Reload document to restore correct order
+      loadDocument();
     }
   };
 
@@ -324,8 +374,27 @@ export default function DocumentPage() {
 
         {/* Steps */}
         <div className="space-y-4">
-          {steps.map((step) => (
-            <div key={step.id} id={`step-${step.id}`}>
+          {steps.map((step, index) => (
+            <div
+              key={step.id}
+              id={`step-${step.id}`}
+              draggable={mode === 'edit' && canEdit}
+              onDragStart={() => handleDragStart(index)}
+              onDragEnd={handleDragEnd}
+              onDragOver={handleDragOver}
+              onDrop={() => handleDrop(index)}
+              className={`relative transition-opacity ${
+                draggedStepIndex === index ? 'opacity-50' : 'opacity-100'
+              } ${mode === 'edit' && canEdit ? 'cursor-move' : ''}`}
+            >
+              {/* Drag handle indicator in edit mode */}
+              {mode === 'edit' && canEdit && (
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-8 text-gray-400 hover:text-gray-600">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8h16M4 16h16" />
+                  </svg>
+                </div>
+              )}
               <StepEditor
                 step={step}
                 onUpdate={loadDocument}
