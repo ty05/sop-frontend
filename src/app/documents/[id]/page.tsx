@@ -142,8 +142,10 @@ export default function DocumentPage() {
   };
 
   // Drag and drop handlers for reordering steps
-  const handleDragStart = (index: number) => {
+  const handleDragStart = (e: React.DragEvent, index: number) => {
     setDraggedStepIndex(index);
+    // Make the drag operation move-only
+    e.dataTransfer.effectAllowed = 'move';
   };
 
   const handleDragEnd = () => {
@@ -152,9 +154,13 @@ export default function DocumentPage() {
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault(); // Required to allow drop
+    e.dataTransfer.dropEffect = 'move';
   };
 
-  const handleDrop = async (dropIndex: number) => {
+  const handleDrop = async (e: React.DragEvent, dropIndex: number) => {
+    e.preventDefault();
+    e.stopPropagation();
+
     if (draggedStepIndex === null || draggedStepIndex === dropIndex) {
       return;
     }
@@ -378,28 +384,33 @@ export default function DocumentPage() {
             <div
               key={step.id}
               id={`step-${step.id}`}
-              draggable={mode === 'edit' && canEdit}
-              onDragStart={() => handleDragStart(index)}
-              onDragEnd={handleDragEnd}
               onDragOver={handleDragOver}
-              onDrop={() => handleDrop(index)}
-              className={`relative transition-opacity ${
+              onDrop={(e) => handleDrop(e, index)}
+              className={`relative flex gap-2 transition-opacity ${
                 draggedStepIndex === index ? 'opacity-50' : 'opacity-100'
-              } ${mode === 'edit' && canEdit ? 'cursor-move' : ''}`}
+              }`}
             >
-              {/* Drag handle indicator in edit mode */}
+              {/* Drag handle in edit mode */}
               {mode === 'edit' && canEdit && (
-                <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-8 text-gray-400 hover:text-gray-600">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div
+                  draggable={true}
+                  onDragStart={(e) => handleDragStart(e, index)}
+                  onDragEnd={handleDragEnd}
+                  className="flex-shrink-0 w-8 flex items-center justify-center cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors"
+                  title="Drag to reorder"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8h16M4 16h16" />
                   </svg>
                 </div>
               )}
-              <StepEditor
-                step={step}
-                onUpdate={loadDocument}
-                readOnly={mode === 'browse'}
-              />
+              <div className="flex-1">
+                <StepEditor
+                  step={step}
+                  onUpdate={loadDocument}
+                  readOnly={mode === 'browse'}
+                />
+              </div>
             </div>
           ))}
 
