@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState, useEffect, useMemo } from 'react';
+import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { Stage, Layer, Line, Rect, Circle, Text, Image as KonvaImage, Transformer, Group } from 'react-konva';
 import useImage from 'use-image';
 
@@ -558,60 +558,61 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
                   const angle = Math.atan2(el.height, el.width);
 
                   return (
-                    <Group
-                      key={el.id}
-                      id={`shape-${el.id}`}
-                      x={el.x}
-                      y={el.y}
-                      draggable={tool === 'select' && !isResizingArrow}
-                      onClick={() => handleShapeClick(el.id)}
-                      onTap={() => handleShapeClick(el.id)}
-                      onDragMove={(e: any) => handleDragMove(e, el.id)}
-                      onDragEnd={(e: any) => handleDragEnd(e, el.id)}
-                    >
-                      {/* Main arrow line */}
-                      <Line
-                        points={[0, 0, el.width, el.height]}
-                        stroke={el.color}
-                        strokeWidth={4}
-                        hitStrokeWidth={20}
-                        lineCap="round"
-                        lineJoin="round"
-                      />
-                      {/* Arrowhead line 1 */}
-                      <Line
-                        points={[
-                          el.width, el.height,
-                          el.width - headlen * Math.cos(angle - Math.PI / 6),
-                          el.height - headlen * Math.sin(angle - Math.PI / 6)
-                        ]}
-                        stroke={el.color}
-                        strokeWidth={4}
-                        lineCap="round"
-                        lineJoin="round"
-                        listening={false}
-                      />
-                      {/* Arrowhead line 2 */}
-                      <Line
-                        points={[
-                          el.width, el.height,
-                          el.width - headlen * Math.cos(angle + Math.PI / 6),
-                          el.height - headlen * Math.sin(angle + Math.PI / 6)
-                        ]}
-                        stroke={el.color}
-                        strokeWidth={4}
-                        lineCap="round"
-                        lineJoin="round"
-                        listening={false}
-                      />
+                    <React.Fragment key={el.id}>
+                      <Group
+                        id={`shape-${el.id}`}
+                        x={el.x}
+                        y={el.y}
+                        draggable={tool === 'select' && !isResizingArrow}
+                        onClick={() => handleShapeClick(el.id)}
+                        onTap={() => handleShapeClick(el.id)}
+                        onDragMove={(e: any) => handleDragMove(e, el.id)}
+                        onDragEnd={(e: any) => handleDragEnd(e, el.id)}
+                      >
+                        {/* Main arrow line */}
+                        <Line
+                          points={[0, 0, el.width, el.height]}
+                          stroke={el.color}
+                          strokeWidth={4}
+                          hitStrokeWidth={20}
+                          lineCap="round"
+                          lineJoin="round"
+                        />
+                        {/* Arrowhead line 1 */}
+                        <Line
+                          points={[
+                            el.width, el.height,
+                            el.width - headlen * Math.cos(angle - Math.PI / 6),
+                            el.height - headlen * Math.sin(angle - Math.PI / 6)
+                          ]}
+                          stroke={el.color}
+                          strokeWidth={4}
+                          lineCap="round"
+                          lineJoin="round"
+                          listening={false}
+                        />
+                        {/* Arrowhead line 2 */}
+                        <Line
+                          points={[
+                            el.width, el.height,
+                            el.width - headlen * Math.cos(angle + Math.PI / 6),
+                            el.height - headlen * Math.sin(angle + Math.PI / 6)
+                          ]}
+                          stroke={el.color}
+                          strokeWidth={4}
+                          lineCap="round"
+                          lineJoin="round"
+                          listening={false}
+                        />
+                      </Group>
 
-                      {/* Endpoint handles - only show when selected */}
+                      {/* Endpoint handles - only show when selected - OUTSIDE GROUP for absolute positioning */}
                       {isSelected && (
                         <>
                           {/* Start point handle */}
                           <Circle
-                            x={0}
-                            y={0}
+                            x={el.x}
+                            y={el.y}
                             radius={6}
                             fill="#FFFFFF"
                             stroke="#3B82F6"
@@ -621,11 +622,8 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
                             onDragEnd={() => setIsResizingArrow(null)}
                             onDragMove={(e: any) => {
                               if (isResizingArrow === 'start') {
-                                const stage = stageRef.current;
-                                const pos = stage.getPointerPosition();
-                                const transform = stage.getAbsoluteTransform().copy().invert();
-                                const stagePoint = transform.point(pos);
-
+                                const newX = e.target.x();
+                                const newY = e.target.y();
                                 const endX = el.x + el.width;
                                 const endY = el.y + el.height;
 
@@ -633,21 +631,20 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
                                   elem.id === el.id
                                     ? {
                                         ...elem,
-                                        x: stagePoint.x,
-                                        y: stagePoint.y,
-                                        width: endX - stagePoint.x,
-                                        height: endY - stagePoint.y
+                                        x: newX,
+                                        y: newY,
+                                        width: endX - newX,
+                                        height: endY - newY
                                       }
                                     : elem
                                 ));
-                                e.target.position({ x: 0, y: 0 });
                               }
                             }}
                           />
                           {/* End point handle */}
                           <Circle
-                            x={el.width}
-                            y={el.height}
+                            x={el.x + el.width}
+                            y={el.y + el.height}
                             radius={6}
                             fill="#FFFFFF"
                             stroke="#3B82F6"
@@ -657,27 +654,24 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
                             onDragEnd={() => setIsResizingArrow(null)}
                             onDragMove={(e: any) => {
                               if (isResizingArrow === 'end') {
-                                const stage = stageRef.current;
-                                const pos = stage.getPointerPosition();
-                                const transform = stage.getAbsoluteTransform().copy().invert();
-                                const stagePoint = transform.point(pos);
+                                const newX = e.target.x();
+                                const newY = e.target.y();
 
                                 setElements(prev => prev.map(elem =>
                                   elem.id === el.id
                                     ? {
                                         ...elem,
-                                        width: stagePoint.x - elem.x,
-                                        height: stagePoint.y - elem.y
+                                        width: newX - elem.x,
+                                        height: newY - elem.y
                                       }
                                     : elem
                                 ));
-                                e.target.position({ x: el.width, y: el.height });
                               }
                             }}
                           />
                         </>
                       )}
-                    </Group>
+                    </React.Fragment>
                   );
                 } else if (el.tool === 'rect') {
                   return <Rect key={el.id} {...common} x={el.x} y={el.y} width={el.width} height={el.height} stroke={el.color} strokeWidth={4} />;
