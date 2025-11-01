@@ -23,7 +23,6 @@ export default function DocumentPage() {
   const [steps, setSteps] = useState<Step[]>([]);
   const [mode, setMode] = useState<Mode>('browse');
   const [loading, setLoading] = useState(true);
-  const [draggedStepIndex, setDraggedStepIndex] = useState<number | null>(null);
 
   // Check if user has edit permission (owner or editor)
   const canEdit = activeWorkspace?.role === 'owner' || activeWorkspace?.role === 'editor';
@@ -141,45 +140,29 @@ export default function DocumentPage() {
     }
   };
 
-  // Drag and drop handlers for reordering steps
-  const handleDragStart = (e: React.DragEvent, index: number) => {
-    setDraggedStepIndex(index);
-    // Make the drag operation move-only
-    e.dataTransfer.effectAllowed = 'move';
-  };
-
-  const handleDragEnd = () => {
-    setDraggedStepIndex(null);
-  };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault(); // Required to allow drop
-    e.dataTransfer.dropEffect = 'move';
-  };
-
-  const handleDrop = async (e: React.DragEvent, dropIndex: number) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    if (draggedStepIndex === null || draggedStepIndex === dropIndex) {
-      return;
-    }
-
+  // Move step up or down
+  const handleMoveStep = async (index: number, direction: 'up' | 'down') => {
     // Check permission
     if (!canEdit) {
       alert('You do not have permission to edit this document. Only owners and editors can make changes.');
       return;
     }
 
+    const newIndex = direction === 'up' ? index - 1 : index + 1;
+
+    // Validate bounds
+    if (newIndex < 0 || newIndex >= steps.length) {
+      return;
+    }
+
     try {
       // Reorder steps locally
       const newSteps = [...steps];
-      const [draggedStep] = newSteps.splice(draggedStepIndex, 1);
-      newSteps.splice(dropIndex, 0, draggedStep);
+      const [movedStep] = newSteps.splice(index, 1);
+      newSteps.splice(newIndex, 0, movedStep);
 
       // Update local state immediately for better UX
       setSteps(newSteps);
-      setDraggedStepIndex(null);
 
       // Send new order to backend
       const stepIds = newSteps.map(step => step.id);
@@ -384,32 +367,50 @@ export default function DocumentPage() {
             <div
               key={step.id}
               id={`step-${step.id}`}
-              onDragOver={handleDragOver}
-              onDrop={(e) => handleDrop(e, index)}
-              className={`relative flex gap-2 transition-opacity ${
-                draggedStepIndex === index ? 'opacity-50' : 'opacity-100'
-              }`}
+              className="relative"
             >
-              {/* Drag handle in edit mode */}
-              {mode === 'edit' && canEdit && (
-                <div
-                  draggable={true}
-                  onDragStart={(e) => handleDragStart(e, index)}
-                  onDragEnd={handleDragEnd}
-                  className="flex-shrink-0 w-8 flex items-center justify-center cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors"
-                  title="Drag to reorder"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8h16M4 16h16" />
-                  </svg>
+              <div className="flex gap-2 items-start">
+                {/* Reorder buttons in edit mode */}
+                {mode === 'edit' && canEdit && (
+                  <div className="flex-shrink-0 flex flex-col gap-1 pt-2">
+                    <button
+                      onClick={() => handleMoveStep(index, 'up')}
+                      disabled={index === 0}
+                      className={`p-1 rounded transition-colors ${
+                        index === 0
+                          ? 'text-gray-300 cursor-not-allowed'
+                          : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                      }`}
+                      title="Move up"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                      </svg>
+                    </button>
+                    <button
+                      onClick={() => handleMoveStep(index, 'down')}
+                      disabled={index === steps.length - 1}
+                      className={`p-1 rounded transition-colors ${
+                        index === steps.length - 1
+                          ? 'text-gray-300 cursor-not-allowed'
+                          : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                      }`}
+                      title="Move down"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+                    <div className="text-xs text-gray-400 text-center">{index + 1}</div>
+                  </div>
+                )}
+                <div className="flex-1">
+                  <StepEditor
+                    step={step}
+                    onUpdate={loadDocument}
+                    readOnly={mode === 'browse'}
+                  />
                 </div>
-              )}
-              <div className="flex-1">
-                <StepEditor
-                  step={step}
-                  onUpdate={loadDocument}
-                  readOnly={mode === 'browse'}
-                />
               </div>
             </div>
           ))}
