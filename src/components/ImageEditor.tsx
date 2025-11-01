@@ -621,16 +621,22 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
                             onDragEnd={() => setIsResizingArrow(null)}
                             onDragMove={(e: any) => {
                               if (isResizingArrow === 'start') {
-                                const newX = e.target.x();
-                                const newY = e.target.y();
+                                const stage = stageRef.current;
+                                const pos = stage.getPointerPosition();
+                                const transform = stage.getAbsoluteTransform().copy().invert();
+                                const stagePoint = transform.point(pos);
+
+                                const endX = el.x + el.width;
+                                const endY = el.y + el.height;
+
                                 setElements(prev => prev.map(elem =>
                                   elem.id === el.id
                                     ? {
                                         ...elem,
-                                        x: el.x + newX,
-                                        y: el.y + newY,
-                                        width: el.width - newX,
-                                        height: el.height - newY
+                                        x: stagePoint.x,
+                                        y: stagePoint.y,
+                                        width: endX - stagePoint.x,
+                                        height: endY - stagePoint.y
                                       }
                                     : elem
                                 ));
@@ -651,17 +657,21 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
                             onDragEnd={() => setIsResizingArrow(null)}
                             onDragMove={(e: any) => {
                               if (isResizingArrow === 'end') {
-                                const newX = e.target.x();
-                                const newY = e.target.y();
+                                const stage = stageRef.current;
+                                const pos = stage.getPointerPosition();
+                                const transform = stage.getAbsoluteTransform().copy().invert();
+                                const stagePoint = transform.point(pos);
+
                                 setElements(prev => prev.map(elem =>
                                   elem.id === el.id
                                     ? {
                                         ...elem,
-                                        width: newX,
-                                        height: newY
+                                        width: stagePoint.x - elem.x,
+                                        height: stagePoint.y - elem.y
                                       }
                                     : elem
                                 ));
+                                e.target.position({ x: el.width, y: el.height });
                               }
                             }}
                           />
