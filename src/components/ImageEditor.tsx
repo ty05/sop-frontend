@@ -554,8 +554,6 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
 
                 if (el.tool === 'arrow') {
                   const isSelected = selectedId === el.id;
-                  const toX = el.x + el.width;
-                  const toY = el.y + el.height;
                   const headlen = 15;
                   const angle = Math.atan2(el.height, el.width);
 
@@ -563,26 +561,17 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
                     <Group
                       key={el.id}
                       id={`shape-${el.id}`}
+                      x={el.x}
+                      y={el.y}
                       draggable={tool === 'select' && !isResizingArrow}
                       onClick={() => handleShapeClick(el.id)}
                       onTap={() => handleShapeClick(el.id)}
-                      onDragMove={(e: any) => {
-                        if (tool === 'select' && !isResizingArrow) {
-                          const node = e.target;
-                          const newX = el.x + node.x();
-                          const newY = el.y + node.y();
-                          setElements(prev => prev.map(elem => elem.id === el.id ? { ...elem, x: newX, y: newY } : elem));
-                          node.position({ x: 0, y: 0 });
-                        }
-                      }}
-                      onDragEnd={(e: any) => {
-                        const node = e.target;
-                        node.position({ x: 0, y: 0 });
-                      }}
+                      onDragMove={(e: any) => handleDragMove(e, el.id)}
+                      onDragEnd={(e: any) => handleDragEnd(e, el.id)}
                     >
                       {/* Main arrow line */}
                       <Line
-                        points={[el.x, el.y, toX, toY]}
+                        points={[0, 0, el.width, el.height]}
                         stroke={el.color}
                         strokeWidth={4}
                         hitStrokeWidth={20}
@@ -592,9 +581,9 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
                       {/* Arrowhead line 1 */}
                       <Line
                         points={[
-                          toX, toY,
-                          toX - headlen * Math.cos(angle - Math.PI / 6),
-                          toY - headlen * Math.sin(angle - Math.PI / 6)
+                          el.width, el.height,
+                          el.width - headlen * Math.cos(angle - Math.PI / 6),
+                          el.height - headlen * Math.sin(angle - Math.PI / 6)
                         ]}
                         stroke={el.color}
                         strokeWidth={4}
@@ -605,9 +594,9 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
                       {/* Arrowhead line 2 */}
                       <Line
                         points={[
-                          toX, toY,
-                          toX - headlen * Math.cos(angle + Math.PI / 6),
-                          toY - headlen * Math.sin(angle + Math.PI / 6)
+                          el.width, el.height,
+                          el.width - headlen * Math.cos(angle + Math.PI / 6),
+                          el.height - headlen * Math.sin(angle + Math.PI / 6)
                         ]}
                         stroke={el.color}
                         strokeWidth={4}
@@ -621,8 +610,8 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
                         <>
                           {/* Start point handle */}
                           <Circle
-                            x={el.x}
-                            y={el.y}
+                            x={0}
+                            y={0}
                             radius={6}
                             fill="#FFFFFF"
                             stroke="#3B82F6"
@@ -638,20 +627,21 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
                                   elem.id === el.id
                                     ? {
                                         ...elem,
-                                        x: newX,
-                                        y: newY,
-                                        width: toX - newX,
-                                        height: toY - newY
+                                        x: el.x + newX,
+                                        y: el.y + newY,
+                                        width: el.width - newX,
+                                        height: el.height - newY
                                       }
                                     : elem
                                 ));
+                                e.target.position({ x: 0, y: 0 });
                               }
                             }}
                           />
                           {/* End point handle */}
                           <Circle
-                            x={toX}
-                            y={toY}
+                            x={el.width}
+                            y={el.height}
                             radius={6}
                             fill="#FFFFFF"
                             stroke="#3B82F6"
@@ -667,8 +657,8 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
                                   elem.id === el.id
                                     ? {
                                         ...elem,
-                                        width: newX - elem.x,
-                                        height: newY - elem.y
+                                        width: newX,
+                                        height: newY
                                       }
                                     : elem
                                 ));
