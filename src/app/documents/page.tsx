@@ -46,11 +46,9 @@ export default function DocumentsPage() {
 
   const loadDocuments = async () => {
     if (!activeWorkspace) {
-      console.log('No active workspace, skipping document load');
       return;
     }
 
-    console.log('Loading documents for workspace:', activeWorkspace.id, 'folder:', selectedFolderId);
     setLoading(true);
     try {
       const params = new URLSearchParams();
@@ -58,10 +56,7 @@ export default function DocumentsPage() {
         params.append('folder_id', selectedFolderId);
       }
 
-      console.log('Calling documentsAPI.list with params:', params.toString());
       const response = await documentsAPI.list(activeWorkspace.id, params.toString());
-      console.log('Documents API response:', response.data);
-      console.log('Number of documents received:', response.data.length);
       setDocuments(response.data);
     } catch (error) {
       console.error('Failed to load documents', error);

@@ -22,7 +22,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     // Clean up old auth tokens from previous authentication system
     if (localStorage.getItem('access_token')) {
-      console.log('Removing old authentication tokens...');
       localStorage.removeItem('access_token');
       localStorage.removeItem('refresh_token');
     }

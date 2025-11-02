@@ -49,7 +49,6 @@ export default function RootLayout({
               navigator.serviceWorker.getRegistrations().then(function(registrations) {
                 for(let registration of registrations) {
                   registration.unregister();
-                  console.log('Service worker unregistered');
                 }
               });
             }

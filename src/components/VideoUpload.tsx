@@ -67,7 +67,6 @@ export default function VideoUpload({ onUploadComplete, onCancel }: VideoUploadP
       // Handle completion
       xhr.addEventListener('load', async () => {
         if (xhr.status === 200 || xhr.status === 204) {
-          console.log('Upload complete!');
 
           // Mark as complete
           try {
@@ -95,7 +94,6 @@ export default function VideoUpload({ onUploadComplete, onCancel }: VideoUploadP
 
       // Handle abort
       xhr.addEventListener('abort', () => {
-        console.log('Upload aborted');
         setUploading(false);
         setError('Upload was cancelled.');
       });

@@ -45,18 +45,12 @@ export default function StepEditor({ step, onUpdate, readOnly = false }: StepEdi
     if (step.type === 'image' && step.images && step.images.length > 0) {
       const newBlobUrls: Record<string, string> = {};
 
-      console.log('📸 Loading images for step:', step.id);
-      console.log('  image_ids:', step.image_ids);
-      console.log('  images array:', step.images);
-
       // Use embedded image data - no API calls needed!
       for (const image of step.images) {
         newBlobUrls[image.id] = image.cdn_url;
-        console.log(`  Mapping ${image.id} -> ${image.cdn_url}`);
       }
 
       setImageBlobUrls(newBlobUrls);
-      console.log('  Final imageBlobUrls:', newBlobUrls);
     }
 
     // Cleanup blob URLs on unmount (only for blob: URLs)
@@ -155,7 +149,6 @@ export default function StepEditor({ step, onUpdate, readOnly = false }: StepEdi
 
   const handleImageEdit = async (imageId: string) => {
     try {
-      console.log('Fetching image for editing:', imageId);
 
       // Fetch image through proxy with authentication (using apiClient)
       const response = await assetsAPI.proxy(imageId);
@@ -164,7 +157,6 @@ export default function StepEditor({ step, onUpdate, readOnly = false }: StepEdi
       // Convert to blob URL
       const blobUrl = URL.createObjectURL(blob);
 
-      console.log('Image loaded, blob URL:', blobUrl);
 
       // Pass blob URL to ImageEditor - no CORS issues with blob URLs
       setEditingImageId(imageId);
@@ -178,10 +170,6 @@ export default function StepEditor({ step, onUpdate, readOnly = false }: StepEdi
 
   const handleImageSave = async (blob: Blob) => {
     try {
-      console.log('Saving edited image for step:', step.id);
-      console.log('Editing image ID:', editingImageId);
-      console.log('Blob size:', blob.size, 'bytes');
-      console.log('Blob type:', blob.type);
 
       if (blob.size === 0) {
         throw new Error('Generated blob is empty - canvas export failed');
@@ -197,13 +185,10 @@ export default function StepEditor({ step, onUpdate, readOnly = false }: StepEdi
       );
       const { asset_id } = uploadUrlResponse.data;
 
-      console.log('Created asset record with ID:', asset_id);
 
       // 2. Upload to backend (which validates and uploads to R2)
       const uploadResponse = await assetsAPI.uploadEdited(asset_id, blob);
 
-      console.log('Upload response:', uploadResponse.data);
-      console.log('Uploaded size:', uploadResponse.data.size, 'bytes');
 
       if (uploadResponse.data.size === 0) {
         throw new Error('Backend received empty file - canvas export issue');
@@ -215,22 +200,17 @@ export default function StepEditor({ step, onUpdate, readOnly = false }: StepEdi
         ? currentImageIds.map(id => id === editingImageId ? asset_id : id)
         : [...currentImageIds, asset_id];
 
-      console.log('Old image IDs:', currentImageIds);
-      console.log('Updated image IDs:', updatedImageIds);
 
       // 4. Update step with the new image array (replace specific image)
       await stepsAPI.update(step.id, {
         image_ids: updatedImageIds,
       });
 
-      console.log('Step updated with new image ID:', asset_id);
 
       // 5. Delete the old edited image from storage
       if (editingImageId && editingImageId !== asset_id) {
-        console.log('Deleting old image:', editingImageId);
         try {
           await assetsAPI.delete(editingImageId);
-          console.log('Deleted old image:', editingImageId);
         } catch (err) {
           console.warn('Failed to delete old image:', editingImageId, err);
           // Continue even if delete fails
@@ -250,7 +230,6 @@ export default function StepEditor({ step, onUpdate, readOnly = false }: StepEdi
       setUploading(false);
       onUpdate();
 
-      console.log('✅ Image save complete');
     } catch (error) {
       console.error('❌ Failed to save edited image:', error);
       alert('Failed to save edited image. Please try again.');
@@ -463,7 +442,6 @@ export default function StepEditor({ step, onUpdate, readOnly = false }: StepEdi
           {step.image_ids && step.image_ids.length > 0 ? (
             <div className="grid grid-cols-1 gap-4">
               {step.image_ids.map((imageId, index) => {
-                console.log(`🖼️ Rendering image ${index + 1}:`, { imageId, url: imageBlobUrls[imageId] });
                 return (
                   <div key={imageId} className="relative border rounded-lg overflow-hidden">
                     {imageBlobUrls[imageId] ? (
@@ -481,7 +459,6 @@ export default function StepEditor({ step, onUpdate, readOnly = false }: StepEdi
                       <div className="absolute top-2 right-2 flex gap-2">
                         <button
                           onClick={() => {
-                            console.log(`✏️ Editing image: ${imageId}`);
                             handleImageEdit(imageId);
                           }}
                           className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700"

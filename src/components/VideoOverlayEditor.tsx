@@ -829,15 +829,12 @@ export default function VideoOverlayEditor({
 
   const handleDeleteOverlay = () => {
     if (!selectedOverlay) {
-      console.log('⚠️ No overlay selected');
       return;
     }
     if (confirm('Delete this overlay?')) {
-      console.log('🗑️ Deleting overlay:', selectedOverlay);
       const newOverlays = overlays.filter(o => o.id !== selectedOverlay);
       saveToHistory(newOverlays);
       setSelectedOverlay(null);
-      console.log('✅ Overlay deleted');
     }
   };
 
@@ -887,7 +884,6 @@ export default function VideoOverlayEditor({
       // Delete with Delete or Backspace
       if ((e.key === 'Delete' || e.key === 'Backspace') && selectedOverlay) {
         e.preventDefault();
-        console.log('🔑 Delete key pressed, overlay:', selectedOverlay);
         handleDeleteOverlay();
         return;
       }

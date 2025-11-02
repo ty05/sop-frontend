@@ -35,13 +35,10 @@ function VerifyContent() {
 
         // Check if user has pending invitations (for first-time login)
         try {
-          console.log('Checking for pending invitations...');
           const invitationsResponse = await invitationsAPI.getMyInvitations();
-          console.log('Invitations response:', invitationsResponse.data);
 
           if (invitationsResponse.data && invitationsResponse.data.length > 0) {
             // User has pending invitations, redirect to invitations page
-            console.log('User has pending invitations, redirecting to /invitations');
             window.location.href = '/invitations';
             return;
           }
@@ -51,7 +48,6 @@ function VerifyContent() {
         }
 
         // No pending invitations, go to documents
-        console.log('No pending invitations, redirecting to /documents');
         window.location.href = '/documents';
       })
       .catch((error) => {

@@ -115,18 +115,13 @@ export default function WorkspaceSettingsPage() {
   };
 
   const handleUpgrade = async (plan: 'basic' | 'pro') => {
-    console.log('🔵 handleUpgrade called with plan:', plan);
-    console.log('🔵 activeWorkspace:', activeWorkspace);
 
     if (!activeWorkspace) {
-      console.log('❌ No active workspace');
       return;
     }
 
     try {
-      console.log('🔵 Calling API:', `/billing/checkout/${activeWorkspace.id}`);
       const res = await apiClient.post(`/billing/checkout/${activeWorkspace.id}`, { plan });
-      console.log('✅ API response:', res.data);
       window.location.href = res.data.checkout_url;
     } catch (error: any) {
       console.error('❌ Checkout error:', error);
@@ -684,7 +679,6 @@ function InviteModal({
         role
       });
 
-      console.log('✅ Invitation created successfully:', response);
 
       // SUCCESS - Show success message
       alert(

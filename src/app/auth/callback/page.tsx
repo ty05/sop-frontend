@@ -12,10 +12,6 @@ export default function AuthCallbackPage() {
     // Handle the auth callback
     const handleAuthCallback = async () => {
       try {
-        console.log('=== AUTH CALLBACK START ===');
-        console.log('Full URL:', window.location.href);
-        console.log('Hash:', window.location.hash);
-
         // Check for error in URL (e.g., expired link)
         // Supabase can send errors in either hash (#) or query (?)
         const hashParams = new URLSearchParams(window.location.hash.substring(1));
@@ -23,9 +19,6 @@ export default function AuthCallbackPage() {
 
         const errorDescription = hashParams.get('error_description') || searchParams.get('error_description');
         const errorCode = hashParams.get('error_code') || searchParams.get('error_code');
-
-        console.log('Error code:', errorCode);
-        console.log('Error description:', errorDescription);
 
         if (errorDescription) {
           let userFriendlyError = errorDescription.replace(/\+/g, ' ');
@@ -41,10 +34,7 @@ export default function AuthCallbackPage() {
         }
 
         // Wait for Supabase to process the session from URL
-        console.log('Getting session...');
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        console.log('Session:', session);
-        console.log('Session error:', sessionError);
 
         if (sessionError) {
           console.error('Session error:', sessionError);
@@ -55,17 +45,10 @@ export default function AuthCallbackPage() {
 
         if (session) {
           // Successfully authenticated
-          console.log('✅ Auth successful! User:', session.user.email);
-          console.log('Access token:', session.access_token.substring(0, 20) + '...');
-          console.log('User metadata:', session.user.user_metadata);
-
           // Check if this is an invitation signup
           const invitationId = session.user.user_metadata?.invitation_id;
 
           if (invitationId) {
-            console.log('🎫 This is an invitation signup! Invitation ID:', invitationId);
-            console.log('Redirecting to invitations page to accept...');
-
             // The user was invited - redirect to invitations page
             // The invitations page will show the pending invitation and they can accept it
             router.push('/invitations');
@@ -74,7 +57,6 @@ export default function AuthCallbackPage() {
             const pendingToken = localStorage.getItem('pending_invitation_token');
 
             if (pendingToken) {
-              console.log('📋 Found pending invitation token, redirecting to accept page...');
               router.push(`/invite/accept?token=${pendingToken}`);
             } else {
               // Normal login, go to documents
@@ -83,7 +65,6 @@ export default function AuthCallbackPage() {
           }
         } else {
           // No session found, redirect to login
-          console.log('❌ No session found, redirecting to login');
           setTimeout(() => router.push('/auth/login'), 1000);
         }
       } catch (err) {

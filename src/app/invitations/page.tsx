@@ -40,9 +40,7 @@ export default function InvitationsPage() {
 
   const loadInvitations = async () => {
     try {
-      console.log('Loading invitations...');
       const response = await invitationsAPI.getMyInvitations();
-      console.log('Invitations loaded:', response.data);
       setInvitations(response.data);
     } catch (error: any) {
       console.error('Failed to load invitations:', error);
@@ -54,9 +52,7 @@ export default function InvitationsPage() {
 
   const handleAcceptInvitation = async (invitationId: string) => {
     try {
-      console.log('Accepting invitation:', invitationId);
       await invitationsAPI.acceptInvitationById(invitationId);
-      console.log('Invitation accepted! Redirecting to documents...');
       // Redirect to documents page to see the new workspace
       window.location.href = '/documents';
     } catch (error: any) {

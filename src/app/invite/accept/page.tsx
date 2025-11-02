@@ -18,7 +18,6 @@ function AcceptInviteContent() {
     if (authLoading) return;
 
     const token = searchParams.get('token');
-    console.log('Invitation token from URL:', token);
 
     if (!token) {
       setStatus('error');
@@ -27,25 +26,20 @@ function AcceptInviteContent() {
     }
 
     // Check if user is logged in
-    console.log('User logged in:', !!user);
 
     if (!user) {
       // Store the invitation token and redirect to login
-      console.log('User not logged in, redirecting to login...');
       localStorage.setItem('pending_invitation_token', token);
       router.push('/auth/login');
       return;
     }
 
-    console.log('User is logged in, accepting invitation...');
     acceptInvitation(token);
   }, [user, authLoading, searchParams, router]);
 
   const acceptInvitation = async (token: string) => {
-    console.log('Accepting invitation with token:', token.substring(0, 10) + '...');
     try {
       const response = await invitationsAPI.acceptInvitation(token);
-      console.log('Invitation accepted successfully:', response.data);
 
       setStatus('success');
       setMessage('Invitation accepted! Redirecting...');
@@ -56,7 +50,6 @@ function AcceptInviteContent() {
 
       // Use window.location for full reload to refresh workspace context
       setTimeout(() => {
-        console.log('Redirecting to /documents...');
         window.location.href = '/documents';
       }, 2000);
     } catch (error: any) {
