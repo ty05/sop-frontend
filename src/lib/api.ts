@@ -30,6 +30,20 @@ apiClient.interceptors.response.use(
       await supabase.auth.signOut();
       window.location.href = '/auth/login';
     }
+
+    // Handle 402 Payment Required - Trial expired or limit reached
+    if (error.response?.status === 402) {
+      const detail = error.response.data?.detail;
+      const message = detail?.message || 'Please upgrade to continue';
+      const upgradeUrl = detail?.upgrade_url || '/workspace/settings';
+
+      // Show alert with error message
+      alert(message);
+
+      // Redirect to upgrade page
+      window.location.href = upgradeUrl;
+    }
+
     return Promise.reject(error);
   }
 );
@@ -91,17 +105,17 @@ export const stepsAPI = {
 
 // Assets API
 export const assetsAPI = {
-  getUploadURL: (filename: string, mimeType: string, type: 'image' | 'video') =>
-    apiClient.post('/assets/upload-url', { filename, mime_type: mimeType, type }),
+  getUploadURL: (filename: string, mimeType: string, type: 'image' | 'video', workspaceId: string) =>
+    apiClient.post('/assets/upload-url', { filename, mime_type: mimeType, type, workspace_id: workspaceId }),
 
   get: (id: string) => apiClient.get(`/assets/${id}`),
 
   proxy: (assetId: string) => apiClient.get(`/assets/${assetId}/proxy`, { responseType: 'blob' }),
 
-  uploadEdited: (assetId: string, blob: Blob) => {
+  uploadEdited: (assetId: string, workspaceId: string, blob: Blob) => {
     const formData = new FormData();
     formData.append('file', blob, 'edited.png');
-    return apiClient.post(`/assets/${assetId}/upload-edited`, formData, {
+    return apiClient.post(`/assets/${assetId}/upload-edited?workspace_id=${workspaceId}`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },

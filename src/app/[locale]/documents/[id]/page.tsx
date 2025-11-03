@@ -428,6 +428,7 @@ export default function DocumentPage() {
                     step={step}
                     onUpdate={loadDocument}
                     readOnly={mode === 'browse'}
+                    workspaceId={document?.workspace_id || ''}
                   />
                 </div>
               </div>

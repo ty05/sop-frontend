@@ -16,9 +16,10 @@ interface StepEditorProps {
   step: Step;
   onUpdate: () => void;
   readOnly?: boolean;
+  workspaceId: string;
 }
 
-export default function StepEditor({ step, onUpdate, readOnly = false }: StepEditorProps) {
+export default function StepEditor({ step, onUpdate, readOnly = false, workspaceId }: StepEditorProps) {
   const { session } = useAuth();
   const t = useTranslations('stepEditor');
   const tCommon = useTranslations('common');
@@ -120,7 +121,7 @@ export default function StepEditor({ step, onUpdate, readOnly = false }: StepEdi
     setUploading(true);
     try {
       // Get presigned URL
-      const response = await assetsAPI.getUploadURL(file.name, file.type, 'image');
+      const response = await assetsAPI.getUploadURL(file.name, file.type, 'image', workspaceId);
       const { asset_id, upload_url } = response.data;
 
       // Upload to S3/MinIO
@@ -184,13 +185,14 @@ export default function StepEditor({ step, onUpdate, readOnly = false }: StepEdi
       const uploadUrlResponse = await assetsAPI.getUploadURL(
         'edited-image.png',
         'image/png',
-        'image'
+        'image',
+        workspaceId
       );
       const { asset_id } = uploadUrlResponse.data;
 
 
       // 2. Upload to backend (which validates and uploads to R2)
-      const uploadResponse = await assetsAPI.uploadEdited(asset_id, blob);
+      const uploadResponse = await assetsAPI.uploadEdited(asset_id, workspaceId, blob);
 
 
       if (uploadResponse.data.size === 0) {
@@ -571,6 +573,7 @@ export default function StepEditor({ step, onUpdate, readOnly = false }: StepEdi
               <VideoUpload
                 onUploadComplete={handleVideoUploadComplete}
                 onCancel={() => setShowVideoUpload(false)}
+                workspaceId={workspaceId}
               />
             </div>
           )}

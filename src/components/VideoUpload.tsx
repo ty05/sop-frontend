@@ -6,9 +6,10 @@ import { assetsAPI } from '@/lib/api';
 interface VideoUploadProps {
   onUploadComplete: (assetId: string) => void;
   onCancel?: () => void;
+  workspaceId: string;
 }
 
-export default function VideoUpload({ onUploadComplete, onCancel }: VideoUploadProps) {
+export default function VideoUpload({ onUploadComplete, onCancel, workspaceId }: VideoUploadProps) {
   const [file, setFile] = useState<File | null>(null);
   const [progress, setProgress] = useState(0);
   const [uploading, setUploading] = useState(false);
@@ -48,7 +49,8 @@ export default function VideoUpload({ onUploadComplete, onCancel }: VideoUploadP
       const response = await assetsAPI.getUploadURL(
         file.name,
         file.type,
-        'video'
+        'video',
+        workspaceId
       );
 
       const { asset_id, upload_url } = response.data;
