@@ -13,7 +13,10 @@
     "success": "Success",
     "confirm": "Confirm",
     "back": "Back",
-    "language": "Language"
+    "language": "Language",
+    "browse": "Browse",
+    "run": "Run",
+    "documentNotFound": "Document not found"
   },
   "nav": {
     "documents": "Documents",
@@ -39,8 +42,18 @@
       "archived": "Archived"
     },
     "exportPdf": "Export PDF",
+    "exportAsPdf": "Export as PDF",
+    "pdf": "PDF",
     "qrCode": "QR Code",
-    "shareLink": "Share Link"
+    "shareLink": "Share Link",
+    "viewOnlyAccess": "View-Only Access",
+    "viewOnlyAccessMessage": "You have viewer permissions for this document. You can read and run procedures, but cannot make changes.",
+    "statusChangePermission": "Only owners and editors can change status",
+    "editPermissionDenied": "You do not have permission to edit this document. Only owners and editors can make changes.",
+    "statusChangePermissionDenied": "You do not have permission to change document status. Only owners and editors can make changes.",
+    "documentPublished": "Document published successfully! Steps are now searchable.",
+    "documentDraft": "Document set to draft successfully!",
+    "documentArchived": "Document archived successfully!"
   },
   "step": {
     "addText": "+ Text",
@@ -51,6 +64,7 @@
     "moveDown": "Move down",
     "stepNumber": "Step",
     "noSteps": "No steps in this document",
+    "noStepsYet": "No steps yet. Add your first step above!",
     "addFirstStep": "No steps yet. Add your first step above!"
   },
   "stepEditor": {
@@ -136,7 +150,9 @@
     "accessDenied": "Access denied: Not a member of this workspace"
   },
   "notifications": {
+    "draftModeTitle": "Draft Mode",
     "draftMode": "This document is not published. Steps won't appear in search results. Change status to \"Published\" above to make it searchable.",
+    "archivedModeTitle": "Archived",
     "archivedMode": "This document is archived and won't appear in search results.",
     "published": "Document published successfully! Steps are now searchable.",
     "savedAsDraft": "Document set to draft successfully!",
@@ -208,6 +224,15 @@
     "dragDrop": "Drag and drop video file here",
     "or": "or",
     "browse": "Browse Files"
+  },
+  "qrCode": {
+    "title": "QR Code",
+    "generateQrCode": "Generate QR Code",
+    "generating": "Generating...",
+    "downloadQrCode": "Download QR Code",
+    "generateNew": "Generate New",
+    "printMessage": "Print this QR code for quick access on mobile devices",
+    "failedToGenerate": "Failed to generate QR code"
   },
   "errors": {
     "generic": "An error occurred. Please try again.",

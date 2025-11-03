@@ -21,6 +21,9 @@ export default function DocumentPage() {
   const documentId = params.id as string;
   const { activeWorkspace } = useWorkspace();
   const t = useTranslations('step');
+  const tDocument = useTranslations('document');
+  const tCommon = useTranslations('common');
+  const tNotifications = useTranslations('notifications');
 
   const [document, setDocument] = useState<Document | null>(null);
   const [steps, setSteps] = useState<Step[]>([]);
@@ -66,18 +69,23 @@ export default function DocumentPage() {
 
   const handleStatusChange = async (newStatus: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED') => {
     if (!canEdit) {
-      alert('You do not have permission to change document status. Only owners and editors can make changes.');
+      alert(tDocument('statusChangePermissionDenied'));
       return;
     }
 
     try {
       await documentsAPI.update(documentId, { status: newStatus });
       setDocument(prev => prev ? { ...prev, status: newStatus } : null);
-      alert(`Document ${newStatus === 'PUBLISHED' ? 'published' : newStatus === 'DRAFT' ? 'set to draft' : 'archived'} successfully! ${newStatus === 'PUBLISHED' ? 'Steps are now searchable.' : ''}`);
+      const successMsg = newStatus === 'PUBLISHED'
+        ? tDocument('documentPublished')
+        : newStatus === 'DRAFT'
+        ? tDocument('documentDraft')
+        : tDocument('documentArchived');
+      alert(successMsg);
     } catch (error: any) {
       const errorMsg = error.response?.data?.detail || 'Failed to update document status';
       if (errorMsg.includes('permission') || errorMsg.includes('Editor role required')) {
-        alert('You do not have permission to change document status. Only owners and editors can make changes.');
+        alert(tDocument('statusChangePermissionDenied'));
       } else {
         alert(errorMsg);
       }
@@ -117,7 +125,7 @@ export default function DocumentPage() {
   const handleAddStep = async (type: 'text' | 'checklist' | 'image' | 'video') => {
     // Check permission
     if (!canEdit) {
-      alert('You do not have permission to edit this document. Only owners and editors can make changes.');
+      alert(tDocument('editPermissionDenied'));
       return;
     }
 
@@ -136,7 +144,7 @@ export default function DocumentPage() {
       // Show better error message based on response
       const errorMsg = error.response?.data?.detail || 'Failed to create step';
       if (errorMsg.includes('permission') || errorMsg.includes('Editor role required')) {
-        alert('You do not have permission to edit this document. Only owners and editors can make changes.');
+        alert(tDocument('editPermissionDenied'));
       } else {
         alert(errorMsg);
       }
@@ -147,7 +155,7 @@ export default function DocumentPage() {
   const handleMoveStep = async (index: number, direction: 'up' | 'down') => {
     // Check permission
     if (!canEdit) {
-      alert('You do not have permission to edit this document. Only owners and editors can make changes.');
+      alert(tDocument('editPermissionDenied'));
       return;
     }
 
@@ -173,7 +181,7 @@ export default function DocumentPage() {
     } catch (error: any) {
       const errorMsg = error.response?.data?.detail || 'Failed to reorder steps';
       if (errorMsg.includes('permission') || errorMsg.includes('Editor role required')) {
-        alert('You do not have permission to edit this document. Only owners and editors can make changes.');
+        alert(tDocument('editPermissionDenied'));
       } else {
         alert(errorMsg);
       }
@@ -183,11 +191,11 @@ export default function DocumentPage() {
   };
 
   if (loading) {
-    return <div className="p-8">Loading...</div>;
+    return <div className="p-8">{tCommon('loading')}</div>;
   }
 
   if (!document) {
-    return <div className="p-8">Document not found</div>;
+    return <div className="p-8">{tCommon('documentNotFound')}</div>;
   }
 
   // Run mode - full screen
@@ -223,8 +231,7 @@ export default function DocumentPage() {
                 <span className="text-blue-600">👁️</span>
                 <div className="flex-1">
                   <p className="text-sm text-blue-800">
-                    <strong>View-Only Access:</strong> You have viewer permissions for this document.
-                    You can read and run procedures, but cannot make changes.
+                    <strong>{tDocument('viewOnlyAccess')}:</strong> {tDocument('viewOnlyAccessMessage')}
                   </p>
                 </div>
               </div>
@@ -248,11 +255,11 @@ export default function DocumentPage() {
                     ? 'bg-yellow-100 text-yellow-800 border-yellow-300'
                     : 'bg-gray-100 text-gray-800 border-gray-300'
                 }`}
-                title={!canEdit ? 'Only owners and editors can change status' : ''}
+                title={!canEdit ? tDocument('statusChangePermission') : ''}
               >
-                <option value="DRAFT">Draft</option>
-                <option value="PUBLISHED">Published</option>
-                <option value="ARCHIVED">Archived</option>
+                <option value="DRAFT">{tDocument('status.draft')}</option>
+                <option value="PUBLISHED">{tDocument('status.published')}</option>
+                <option value="ARCHIVED">{tDocument('status.archived')}</option>
               </select>
               {document.status === 'PUBLISHED' && (
                 <span className="text-xs text-green-600" title="Steps are searchable">
@@ -265,13 +272,13 @@ export default function DocumentPage() {
             <button
               onClick={handleExportPdf}
               className="bg-gray-100 hover:bg-gray-200 text-gray-800 px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 justify-center"
-              title="Export as PDF"
+              title={tDocument('exportAsPdf')}
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
               </svg>
-              <span className="hidden sm:inline">Export PDF</span>
-              <span className="sm:hidden">PDF</span>
+              <span className="hidden sm:inline">{tDocument('exportPdf')}</span>
+              <span className="sm:hidden">{tDocument('pdf')}</span>
             </button>
 
             {/* Mode Switcher - Full width on mobile, hide edit mode for viewers */}
@@ -287,7 +294,7 @@ export default function DocumentPage() {
                       : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                   }`}
                 >
-                  Browse
+                  {tCommon('browse')}
                 </button>
                 <button
                   onClick={() => setMode('run')}
@@ -297,7 +304,7 @@ export default function DocumentPage() {
                       : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                   }`}
                 >
-                  Run
+                  {tCommon('run')}
                 </button>
               </div>
             )}
@@ -313,8 +320,7 @@ export default function DocumentPage() {
               <span className="text-yellow-600">ℹ️</span>
               <div className="flex-1">
                 <p className="text-sm text-yellow-800">
-                  <strong>Draft Mode:</strong> This document is not published. Steps won&apos;t appear in search results.
-                  Change status to &quot;Published&quot; above to make it searchable.
+                  <strong>{tNotifications('draftModeTitle')}:</strong> {tNotifications('draftMode')}
                 </p>
               </div>
             </div>
@@ -327,7 +333,7 @@ export default function DocumentPage() {
               <span className="text-gray-600">📦</span>
               <div className="flex-1">
                 <p className="text-sm text-gray-800">
-                  <strong>Archived:</strong> This document is archived and won&apos;t appear in search results.
+                  <strong>{tNotifications('archivedModeTitle')}:</strong> {tNotifications('archivedMode')}
                 </p>
               </div>
             </div>
@@ -427,8 +433,8 @@ export default function DocumentPage() {
             <div className="text-center py-12 bg-white rounded-lg border-2 border-dashed">
               <p className="text-gray-500">
                 {mode === 'edit'
-                  ? 'No steps yet. Add your first step above!'
-                  : 'No steps in this document'}
+                  ? t('noStepsYet')
+                  : t('noSteps')}
               </p>
             </div>
           )}

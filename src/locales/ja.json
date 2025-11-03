@@ -13,7 +13,10 @@
     "success": "成功",
     "confirm": "確認",
     "back": "戻る",
-    "language": "言語"
+    "language": "言語",
+    "browse": "閲覧",
+    "run": "実行",
+    "documentNotFound": "ドキュメントが見つかりません"
   },
   "nav": {
     "documents": "ドキュメント",
@@ -39,8 +42,18 @@
       "archived": "アーカイブ済み"
     },
     "exportPdf": "PDFエクスポート",
+    "exportAsPdf": "PDFとしてエクスポート",
+    "pdf": "PDF",
     "qrCode": "QRコード",
-    "shareLink": "リンクを共有"
+    "shareLink": "リンクを共有",
+    "viewOnlyAccess": "閲覧のみのアクセス",
+    "viewOnlyAccessMessage": "このドキュメントは閲覧者権限でアクセスしています。手順の閲覧と実行はできますが、変更はできません。",
+    "statusChangePermission": "ステータスを変更できるのはオーナーと編集者のみです",
+    "editPermissionDenied": "このドキュメントを編集する権限がありません。変更できるのはオーナーと編集者のみです。",
+    "statusChangePermissionDenied": "ドキュメントのステータスを変更する権限がありません。変更できるのはオーナーと編集者のみです。",
+    "documentPublished": "ドキュメントが公開されました！ステップが検索可能になりました。",
+    "documentDraft": "ドキュメントが下書きに設定されました！",
+    "documentArchived": "ドキュメントがアーカイブされました！"
   },
   "step": {
     "addText": "+ テキスト",
@@ -51,6 +64,7 @@
     "moveDown": "下に移動",
     "stepNumber": "ステップ",
     "noSteps": "このドキュメントにステップがありません",
+    "noStepsYet": "まだステップがありません。上のボタンから最初のステップを追加してください！",
     "addFirstStep": "まだステップがありません。上のボタンから最初のステップを追加してください！"
   },
   "stepEditor": {
@@ -136,7 +150,9 @@
     "accessDenied": "アクセス拒否：このワークスペースのメンバーではありません"
   },
   "notifications": {
+    "draftModeTitle": "下書きモード",
     "draftMode": "このドキュメントは公開されていません。ステップは検索結果に表示されません。検索可能にするには、上記のステータスを「公開済み」に変更してください。",
+    "archivedModeTitle": "アーカイブ済み",
     "archivedMode": "このドキュメントはアーカイブされており、検索結果に表示されません。",
     "published": "ドキュメントが公開されました！ステップが検索可能になりました。",
     "savedAsDraft": "ドキュメントが下書きに設定されました！",
@@ -208,6 +224,15 @@
     "dragDrop": "ここに動画ファイルをドラッグ&ドロップ",
     "or": "または",
     "browse": "ファイルを選択"
+  },
+  "qrCode": {
+    "title": "QRコード",
+    "generateQrCode": "QRコードを生成",
+    "generating": "生成中...",
+    "downloadQrCode": "QRコードをダウンロード",
+    "generateNew": "新しいQRコードを生成",
+    "printMessage": "このQRコードを印刷してモバイルデバイスから素早くアクセスできます",
+    "failedToGenerate": "QRコードの生成に失敗しました"
   },
   "errors": {
     "generic": "エラーが発生しました。もう一度お試しください。",
