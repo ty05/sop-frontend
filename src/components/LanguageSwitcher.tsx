@@ -30,7 +30,7 @@ export default function LanguageSwitcher() {
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-gray-100 text-sm"
       >
-        <span>{locale === 'ja' ? '🇯🇵' : '🇬🇧'}</span>
+        <span>{locale === 'ja' ? '🇯🇵 日本語' : '🇬🇧 English'}</span>
       </button>
 
       {isOpen && (

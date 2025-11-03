@@ -10,7 +10,6 @@ import RunMode from '@/components/RunMode';
 import SearchBar from '@/components/SearchBar';
 import QRCodeGenerator from '@/components/QRCodeGenerator';
 import { useWorkspace } from '@/contexts/WorkspaceContext';
-import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { useTranslations } from 'next-intl';
 
 type Mode = 'edit' | 'browse' | 'run';
@@ -209,12 +208,7 @@ export default function DocumentPage() {
       {/* Search Header - Sticky */}
       <div className="bg-white border-b sticky top-0 z-10">
         <div className="max-w-4xl mx-auto p-4">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex-1">
-              <SearchBar workspaceId={document.workspace_id} />
-            </div>
-            <LanguageSwitcher />
-          </div>
+          <SearchBar workspaceId={document.workspace_id} />
         </div>
       </div>
 
