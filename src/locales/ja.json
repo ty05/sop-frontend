@@ -141,7 +141,21 @@
       "owner": "オーナー",
       "editor": "編集者",
       "viewer": "閲覧者"
-    }
+    },
+    "quickActions": "クイックアクション",
+    "members": "メンバー",
+    "workspaces": "ワークスペース",
+    "noWorkspacesYet": "ワークスペースがありません",
+    "upgradeToCreate": "アップグレードして作成",
+    "about": "詳細",
+    "name": "名前",
+    "nameRequired": "名前 *",
+    "descriptionOptional": "説明（任意）",
+    "myWorkspace": "マイワークスペース",
+    "workspaceDescription": "このワークスペースの用途は？",
+    "creating": "作成中...",
+    "workspaceLimitReached": "ワークスペースの上限に達しました（{current}/{limit}）。プランをアップグレードしてください。",
+    "failedToCreateWorkspace": "ワークスペースの作成に失敗しました"
   },
   "permissions": {
     "viewOnly": "閲覧のみのアクセス",

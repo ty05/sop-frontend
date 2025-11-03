@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { useAuth } from '@/contexts/AuthContext';
 import { useWorkspace } from '@/contexts/WorkspaceContext';
 import apiClient from '@/lib/api';
@@ -16,6 +17,8 @@ interface WorkspaceLimits {
 }
 
 export default function WorkspaceSwitcher() {
+  const t = useTranslations('workspace');
+  const tNav = useTranslations('nav');
   const { session } = useAuth();
   const { workspaces, activeWorkspace, setActiveWorkspace, refreshWorkspaces } = useWorkspace();
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -42,7 +45,7 @@ export default function WorkspaceSwitcher() {
 
   const handleCreateClick = () => {
     if (limits && !limits.can_create) {
-      alert(`Workspace limit reached (${limits.current}/${limits.limit}). Please upgrade your plan.`);
+      alert(t('workspaceLimitReached', { current: limits.current, limit: limits.limit }));
       return;
     }
     setShowCreateModal(true);
@@ -54,14 +57,14 @@ export default function WorkspaceSwitcher() {
         <div className="text-center">
           <div className="mb-4">
             <div className="text-4xl mb-2">📁</div>
-            <p className="text-gray-400 text-sm">No workspaces yet</p>
+            <p className="text-gray-400 text-sm">{t('noWorkspacesYet')}</p>
           </div>
           <button
             onClick={handleCreateClick}
             disabled={!!(limits && !limits.can_create)}
             className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 w-full disabled:bg-gray-400"
           >
-            + Create Workspace
+            + {t('createWorkspace')}
           </button>
         </div>
         {showCreateModal && (
@@ -90,8 +93,8 @@ export default function WorkspaceSwitcher() {
         {limits && (
           <div className="text-xs text-gray-400 mb-2">
             {limits.limit === -1
-              ? `${limits.current} workspaces`
-              : `${limits.current} / ${limits.limit} workspaces`
+              ? `${limits.current} ${t('workspaces')}`
+              : `${limits.current} / ${limits.limit} ${t('workspaces')}`
             }
           </div>
         )}
@@ -102,7 +105,7 @@ export default function WorkspaceSwitcher() {
         >
           <div className="flex-1 text-left">
             <div className="font-semibold truncate">{activeWorkspace.name}</div>
-            <div className="text-xs text-gray-400 capitalize">{activeWorkspace.role}</div>
+            <div className="text-xs text-gray-400">{t(`role.${activeWorkspace.role}`)}</div>
           </div>
           <svg
             className={`w-4 h-4 transition-transform ${showDropdown ? 'rotate-180' : ''}`}
@@ -129,9 +132,9 @@ export default function WorkspaceSwitcher() {
                 }`}
               >
                 <div className="font-medium truncate">{workspace.name}</div>
-                <div className="text-xs text-gray-400 capitalize">{workspace.role}</div>
+                <div className="text-xs text-gray-400">{t(`role.${workspace.role}`)}</div>
                 {workspace.member_count && (
-                  <div className="text-xs text-gray-500">{workspace.member_count} members</div>
+                  <div className="text-xs text-gray-500">{workspace.member_count} {t('members')}</div>
                 )}
               </button>
             ))}
@@ -148,7 +151,7 @@ export default function WorkspaceSwitcher() {
                   : 'hover:bg-gray-700 text-blue-400'
               }`}
             >
-              {limits && !limits.can_create ? '🔒 Upgrade to Create' : '+ Create Workspace'}
+              {limits && !limits.can_create ? `🔒 ${t('upgradeToCreate')}` : `+ ${t('createWorkspace')}`}
             </button>
           </div>
         )}
@@ -157,24 +160,24 @@ export default function WorkspaceSwitcher() {
       {/* Workspace Actions */}
       <div className="flex-1 overflow-y-auto">
         <div className="p-4 space-y-2">
-          <div className="text-xs text-gray-400 uppercase font-semibold mb-2">Quick Actions</div>
+          <div className="text-xs text-gray-400 uppercase font-semibold mb-2">{t('quickActions')}</div>
           <Link
             href="/documents"
             className="block px-3 py-2 hover:bg-gray-800 rounded text-sm"
           >
-            📄 Documents
+            📄 {tNav('documents')}
           </Link>
           <Link
             href="/workspace/settings"
             className="block px-3 py-2 hover:bg-gray-800 rounded text-sm"
           >
-            ⚙️ Settings
+            ⚙️ {tNav('settings')}
           </Link>
         </div>
 
         {activeWorkspace.description && (
           <div className="p-4 border-t border-gray-700">
-            <div className="text-xs text-gray-400 mb-1">About</div>
+            <div className="text-xs text-gray-400 mb-1">{t('about')}</div>
             <div className="text-sm text-gray-300">{activeWorkspace.description}</div>
           </div>
         )}
@@ -203,6 +206,8 @@ function CreateWorkspaceModal({
   onClose: () => void;
   onSuccess: () => void;
 }) {
+  const t = useTranslations('workspace');
+  const tCommon = useTranslations('common');
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(false);
@@ -222,9 +227,9 @@ function CreateWorkspaceModal({
       if (error.response?.status === 402) {
         // Payment required (limit reached)
         const detail = error.response.data.detail;
-        setError(detail.message || 'Workspace limit reached');
+        setError(detail.message || t('workspaceLimitReached', { current: '?', limit: '?' }));
       } else {
-        setError(error.response?.data?.detail || 'Failed to create workspace');
+        setError(error.response?.data?.detail || t('failedToCreateWorkspace'));
       }
     } finally {
       setLoading(false);
@@ -234,7 +239,7 @@ function CreateWorkspaceModal({
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg p-6 max-w-md w-full">
-        <h2 className="text-xl font-bold mb-4 text-gray-900">Create Workspace</h2>
+        <h2 className="text-xl font-bold mb-4 text-gray-900">{t('createWorkspace')}</h2>
 
         {error && (
           <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded text-sm text-red-700">
@@ -244,7 +249,7 @@ function CreateWorkspaceModal({
 
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
-            <label className="block text-sm font-medium mb-1 text-gray-700">Name *</label>
+            <label className="block text-sm font-medium mb-1 text-gray-700">{t('nameRequired')}</label>
             <input
               type="text"
               value={name}
@@ -252,13 +257,13 @@ function CreateWorkspaceModal({
               required
               maxLength={100}
               className="w-full px-3 py-2 border rounded text-gray-900"
-              placeholder="My Workspace"
+              placeholder={t('myWorkspace')}
             />
           </div>
 
           <div className="mb-6">
             <label className="block text-sm font-medium mb-1 text-gray-700">
-              Description (optional)
+              {t('descriptionOptional')}
             </label>
             <textarea
               value={description}
@@ -266,7 +271,7 @@ function CreateWorkspaceModal({
               rows={3}
               maxLength={500}
               className="w-full px-3 py-2 border rounded text-gray-900"
-              placeholder="What's this workspace for?"
+              placeholder={t('workspaceDescription')}
             />
           </div>
 
@@ -276,14 +281,14 @@ function CreateWorkspaceModal({
               onClick={onClose}
               className="px-4 py-2 border rounded text-gray-700"
             >
-              Cancel
+              {tCommon('cancel')}
             </button>
             <button
               type="submit"
               disabled={loading || !name.trim()}
               className="px-4 py-2 bg-blue-600 text-white rounded disabled:bg-gray-400"
             >
-              {loading ? 'Creating...' : 'Create Workspace'}
+              {loading ? t('creating') : t('createWorkspace')}
             </button>
           </div>
         </form>

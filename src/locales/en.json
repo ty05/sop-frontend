@@ -141,7 +141,21 @@
       "owner": "Owner",
       "editor": "Editor",
       "viewer": "Viewer"
-    }
+    },
+    "quickActions": "Quick Actions",
+    "members": "members",
+    "workspaces": "workspaces",
+    "noWorkspacesYet": "No workspaces yet",
+    "upgradeToCreate": "Upgrade to Create",
+    "about": "About",
+    "name": "Name",
+    "nameRequired": "Name *",
+    "descriptionOptional": "Description (optional)",
+    "myWorkspace": "My Workspace",
+    "workspaceDescription": "What's this workspace for?",
+    "creating": "Creating...",
+    "workspaceLimitReached": "Workspace limit reached ({current}/{limit}). Please upgrade your plan.",
+    "failedToCreateWorkspace": "Failed to create workspace"
   },
   "permissions": {
     "viewOnly": "View-Only Access",
