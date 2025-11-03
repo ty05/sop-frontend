@@ -11,8 +11,7 @@ import SearchBar from '@/components/SearchBar';
 import QRCodeGenerator from '@/components/QRCodeGenerator';
 import { useWorkspace } from '@/contexts/WorkspaceContext';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
-import { useTranslation } from 'react-i18next';
-import '../../../i18n';
+import { useTranslations } from 'next-intl';
 
 type Mode = 'edit' | 'browse' | 'run';
 
@@ -21,7 +20,7 @@ export default function DocumentPage() {
   const searchParams = useSearchParams();
   const documentId = params.id as string;
   const { activeWorkspace } = useWorkspace();
-  const { t } = useTranslation();
+  const t = useTranslations('step');
 
   const [document, setDocument] = useState<Document | null>(null);
   const [steps, setSteps] = useState<Step[]>([]);
@@ -347,25 +346,25 @@ export default function DocumentPage() {
               onClick={() => handleAddStep('text')}
               className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
             >
-              {t('step.addText')}
+              {t('addText')}
             </button>
             <button
               onClick={() => handleAddStep('checklist')}
               className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
             >
-              {t('step.addChecklist')}
+              {t('addChecklist')}
             </button>
             <button
               onClick={() => handleAddStep('image')}
               className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700"
             >
-              {t('step.addImage')}
+              {t('addImage')}
             </button>
             <button
               onClick={() => handleAddStep('video')}
               className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
             >
-              {t('step.addVideo')}
+              {t('addVideo')}
             </button>
           </div>
         )}

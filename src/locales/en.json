@@ -1,0 +1,88 @@
+{
+  "common": {
+    "edit": "Edit",
+    "delete": "Delete",
+    "save": "Save",
+    "cancel": "Cancel",
+    "add": "Add",
+    "create": "Create",
+    "update": "Update",
+    "search": "Search",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success"
+  },
+  "nav": {
+    "documents": "Documents",
+    "workspaces": "Workspaces",
+    "settings": "Settings",
+    "logout": "Logout",
+    "login": "Login"
+  },
+  "document": {
+    "title": "Document",
+    "newDocument": "New Document",
+    "editDocument": "Edit Document",
+    "deleteDocument": "Delete Document",
+    "status": {
+      "draft": "Draft",
+      "published": "Published",
+      "archived": "Archived"
+    },
+    "exportPdf": "Export PDF",
+    "qrCode": "QR Code",
+    "shareLink": "Share Link"
+  },
+  "step": {
+    "addText": "+ Text",
+    "addChecklist": "+ Checklist",
+    "addImage": "+ Image",
+    "addVideo": "+ Video",
+    "moveUp": "Move up",
+    "moveDown": "Move down",
+    "stepNumber": "Step",
+    "noSteps": "No steps in this document",
+    "addFirstStep": "No steps yet. Add your first step above!"
+  },
+  "mode": {
+    "edit": "Edit",
+    "browse": "Browse",
+    "run": "Run"
+  },
+  "auth": {
+    "signIn": "Sign In",
+    "signOut": "Sign Out",
+    "email": "Email",
+    "enterEmail": "Enter your email",
+    "sendMagicLink": "Send Magic Link",
+    "checkEmail": "Check your email for the magic link!",
+    "signingIn": "Signing you in...",
+    "authError": "Authentication Error",
+    "invalidToken": "Invalid or expired token",
+    "redirecting": "Redirecting to login..."
+  },
+  "workspace": {
+    "createWorkspace": "Create Workspace",
+    "workspaceName": "Workspace Name",
+    "workspaceMembers": "Members",
+    "inviteMember": "Invite Member",
+    "role": {
+      "owner": "Owner",
+      "editor": "Editor",
+      "viewer": "Viewer"
+    }
+  },
+  "permissions": {
+    "viewOnly": "View-Only Access",
+    "viewOnlyMessage": "You have viewer permissions for this document. You can read and run procedures, but cannot make changes.",
+    "editorRequired": "Editor role required to make changes",
+    "accessDenied": "Access denied: Not a member of this workspace"
+  },
+  "notifications": {
+    "draftMode": "This document is not published. Steps won't appear in search results. Change status to \"Published\" above to make it searchable.",
+    "archivedMode": "This document is archived and won't appear in search results.",
+    "published": "Document published successfully! Steps are now searchable.",
+    "savedAsDraft": "Document set to draft successfully!",
+    "archived": "Document archived successfully!"
+  }
+}

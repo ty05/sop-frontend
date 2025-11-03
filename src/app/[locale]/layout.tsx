@@ -1,8 +1,10 @@
 import type { Metadata } from 'next';
-import './globals.css';
+import '../globals.css';
 import PWAInstallPrompt from '@/components/PWAInstallPrompt';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { WorkspaceProvider } from '@/contexts/WorkspaceContext';
+import {NextIntlClientProvider} from 'next-intl';
+import {getMessages} from 'next-intl/server';
 
 export const metadata: Metadata = {
   title: 'SOP Manual SaaS',
@@ -21,13 +23,18 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function LocaleLayout({
   children,
+  params
 }: {
   children: React.ReactNode;
+  params: Promise<{locale: string}>;
 }) {
+  const {locale} = await params;
+  const messages = await getMessages();
+
   return (
-    <html lang="en">
+    <html lang={locale}>
       <head>
         <link rel="manifest" href="/manifest.json" />
         <link rel="apple-touch-icon" href="/icon-192.png" />
@@ -35,11 +42,13 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
       </head>
       <body suppressHydrationWarning>
-        <AuthProvider>
-          <WorkspaceProvider>
-            {children}
-          </WorkspaceProvider>
-        </AuthProvider>
+        <NextIntlClientProvider messages={messages}>
+          <AuthProvider>
+            <WorkspaceProvider>
+              {children}
+            </WorkspaceProvider>
+          </AuthProvider>
+        </NextIntlClientProvider>
         <PWAInstallPrompt />
 
         {/* Service Worker - DISABLED - Unregister old broken SW */}

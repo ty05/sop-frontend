@@ -1,0 +1,88 @@
+{
+  "common": {
+    "edit": "編集",
+    "delete": "削除",
+    "save": "保存",
+    "cancel": "キャンセル",
+    "add": "追加",
+    "create": "作成",
+    "update": "更新",
+    "search": "検索",
+    "loading": "読み込み中...",
+    "error": "エラー",
+    "success": "成功"
+  },
+  "nav": {
+    "documents": "ドキュメント",
+    "workspaces": "ワークスペース",
+    "settings": "設定",
+    "logout": "ログアウト",
+    "login": "ログイン"
+  },
+  "document": {
+    "title": "ドキュメント",
+    "newDocument": "新規ドキュメント",
+    "editDocument": "ドキュメントを編集",
+    "deleteDocument": "ドキュメントを削除",
+    "status": {
+      "draft": "下書き",
+      "published": "公開済み",
+      "archived": "アーカイブ済み"
+    },
+    "exportPdf": "PDFエクスポート",
+    "qrCode": "QRコード",
+    "shareLink": "リンクを共有"
+  },
+  "step": {
+    "addText": "+ テキスト",
+    "addChecklist": "+ チェックリスト",
+    "addImage": "+ 画像",
+    "addVideo": "+ 動画",
+    "moveUp": "上に移動",
+    "moveDown": "下に移動",
+    "stepNumber": "ステップ",
+    "noSteps": "このドキュメントにステップがありません",
+    "addFirstStep": "まだステップがありません。上のボタンから最初のステップを追加してください！"
+  },
+  "mode": {
+    "edit": "編集",
+    "browse": "閲覧",
+    "run": "実行"
+  },
+  "auth": {
+    "signIn": "ログイン",
+    "signOut": "ログアウト",
+    "email": "メールアドレス",
+    "enterEmail": "メールアドレスを入力",
+    "sendMagicLink": "マジックリンクを送信",
+    "checkEmail": "メールを確認してください！",
+    "signingIn": "ログイン中...",
+    "authError": "認証エラー",
+    "invalidToken": "無効または期限切れのトークン",
+    "redirecting": "ログインページにリダイレクト中..."
+  },
+  "workspace": {
+    "createWorkspace": "ワークスペースを作成",
+    "workspaceName": "ワークスペース名",
+    "workspaceMembers": "メンバー",
+    "inviteMember": "メンバーを招待",
+    "role": {
+      "owner": "オーナー",
+      "editor": "編集者",
+      "viewer": "閲覧者"
+    }
+  },
+  "permissions": {
+    "viewOnly": "閲覧のみのアクセス",
+    "viewOnlyMessage": "このドキュメントは閲覧者権限でアクセスしています。手順の閲覧と実行はできますが、変更はできません。",
+    "editorRequired": "変更するには編集者権限が必要です",
+    "accessDenied": "アクセス拒否：このワークスペースのメンバーではありません"
+  },
+  "notifications": {
+    "draftMode": "このドキュメントは公開されていません。ステップは検索結果に表示されません。検索可能にするには、上記のステータスを「公開済み」に変更してください。",
+    "archivedMode": "このドキュメントはアーカイブされており、検索結果に表示されません。",
+    "published": "ドキュメントが公開されました！ステップが検索可能になりました。",
+    "savedAsDraft": "ドキュメントが下書きに設定されました！",
+    "archived": "ドキュメントがアーカイブされました！"
+  }
+}

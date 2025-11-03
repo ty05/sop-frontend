@@ -1,20 +1,16 @@
-import i18n from 'i18next';
-import { initReactI18next } from 'react-i18next';
-import en from '../messages/en.json';
-import ja from '../messages/ja.json';
+import {getRequestConfig} from 'next-intl/server';
 
-i18n
-  .use(initReactI18next)
-  .init({
-    resources: {
-      en: { translation: en },
-      ja: { translation: ja },
-    },
-    lng: typeof window !== 'undefined' ? localStorage.getItem('language') || 'en' : 'en',
-    fallbackLng: 'en',
-    interpolation: {
-      escapeValue: false,
-    },
-  });
+export default getRequestConfig(async ({requestLocale}) => {
+  // This typically corresponds to the `[locale]` segment
+  let locale = await requestLocale;
 
-export default i18n;
+  // Ensure a locale is always returned
+  if (!locale) {
+    locale = 'en';
+  }
+
+  return {
+    locale,
+    messages: (await import(`./locales/${locale}.json`)).default
+  };
+});
