@@ -10,6 +10,9 @@ import RunMode from '@/components/RunMode';
 import SearchBar from '@/components/SearchBar';
 import QRCodeGenerator from '@/components/QRCodeGenerator';
 import { useWorkspace } from '@/contexts/WorkspaceContext';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
+import { useTranslation } from 'react-i18next';
+import '../../../i18n';
 
 type Mode = 'edit' | 'browse' | 'run';
 
@@ -18,6 +21,7 @@ export default function DocumentPage() {
   const searchParams = useSearchParams();
   const documentId = params.id as string;
   const { activeWorkspace } = useWorkspace();
+  const { t } = useTranslation();
 
   const [document, setDocument] = useState<Document | null>(null);
   const [steps, setSteps] = useState<Step[]>([]);
@@ -198,7 +202,12 @@ export default function DocumentPage() {
       {/* Search Header - Sticky */}
       <div className="bg-white border-b sticky top-0 z-10">
         <div className="max-w-4xl mx-auto p-4">
-          <SearchBar workspaceId={document.workspace_id} />
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex-1">
+              <SearchBar workspaceId={document.workspace_id} />
+            </div>
+            <LanguageSwitcher />
+          </div>
         </div>
       </div>
 
@@ -338,25 +347,25 @@ export default function DocumentPage() {
               onClick={() => handleAddStep('text')}
               className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
             >
-              + Text
+              {t('step.addText')}
             </button>
             <button
               onClick={() => handleAddStep('checklist')}
               className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
             >
-              + Checklist
+              {t('step.addChecklist')}
             </button>
             <button
               onClick={() => handleAddStep('image')}
               className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700"
             >
-              + Image
+              {t('step.addImage')}
             </button>
             <button
               onClick={() => handleAddStep('video')}
               className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
             >
-              + Video
+              {t('step.addVideo')}
             </button>
           </div>
         )}
