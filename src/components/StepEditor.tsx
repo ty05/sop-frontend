@@ -10,6 +10,7 @@ import VideoPlayer from './VideoPlayer';
 import VideoTrimmer from './VideoTrimmer';
 import ChapterEditor from './ChapterEditor';
 import VideoOverlayEditor from './VideoOverlayEditor';
+import { useTranslations } from 'next-intl';
 
 interface StepEditorProps {
   step: Step;
@@ -19,6 +20,8 @@ interface StepEditorProps {
 
 export default function StepEditor({ step, onUpdate, readOnly = false }: StepEditorProps) {
   const { session } = useAuth();
+  const t = useTranslations('stepEditor');
+  const tCommon = useTranslations('common');
   const [editing, setEditing] = useState(false);
   const [title, setTitle] = useState(step.title || '');
   const [body, setBody] = useState(step.body || '');
@@ -90,18 +93,18 @@ export default function StepEditor({ step, onUpdate, readOnly = false }: StepEdi
       setEditing(false);
       onUpdate();
     } catch (error) {
-      alert('Failed to update step');
+      alert(t('failedToUpdate'));
     }
   };
 
   const handleDelete = async () => {
-    if (!confirm('Delete this step?')) return;
+    if (!confirm(t('deleteStepConfirm'))) return;
 
     try {
       await stepsAPI.delete(step.id);
       onUpdate();
     } catch (error) {
-      alert('Failed to delete step');
+      alert(t('failedToDelete'));
     }
   };
 
@@ -110,7 +113,7 @@ export default function StepEditor({ step, onUpdate, readOnly = false }: StepEdi
 
     const file = e.target.files[0];
     if (!file.type.startsWith('image/')) {
-      alert('Please select an image file');
+      alert(t('selectImageFile'));
       return;
     }
 
@@ -141,7 +144,7 @@ export default function StepEditor({ step, onUpdate, readOnly = false }: StepEdi
       onUpdate();
     } catch (error) {
       console.error('Image upload failed:', error);
-      alert('Failed to upload image');
+      alert(t('failedToUpload'));
     } finally {
       setUploading(false);
     }
@@ -164,7 +167,7 @@ export default function StepEditor({ step, onUpdate, readOnly = false }: StepEdi
       setShowImageEditor(true);
     } catch (error) {
       console.error('Failed to load image for editing:', error);
-      alert('Failed to load image for editing');
+      alert(t('failedToLoadImage'));
     }
   };
 
@@ -232,7 +235,7 @@ export default function StepEditor({ step, onUpdate, readOnly = false }: StepEdi
 
     } catch (error) {
       console.error('❌ Failed to save edited image:', error);
-      alert('Failed to save edited image. Please try again.');
+      alert(t('failedToSaveImage'));
 
       // Reset state on error
       setUploading(false);
@@ -258,12 +261,12 @@ export default function StepEditor({ step, onUpdate, readOnly = false }: StepEdi
       onUpdate();
     } catch (error) {
       console.error('Failed to update step with video:', error);
-      alert('Failed to update step with video');
+      alert(t('failedToUpdateVideo'));
     }
   };
 
   const handleRemoveImage = async (imageId: string) => {
-    if (!confirm('Remove this image? This will permanently delete the file.')) return;
+    if (!confirm(t('removeImageConfirm'))) return;
 
     try {
       // Remove from step's image_ids
@@ -282,7 +285,7 @@ export default function StepEditor({ step, onUpdate, readOnly = false }: StepEdi
 
       onUpdate();
     } catch (error) {
-      alert('Failed to remove image');
+      alert(t('failedToRemoveImage'));
     }
   };
 
@@ -296,7 +299,7 @@ export default function StepEditor({ step, onUpdate, readOnly = false }: StepEdi
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               className="text-xl font-semibold w-full border-b pb-1"
-              placeholder="Step title"
+              placeholder={t('stepTitle')}
             />
           ) : (
             <h3 className="text-xl font-semibold">{step.title}</h3>
@@ -314,13 +317,13 @@ export default function StepEditor({ step, onUpdate, readOnly = false }: StepEdi
                   onClick={handleSave}
                   className="text-sm bg-blue-600 text-white px-3 py-1 rounded"
                 >
-                  Save
+                  {tCommon('save')}
                 </button>
                 <button
                   onClick={() => setEditing(false)}
                   className="text-sm bg-gray-300 px-3 py-1 rounded"
                 >
-                  Cancel
+                  {tCommon('cancel')}
                 </button>
               </>
             ) : (
@@ -328,14 +331,14 @@ export default function StepEditor({ step, onUpdate, readOnly = false }: StepEdi
                 onClick={() => setEditing(true)}
                 className="text-sm text-blue-600"
               >
-                Edit
+                {tCommon('edit')}
               </button>
             )}
             <button
               onClick={handleDelete}
               className="text-sm text-red-600"
             >
-              Delete
+              {tCommon('delete')}
             </button>
           </div>
         )}
@@ -348,7 +351,7 @@ export default function StepEditor({ step, onUpdate, readOnly = false }: StepEdi
               value={body}
               onChange={(e) => setBody(e.target.value)}
               className="w-full border rounded p-2 min-h-[100px]"
-              placeholder="Enter step content..."
+              placeholder={t('enterContent')}
             />
           ) : (
             <p className="text-gray-700 whitespace-pre-wrap">{step.body}</p>
@@ -373,7 +376,7 @@ export default function StepEditor({ step, onUpdate, readOnly = false }: StepEdi
                         setChecklistItems(newItems);
                       }}
                       className="flex-1 border rounded px-2 py-1"
-                      placeholder="Item text"
+                      placeholder={t('itemText')}
                     />
                     <label className="flex items-center gap-1 text-sm">
                       <input
@@ -386,7 +389,7 @@ export default function StepEditor({ step, onUpdate, readOnly = false }: StepEdi
                         }}
                         className="w-3 h-3"
                       />
-                      Required
+                      {t('required')}
                     </label>
                     <button
                       onClick={() => {
@@ -395,7 +398,7 @@ export default function StepEditor({ step, onUpdate, readOnly = false }: StepEdi
                       }}
                       className="text-red-600 hover:text-red-800 text-sm px-2"
                     >
-                      Delete
+                      {tCommon('delete')}
                     </button>
                   </>
                 ) : (
@@ -416,7 +419,7 @@ export default function StepEditor({ step, onUpdate, readOnly = false }: StepEdi
               }}
               className="mt-3 text-sm bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700"
             >
-              + Add Item
+              {t('addItem')}
             </button>
           )}
         </div>
@@ -427,7 +430,7 @@ export default function StepEditor({ step, onUpdate, readOnly = false }: StepEdi
           {!readOnly && (
             <div className="mb-4">
               <label className="inline-block bg-blue-600 text-white px-4 py-2 rounded cursor-pointer hover:bg-blue-700">
-                {uploading ? 'Uploading...' : '+ Upload Image'}
+                {uploading ? t('uploading') : t('uploadImage')}
                 <input
                   type="file"
                   accept="image/*"
@@ -452,7 +455,7 @@ export default function StepEditor({ step, onUpdate, readOnly = false }: StepEdi
                       />
                     ) : (
                       <div className="w-full h-64 bg-gray-200 flex items-center justify-center">
-                        <p className="text-gray-500">Loading image...</p>
+                        <p className="text-gray-500">{t('loadingImage')}</p>
                       </div>
                     )}
                     {!readOnly && (
@@ -464,13 +467,13 @@ export default function StepEditor({ step, onUpdate, readOnly = false }: StepEdi
                           className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700"
                           disabled={!imageBlobUrls[imageId]}
                         >
-                          Edit
+                          {t('edit')}
                         </button>
                       <button
                         onClick={() => handleRemoveImage(imageId)}
                         className="bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700"
                       >
-                        Remove
+                        {t('remove')}
                       </button>
                     </div>
                   )}
@@ -480,7 +483,7 @@ export default function StepEditor({ step, onUpdate, readOnly = false }: StepEdi
             </div>
           ) : (
             <div className="text-gray-500 italic text-center py-8 border-2 border-dashed rounded">
-              No images uploaded yet. Click &quot;Upload Image&quot; to add one.
+              {t('noImagesYet')}
             </div>
           )}
         </div>
@@ -509,10 +512,10 @@ export default function StepEditor({ step, onUpdate, readOnly = false }: StepEdi
                         video_start_sec: start,
                         video_end_sec: end
                       }).then(() => {
-                        alert('Trim points saved!');
+                        alert(t('trimPointsSaved'));
                         onUpdate();
                       }).catch(() => {
-                        alert('Failed to save trim points');
+                        alert(t('failedToSaveTrimPoints'));
                       });
                     }}
                   />
@@ -530,7 +533,7 @@ export default function StepEditor({ step, onUpdate, readOnly = false }: StepEdi
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                       </svg>
-                      Add Text & Shapes
+                      {t('addTextShapes')}
                     </button>
                   </div>
                 </>
@@ -541,7 +544,7 @@ export default function StepEditor({ step, onUpdate, readOnly = false }: StepEdi
                   onClick={() => setShowVideoUpload(true)}
                   className="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
                 >
-                  Replace Video
+                  {t('replaceVideo')}
                 </button>
               )}
             </div>
@@ -552,12 +555,12 @@ export default function StepEditor({ step, onUpdate, readOnly = false }: StepEdi
                   onClick={() => setShowVideoUpload(true)}
                   className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
                 >
-                  + Upload Video
+                  {t('uploadVideo')}
                 </button>
               )}
               {!showVideoUpload && (
                 <div className="text-gray-500 italic text-center py-8 border-2 border-dashed rounded mt-4">
-                  No video uploaded yet.
+                  {t('noVideoYet')}
                 </div>
               )}
             </div>

@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Step } from '@/types';
 import { progressAPI, assetsAPI } from '@/lib/api';
 import VideoPlayer from '@/components/VideoPlayer';
+import { useTranslations } from 'next-intl';
 
 interface RunModeProps {
   steps: Step[];
@@ -14,6 +15,7 @@ interface RunModeProps {
 
 export default function RunMode({ steps, documentId, onExit }: RunModeProps) {
   const { session } = useAuth();
+  const t = useTranslations('runMode');
   const [currentIndex, setCurrentIndex] = useState(0);
   const [checkedItems, setCheckedItems] = useState<Record<number, boolean>>({});
   const [loadingProgress, setLoadingProgress] = useState(false);
@@ -114,12 +116,12 @@ export default function RunMode({ steps, documentId, onExit }: RunModeProps) {
     return (
       <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
         <div className="text-center">
-          <p className="text-xl mb-4">No steps available</p>
+          <p className="text-xl mb-4">{t('noStepsAvailable')}</p>
           <button
             onClick={onExit}
             className="bg-blue-600 hover:bg-blue-500 px-6 py-3 rounded-lg"
           >
-            Exit Run Mode
+            {t('exitRunMode')}
           </button>
         </div>
       </div>
@@ -134,14 +136,14 @@ export default function RunMode({ steps, documentId, onExit }: RunModeProps) {
           onClick={onExit}
           className="text-gray-400 hover:text-white flex items-center gap-2"
         >
-          ← Exit Run Mode
+          ← {t('exitRunMode')}
         </button>
       </div>
 
       {/* Progress bar */}
       <div className="max-w-4xl mx-auto mb-8">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-sm">Step {currentIndex + 1} of {steps.length}</span>
+          <span className="text-sm">{t('step')} {currentIndex + 1} {t('of')} {steps.length}</span>
           <span className="text-sm">{Math.round(((currentIndex + 1) / steps.length) * 100)}%</span>
         </div>
         <div className="w-full bg-gray-700 rounded-full h-2">
@@ -187,7 +189,7 @@ export default function RunMode({ steps, documentId, onExit }: RunModeProps) {
             {loadingAssets ? (
               <div className="text-center py-8">
                 <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
-                <p className="mt-4 text-gray-400">Loading images...</p>
+                <p className="mt-4 text-gray-400">{t('loadingImages')}</p>
               </div>
             ) : (
               currentStep.image_ids.map((imageId, index) => (
@@ -195,12 +197,12 @@ export default function RunMode({ steps, documentId, onExit }: RunModeProps) {
                   {imageBlobUrls[imageId] ? (
                     <img
                       src={imageBlobUrls[imageId]}
-                      alt={`Step image ${index + 1}`}
+                      alt={`${t('stepImage')} ${index + 1}`}
                       className="w-full h-auto"
                     />
                   ) : (
                     <div className="flex items-center justify-center h-64 text-gray-400">
-                      <p>Failed to load image</p>
+                      <p>{t('loadingImages')}</p>
                     </div>
                   )}
                 </div>
@@ -224,7 +226,7 @@ export default function RunMode({ steps, documentId, onExit }: RunModeProps) {
             disabled={currentIndex === 0}
             className="bg-gray-700 hover:bg-gray-600 px-8 py-4 rounded-lg text-xl disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            ← Previous
+            ← {t('previous')}
           </button>
 
           {currentIndex === steps.length - 1 ? (
@@ -232,14 +234,14 @@ export default function RunMode({ steps, documentId, onExit }: RunModeProps) {
               onClick={onExit}
               className="bg-green-600 hover:bg-green-500 px-8 py-4 rounded-lg text-xl"
             >
-              Complete ✓
+              {t('complete')} ✓
             </button>
           ) : (
             <button
               onClick={handleNext}
               className="bg-blue-600 hover:bg-blue-500 px-8 py-4 rounded-lg text-xl"
             >
-              Next →
+              {t('next')} →
             </button>
           )}
         </div>

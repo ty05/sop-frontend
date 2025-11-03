@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import apiClient from '@/lib/api';
 
 interface Chapter {
@@ -14,6 +15,7 @@ interface ChapterEditorProps {
 }
 
 export default function ChapterEditor({ videoId, duration }: ChapterEditorProps) {
+  const t = useTranslations('chapter');
   const [chapters, setChapters] = useState<Chapter[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -33,7 +35,7 @@ export default function ChapterEditor({ videoId, duration }: ChapterEditorProps)
   const addChapter = () => {
     setChapters([
       ...chapters,
-      { start_sec: 0, title: 'New Chapter' }
+      { start_sec: 0, title: t('newChapter') }
     ]);
   };
 
@@ -55,10 +57,10 @@ export default function ChapterEditor({ videoId, duration }: ChapterEditorProps)
     setLoading(true);
     try {
       await apiClient.post(`/chapters/${videoId}/chapters`, chapters);
-      alert('Chapters saved!');
+      alert(t('chaptersSaved'));
       loadChapters();
     } catch (error) {
-      alert('Failed to save chapters');
+      alert(t('failedToSave'));
     } finally {
       setLoading(false);
     }
@@ -73,12 +75,12 @@ export default function ChapterEditor({ videoId, duration }: ChapterEditorProps)
   return (
     <div className="bg-white p-4 rounded-lg border">
       <div className="flex justify-between items-center mb-4">
-        <h4 className="font-semibold">Chapters</h4>
+        <h4 className="font-semibold">{t('chapters')}</h4>
         <button
           onClick={addChapter}
           className="bg-blue-600 text-white px-3 py-1 rounded text-sm"
         >
-          + Add Chapter
+          {t('addChapter')}
         </button>
       </div>
 
@@ -102,20 +104,20 @@ export default function ChapterEditor({ videoId, duration }: ChapterEditorProps)
               value={chapter.title}
               onChange={(e) => updateChapter(index, 'title', e.target.value)}
               className="flex-1 px-2 py-1 border rounded text-sm"
-              placeholder="Chapter title"
+              placeholder={t('chapterTitle')}
             />
             <button
               onClick={() => removeChapter(index)}
               className="text-red-600 text-sm"
             >
-              Remove
+              {t('remove')}
             </button>
           </div>
         ))}
 
         {chapters.length === 0 && (
           <p className="text-sm text-gray-500 text-center py-4">
-            No chapters yet. Add your first chapter.
+            {t('noChaptersYet')}
           </p>
         )}
       </div>
@@ -125,7 +127,7 @@ export default function ChapterEditor({ videoId, duration }: ChapterEditorProps)
         disabled={loading || chapters.length === 0}
         className="w-full bg-green-600 text-white px-4 py-2 rounded disabled:bg-gray-400"
       >
-        {loading ? 'Saving...' : 'Save All Chapters'}
+        {loading ? t('saving') : t('saveAllChapters')}
       </button>
     </div>
   );
