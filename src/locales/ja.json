@@ -10,7 +10,10 @@
     "search": "検索",
     "loading": "読み込み中...",
     "error": "エラー",
-    "success": "成功"
+    "success": "成功",
+    "confirm": "確認",
+    "back": "戻る",
+    "language": "言語"
   },
   "nav": {
     "documents": "ドキュメント",
@@ -21,9 +24,15 @@
   },
   "document": {
     "title": "ドキュメント",
-    "newDocument": "新規ドキュメント",
+    "allDocuments": "すべてのドキュメント",
+    "folderDocuments": "フォルダのドキュメント",
+    "newDocument": "+ 新規",
     "editDocument": "ドキュメントを編集",
     "deleteDocument": "ドキュメントを削除",
+    "deleteConfirm": "「{title}」を削除してもよろしいですか？この操作は元に戻せません。",
+    "createPrompt": "ドキュメント名:",
+    "noDocuments": "このフォルダにドキュメントがありません。最初のドキュメントを作成してください！",
+    "updated": "更新日",
     "status": {
       "draft": "下書き",
       "published": "公開済み",
@@ -66,6 +75,14 @@
     "workspaceName": "ワークスペース名",
     "workspaceMembers": "メンバー",
     "inviteMember": "メンバーを招待",
+    "selectWorkspace": "ワークスペースを作成または選択",
+    "selectWorkspaceMessage": "ワークスペースはドキュメントを整理するのに役立ちます。最初のワークスペースを作成して始めましょう！",
+    "loadingWorkspace": "ワークスペースを読み込み中...",
+    "errorLoadingWorkspaces": "ワークスペースの読み込みエラー",
+    "retry": "再試行",
+    "pendingInvitations": "{count}件のワークスペース招待が保留中です",
+    "pendingInvitationsPlural": "{count}件のワークスペース招待が保留中です",
+    "viewInvitations": "招待を表示",
     "role": {
       "owner": "オーナー",
       "editor": "編集者",
@@ -84,5 +101,47 @@
     "published": "ドキュメントが公開されました！ステップが検索可能になりました。",
     "savedAsDraft": "ドキュメントが下書きに設定されました！",
     "archived": "ドキュメントがアーカイブされました！"
+  },
+  "imageEditor": {
+    "title": "画像エディタ",
+    "tools": {
+      "select": "選択",
+      "arrow": "矢印",
+      "rect": "四角形",
+      "circle": "円",
+      "text": "テキスト",
+      "mosaic": "モザイク",
+      "spotlight": "スポットライト"
+    },
+    "save": "保存",
+    "cancel": "キャンセル",
+    "delete": "削除",
+    "zoomIn": "ズームイン",
+    "zoomOut": "ズームアウト",
+    "reset": "リセット",
+    "saving": "画像を保存中...",
+    "savingMessage": "編集した画像を処理して保存しています。しばらくお待ちください。",
+    "instructions": "Spaceキーまたはマウス中ボタンを押したままドラッグでパン。マウスホイールでズーム。"
+  },
+  "videoEditor": {
+    "title": "ビデオエディタ",
+    "addOverlay": "オーバーレイを追加",
+    "chapters": "チャプター",
+    "annotations": "注釈",
+    "timeline": "タイムライン",
+    "preview": "プレビュー",
+    "trim": "動画をトリミング",
+    "save": "保存",
+    "cancel": "キャンセル"
+  },
+  "errors": {
+    "generic": "エラーが発生しました。もう一度お試しください。",
+    "notFound": "見つかりません",
+    "unauthorized": "権限がありません",
+    "networkError": "ネットワークエラー。接続を確認してください。",
+    "uploadFailed": "アップロードに失敗しました。もう一度お試しください。",
+    "saveFailed": "保存に失敗しました。もう一度お試しください。",
+    "deleteFailed": "削除に失敗しました。もう一度お試しください。",
+    "permissionDenied": "この操作を実行する権限がありません。"
   }
 }

@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
+
 type Mode = 'edit' | 'browse' | 'run';
 
 interface ModeSwitcherProps {
@@ -8,10 +10,12 @@ interface ModeSwitcherProps {
 }
 
 export default function ModeSwitcher({ currentMode, onChange }: ModeSwitcherProps) {
-  const modes: { value: Mode; label: string; icon: string }[] = [
-    { value: 'edit', label: 'Edit', icon: '✏️' },
-    { value: 'browse', label: 'Browse', icon: '📖' },
-    { value: 'run', label: 'Run', icon: '▶️' },
+  const t = useTranslations('mode');
+
+  const modes: { value: Mode; icon: string }[] = [
+    { value: 'edit', icon: '✏️' },
+    { value: 'browse', icon: '📖' },
+    { value: 'run', icon: '▶️' },
   ];
 
   return (
@@ -29,7 +33,7 @@ export default function ModeSwitcher({ currentMode, onChange }: ModeSwitcherProp
           `}
         >
           <span className="text-base sm:text-lg">{mode.icon}</span>
-          <span className="text-xs sm:text-base">{mode.label}</span>
+          <span className="text-xs sm:text-base">{t(mode.value)}</span>
         </button>
       ))}
     </div>

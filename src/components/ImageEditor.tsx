@@ -3,6 +3,7 @@
 import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { Stage, Layer, Line, Rect, Circle, Text, Image as KonvaImage, Transformer, Group } from 'react-konva';
 import useImage from 'use-image';
+import { useTranslations } from 'next-intl';
 
 interface ImageEditorProps {
   imageUrl: string;
@@ -27,6 +28,9 @@ interface DrawElement {
 }
 
 export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorProps) {
+  const t = useTranslations('imageEditor');
+  const tCommon = useTranslations('common');
+  const tErrors = useTranslations('errors');
   const [image, status] = useImage(imageUrl);
   const [tool, setTool] = useState<Tool>('select');
   const [color, setColor] = useState('#ff0000');
@@ -410,7 +414,7 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
       // Success - isSaving will be reset by parent component
     } catch (err) {
       console.error('Save error:', err);
-      alert('Failed to save image. Please try again.');
+      alert(tErrors('saveFailed'));
       setIsSaving(false);
     }
   };
@@ -431,13 +435,13 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
       <div className="bg-white rounded-lg p-4 max-w-5xl w-full max-h-screen overflow-auto">
         <div className="flex justify-between mb-4 gap-2">
           <div className="flex gap-2 flex-wrap">
-            <button onClick={() => setTool('select')} className={`px-3 py-2 rounded ${tool === 'select' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}>Select</button>
-            <button onClick={() => setTool('arrow')} className={`px-3 py-2 rounded ${tool === 'arrow' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}>Arrow</button>
-            <button onClick={() => setTool('rect')} className={`px-3 py-2 rounded ${tool === 'rect' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}>Rect</button>
-            <button onClick={() => setTool('circle')} className={`px-3 py-2 rounded ${tool === 'circle' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}>Circle</button>
-            <button onClick={() => setTool('text')} className={`px-3 py-2 rounded ${tool === 'text' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}>Text</button>
-            <button onClick={() => setTool('mosaic')} className={`px-3 py-2 rounded ${tool === 'mosaic' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}>Mosaic</button>
-            <button onClick={() => setTool('spotlight')} className={`px-3 py-2 rounded ${tool === 'spotlight' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}>Spotlight</button>
+            <button onClick={() => setTool('select')} className={`px-3 py-2 rounded ${tool === 'select' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}>{t('tools.select')}</button>
+            <button onClick={() => setTool('arrow')} className={`px-3 py-2 rounded ${tool === 'arrow' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}>{t('tools.arrow')}</button>
+            <button onClick={() => setTool('rect')} className={`px-3 py-2 rounded ${tool === 'rect' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}>{t('tools.rect')}</button>
+            <button onClick={() => setTool('circle')} className={`px-3 py-2 rounded ${tool === 'circle' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}>{t('tools.circle')}</button>
+            <button onClick={() => setTool('text')} className={`px-3 py-2 rounded ${tool === 'text' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}>{t('tools.text')}</button>
+            <button onClick={() => setTool('mosaic')} className={`px-3 py-2 rounded ${tool === 'mosaic' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}>{t('tools.mosaic')}</button>
+            <button onClick={() => setTool('spotlight')} className={`px-3 py-2 rounded ${tool === 'spotlight' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}>{t('tools.spotlight')}</button>
             <input type="color" value={color} onChange={(e) => setColor(e.target.value)} className="w-12 h-10" />
           </div>
           <div className="flex gap-2 items-center">
@@ -448,15 +452,15 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
               onClick={() => { if (selectedId !== null) { setElements(prev => prev.filter(el => el.id !== selectedId)); setSelectedId(null); } }}
               disabled={selectedId === null}
               className="bg-red-500 text-white px-4 py-2 rounded disabled:opacity-50"
-            >Delete</button>
+            >{t('delete')}</button>
             <button
               onClick={handleSave}
               disabled={!image || status === 'loading'}
               className="bg-green-600 text-white px-4 py-2 rounded disabled:opacity-50"
             >
-              {status === 'loading' ? 'Loading...' : 'Save'}
+              {status === 'loading' ? tCommon('loading') : t('save')}
             </button>
-            <button onClick={onCancel} className="bg-gray-300 px-4 py-2 rounded">Cancel</button>
+            <button onClick={onCancel} className="bg-gray-300 px-4 py-2 rounded">{t('cancel')}</button>
           </div>
         </div>
 
@@ -697,7 +701,7 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
         </div>
 
         <div className="mt-4 text-sm text-gray-600">
-          <p>Hold <kbd className="px-1 bg-gray-200 rounded">Space</kbd> or middle mouse button to pan. Use mouse wheel to zoom.</p>
+          <p>{t('instructions')}</p>
         </div>
       </div>
 
@@ -705,9 +709,8 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
         <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-[60]">
           <div className="bg-white rounded-lg p-8 max-w-md text-center">
             <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mx-auto mb-4"></div>
-            <h3 className="text-xl font-bold mb-2">Saving Image...</h3>
-            <p className="text-gray-600">Please wait while we process and save your edited image.</p>
-            <p className="text-sm text-gray-500 mt-4">This may take a few seconds.</p>
+            <h3 className="text-xl font-bold mb-2">{t('saving')}</h3>
+            <p className="text-gray-600">{t('savingMessage')}</p>
           </div>
         </div>
       )}

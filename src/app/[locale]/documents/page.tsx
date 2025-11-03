@@ -10,9 +10,15 @@ import WorkspaceSwitcher from '@/components/WorkspaceSwitcher';
 import SearchBar from '@/components/SearchBar';
 import FolderTree from '@/components/FolderTree';
 import FolderModal from '@/components/FolderModal';
+import { useTranslations, useLocale } from 'next-intl';
 
 export default function DocumentsPage() {
   const router = useRouter();
+  const locale = useLocale();
+  const tDocument = useTranslations('document');
+  const tWorkspace = useTranslations('workspace');
+  const tCommon = useTranslations('common');
+  const tErrors = useTranslations('errors');
   const { user, loading: authLoading } = useAuth();
   const { activeWorkspace, loading: workspaceLoading, error: workspaceError, refreshWorkspaces } = useWorkspace();
   const [documents, setDocuments] = useState<Document[]>([]);
@@ -24,9 +30,9 @@ export default function DocumentsPage() {
   // Check authentication
   useEffect(() => {
     if (!authLoading && !user) {
-      router.push('/auth/login');
+      router.push(`/${locale}/auth/login`);
     }
-  }, [user, authLoading, router]);
+  }, [user, authLoading, router, locale]);
 
   useEffect(() => {
     if (activeWorkspace) {
@@ -69,7 +75,7 @@ export default function DocumentsPage() {
   const handleCreate = async () => {
     if (!activeWorkspace) return;
 
-    const title = prompt('Document title:');
+    const title = prompt(tDocument('createPrompt'));
     if (!title) return;
 
     try {
@@ -78,9 +84,9 @@ export default function DocumentsPage() {
         title,
         folder_id: selectedFolderId
       });
-      router.push(`/documents/${response.data.id}`);
+      router.push(`/${locale}/documents/${response.data.id}`);
     } catch (error) {
-      alert('Failed to create document');
+      alert(tErrors('saveFailed'));
     }
   };
 
@@ -88,7 +94,7 @@ export default function DocumentsPage() {
     // Prevent navigation when clicking delete button
     e.stopPropagation();
 
-    const confirmed = confirm(`Are you sure you want to delete "${documentTitle}"? This action cannot be undone.`);
+    const confirmed = confirm(tDocument('deleteConfirm', { title: documentTitle }));
     if (!confirmed) return;
 
     try {
@@ -97,7 +103,7 @@ export default function DocumentsPage() {
       loadDocuments();
     } catch (error) {
       console.error('Failed to delete document:', error);
-      alert('Failed to delete document. Please try again.');
+      alert(tErrors('deleteFailed'));
     }
   };
 
@@ -109,13 +115,13 @@ export default function DocumentsPage() {
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center max-w-md">
             <div className="text-red-600 text-5xl mb-4">⚠️</div>
-            <h2 className="text-2xl font-bold mb-2">Error Loading Workspaces</h2>
+            <h2 className="text-2xl font-bold mb-2">{tWorkspace('errorLoadingWorkspaces')}</h2>
             <p className="text-gray-600 mb-6">{workspaceError}</p>
             <button
               onClick={() => refreshWorkspaces()}
               className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700"
             >
-              Retry
+              {tWorkspace('retry')}
             </button>
           </div>
         </div>
@@ -131,7 +137,7 @@ export default function DocumentsPage() {
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin h-8 w-8 border-4 border-blue-600 border-t-transparent rounded-full mx-auto mb-4"></div>
-            <p>Loading workspace...</p>
+            <p>{tWorkspace('loadingWorkspace')}</p>
           </div>
         </div>
       </div>
@@ -146,9 +152,9 @@ export default function DocumentsPage() {
         <div className="flex-1 flex items-center justify-center bg-gray-50">
           <div className="text-center max-w-md p-8">
             <div className="text-6xl mb-4">👈</div>
-            <h2 className="text-2xl font-bold mb-2">Create or Select a Workspace</h2>
+            <h2 className="text-2xl font-bold mb-2">{tWorkspace('selectWorkspace')}</h2>
             <p className="text-gray-600">
-              Workspaces help you organize your documents. Create your first workspace to get started!
+              {tWorkspace('selectWorkspaceMessage')}
             </p>
           </div>
         </div>
@@ -172,14 +178,17 @@ export default function DocumentsPage() {
               <div className="flex items-center gap-2">
                 <span className="text-lg">✉️</span>
                 <span>
-                  You have {pendingInvitationsCount} pending workspace invitation{pendingInvitationsCount > 1 ? 's' : ''}
+                  {pendingInvitationsCount > 1
+                    ? tWorkspace('pendingInvitationsPlural', { count: pendingInvitationsCount })
+                    : tWorkspace('pendingInvitations', { count: pendingInvitationsCount })
+                  }
                 </span>
               </div>
               <button
-                onClick={() => router.push('/invitations')}
+                onClick={() => router.push(`/${locale}/invitations`)}
                 className="bg-white text-blue-600 px-4 py-1 rounded hover:bg-blue-50 font-medium"
               >
-                View Invitations
+                {tWorkspace('viewInvitations')}
               </button>
             </div>
           </div>
@@ -209,18 +218,18 @@ export default function DocumentsPage() {
               <div className="flex-1 min-w-0">
             <div className="flex justify-between items-center mb-4 md:mb-6 gap-2">
               <h1 className="text-xl md:text-3xl font-bold truncate">
-                {selectedFolderId ? 'Folder Documents' : 'All Documents'}
+                {selectedFolderId ? tDocument('folderDocuments') : tDocument('allDocuments')}
               </h1>
               <button
                 onClick={handleCreate}
                 className="bg-blue-600 text-white px-3 md:px-4 py-2 rounded hover:bg-blue-700 text-sm md:text-base whitespace-nowrap"
               >
-                + New
+                {tDocument('newDocument')}
               </button>
             </div>
 
             {loading ? (
-              <div className="text-center py-12">Loading...</div>
+              <div className="text-center py-12">{tCommon('loading')}</div>
             ) : (
               <div className="grid gap-4">
                 <div className="text-xs text-gray-500 mb-2">
@@ -229,7 +238,7 @@ export default function DocumentsPage() {
                 {documents.map((doc) => (
                   <div
                     key={doc.id}
-                    onClick={() => router.push(`/documents/${doc.id}`)}
+                    onClick={() => router.push(`/${locale}/documents/${doc.id}`)}
                     className="bg-white p-4 rounded-lg shadow cursor-pointer hover:shadow-lg transition"
                   >
                     <div className="flex justify-between items-start">
@@ -241,7 +250,7 @@ export default function DocumentsPage() {
                         <button
                           onClick={(e) => handleDelete(doc.id, doc.title, e)}
                           className="ml-2 text-red-600 hover:text-red-800 hover:bg-red-50 p-2 rounded transition"
-                          title="Delete document"
+                          title={tDocument('deleteDocument')}
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                             <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
@@ -251,10 +260,10 @@ export default function DocumentsPage() {
                     </div>
                     <div className="flex gap-2 mt-2">
                       <span className="text-xs bg-gray-200 px-2 py-1 rounded">
-                        {doc.status}
+                        {tDocument(`status.${doc.status.toLowerCase()}`)}
                       </span>
                       <span className="text-xs text-gray-500">
-                        Updated {new Date(doc.updated_at).toLocaleDateString()}
+                        {tDocument('updated')} {new Date(doc.updated_at).toLocaleDateString()}
                       </span>
                     </div>
                   </div>
@@ -262,7 +271,7 @@ export default function DocumentsPage() {
 
                 {documents.length === 0 && (
                   <div className="text-center py-12 text-gray-500">
-                    No documents in this folder. Create your first one!
+                    {tDocument('noDocuments')}
                   </div>
                 )}
               </div>

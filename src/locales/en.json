@@ -10,7 +10,10 @@
     "search": "Search",
     "loading": "Loading...",
     "error": "Error",
-    "success": "Success"
+    "success": "Success",
+    "confirm": "Confirm",
+    "back": "Back",
+    "language": "Language"
   },
   "nav": {
     "documents": "Documents",
@@ -21,9 +24,15 @@
   },
   "document": {
     "title": "Document",
-    "newDocument": "New Document",
+    "allDocuments": "All Documents",
+    "folderDocuments": "Folder Documents",
+    "newDocument": "+ New",
     "editDocument": "Edit Document",
     "deleteDocument": "Delete Document",
+    "deleteConfirm": "Are you sure you want to delete \"{title}\"? This action cannot be undone.",
+    "createPrompt": "Document title:",
+    "noDocuments": "No documents in this folder. Create your first one!",
+    "updated": "Updated",
     "status": {
       "draft": "Draft",
       "published": "Published",
@@ -66,6 +75,14 @@
     "workspaceName": "Workspace Name",
     "workspaceMembers": "Members",
     "inviteMember": "Invite Member",
+    "selectWorkspace": "Create or Select a Workspace",
+    "selectWorkspaceMessage": "Workspaces help you organize your documents. Create your first workspace to get started!",
+    "loadingWorkspace": "Loading workspace...",
+    "errorLoadingWorkspaces": "Error Loading Workspaces",
+    "retry": "Retry",
+    "pendingInvitations": "You have {count} pending workspace invitation",
+    "pendingInvitationsPlural": "You have {count} pending workspace invitations",
+    "viewInvitations": "View Invitations",
     "role": {
       "owner": "Owner",
       "editor": "Editor",
@@ -84,5 +101,47 @@
     "published": "Document published successfully! Steps are now searchable.",
     "savedAsDraft": "Document set to draft successfully!",
     "archived": "Document archived successfully!"
+  },
+  "imageEditor": {
+    "title": "Image Editor",
+    "tools": {
+      "select": "Select",
+      "arrow": "Arrow",
+      "rect": "Rectangle",
+      "circle": "Circle",
+      "text": "Text",
+      "mosaic": "Mosaic",
+      "spotlight": "Spotlight"
+    },
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "zoomIn": "Zoom In",
+    "zoomOut": "Zoom Out",
+    "reset": "Reset",
+    "saving": "Saving Image...",
+    "savingMessage": "Please wait while we process and save your edited image.",
+    "instructions": "Hold Space or middle mouse button to pan. Use mouse wheel to zoom."
+  },
+  "videoEditor": {
+    "title": "Video Editor",
+    "addOverlay": "Add Overlay",
+    "chapters": "Chapters",
+    "annotations": "Annotations",
+    "timeline": "Timeline",
+    "preview": "Preview",
+    "trim": "Trim Video",
+    "save": "Save",
+    "cancel": "Cancel"
+  },
+  "errors": {
+    "generic": "An error occurred. Please try again.",
+    "notFound": "Not found",
+    "unauthorized": "Unauthorized",
+    "networkError": "Network error. Please check your connection.",
+    "uploadFailed": "Upload failed. Please try again.",
+    "saveFailed": "Save failed. Please try again.",
+    "deleteFailed": "Delete failed. Please try again.",
+    "permissionDenied": "You do not have permission to perform this action."
   }
 }
