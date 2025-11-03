@@ -28,6 +28,7 @@ export default function DocumentPage() {
   const [steps, setSteps] = useState<Step[]>([]);
   const [mode, setMode] = useState<Mode>('browse');
   const [loading, setLoading] = useState(true);
+  const [initialModeSet, setInitialModeSet] = useState(false);
 
   // Check if user has edit permission (owner or editor)
   const canEdit = activeWorkspace?.role === 'owner' || activeWorkspace?.role === 'editor';
@@ -36,6 +37,16 @@ export default function DocumentPage() {
   useEffect(() => {
     loadDocument();
   }, [documentId]);
+
+  // Set initial mode to 'edit' if user has edit permission
+  useEffect(() => {
+    if (!loading && !initialModeSet && activeWorkspace) {
+      if (canEdit) {
+        setMode('edit');
+      }
+      setInitialModeSet(true);
+    }
+  }, [loading, canEdit, activeWorkspace, initialModeSet]);
 
   // Handle deep linking to specific steps
   useEffect(() => {
