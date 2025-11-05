@@ -257,5 +257,205 @@
     "saveFailed": "Save failed. Please try again.",
     "deleteFailed": "Delete failed. Please try again.",
     "permissionDenied": "You do not have permission to perform this action."
+  },
+  "landing": {
+    "hero": {
+      "headline": "Easy-to-Create Operation Manuals for Restaurants, Clinics, and Retail Stores",
+      "subheadline": "Creating and updating manuals is time-consuming. Training new staff is difficult. Transform your business with video and image-based manuals.",
+      "ctaPrimary": "Start 14-Day Free Trial",
+      "ctaSecondary": "Watch Demo",
+      "trustBadge": "No credit card required"
+    },
+    "problem": {
+      "title": "Common Challenges with Traditional Manuals",
+      "pain1": {
+        "title": "Paper manuals are hard to update",
+        "description": "Every time you update a procedure, you have to reprint and redistribute"
+      },
+      "pain2": {
+        "title": "Training new staff takes too much time",
+        "description": "Verbal explanations are time-consuming and inconsistent"
+      },
+      "pain3": {
+        "title": "Creating video manuals is difficult",
+        "description": "Complex video editing software is hard to learn and use"
+      },
+      "pain4": {
+        "title": "Staff don't use the manuals",
+        "description": "Manuals are hard to access and understand when needed"
+      }
+    },
+    "solution": {
+      "title": "Simple Solutions for Your Business",
+      "feature1": {
+        "title": "Add annotations to videos",
+        "description": "Highlight important parts with arrows, text, and chapters. Make it easy for anyone to understand at a glance."
+      },
+      "feature2": {
+        "title": "Easy image editing too",
+        "description": "Add highlights, text, and shapes to images. Perfect for equipment instructions and checklists."
+      },
+      "feature3": {
+        "title": "Instant mobile access via QR code",
+        "description": "Scan QR codes to access manuals instantly from smartphones. Perfect for on-the-job reference."
+      }
+    },
+    "useCases": {
+      "title": "Industry-Specific Use Cases",
+      "restaurant": {
+        "title": "Restaurants",
+        "example": "Video tutorials for new menu items",
+        "description": "Record cooking procedures and plating techniques. New staff can learn quickly and maintain consistent quality."
+      },
+      "clinic": {
+        "title": "Clinics",
+        "example": "Equipment instructions with images",
+        "description": "Create visual guides for medical equipment and procedures. Reduce mistakes and improve patient safety."
+      },
+      "retail": {
+        "title": "Retail Stores",
+        "example": "Video guides for POS and customer service",
+        "description": "Standardize checkout procedures and customer interactions. Ensure consistent service quality."
+      }
+    },
+    "howItWorks": {
+      "title": "Simple 3-Step Process",
+      "step1": {
+        "title": "Create a document",
+        "description": "Start with a blank document or template"
+      },
+      "step2": {
+        "title": "Upload videos or images",
+        "description": "Add your visual content easily"
+      },
+      "step3": {
+        "title": "Add annotations and publish",
+        "description": "Highlight key points and share with your team"
+      }
+    },
+    "pricing": {
+      "title": "Simple, Transparent Pricing",
+      "subtitle": "Choose the plan that fits your business needs",
+      "trial": {
+        "name": "Trial",
+        "price": "Free",
+        "period": "14 days",
+        "features": {
+          "documents": "10 documents",
+          "workspaces": "1 workspace",
+          "videos": "Video & image annotations",
+          "qr": "QR code access",
+          "support": "Email support"
+        },
+        "cta": "Start Free Trial"
+      },
+      "basic": {
+        "name": "Basic",
+        "price": "$29",
+        "period": "/month",
+        "features": {
+          "documents": "50 documents",
+          "workspaces": "3 workspaces",
+          "videos": "Unlimited videos",
+          "qr": "QR code access",
+          "support": "Priority email support",
+          "export": "PDF export"
+        },
+        "cta": "Get Started",
+        "popular": "Most Popular"
+      },
+      "pro": {
+        "name": "Pro",
+        "price": "$79",
+        "period": "/month",
+        "features": {
+          "documents": "Unlimited documents",
+          "workspaces": "Unlimited workspaces",
+          "videos": "Unlimited videos",
+          "qr": "QR code access",
+          "support": "Priority support",
+          "export": "PDF export",
+          "api": "API access",
+          "custom": "Custom branding"
+        },
+        "cta": "Get Started"
+      },
+      "annualDiscount": "Save 2 months with annual billing"
+    },
+    "socialProof": {
+      "title": "Trusted by Growing Businesses",
+      "stats": {
+        "users": "500+",
+        "usersLabel": "Businesses using our platform",
+        "satisfaction": "95%",
+        "satisfactionLabel": "Customer satisfaction",
+        "timeReduction": "80%",
+        "timeReductionLabel": "Reduction in manual creation time"
+      },
+      "testimonial1": {
+        "quote": "Manual creation time was reduced from 3 days to half a day. Video annotations are especially easy to understand.",
+        "author": "Restaurant Manager",
+        "company": "Italian Restaurant Chain"
+      },
+      "testimonial2": {
+        "quote": "New staff can now learn equipment procedures on their own. Training burden has been significantly reduced.",
+        "author": "Clinic Director",
+        "company": "Dental Clinic"
+      },
+      "testimonial3": {
+        "quote": "QR code access allows staff to check manuals on the spot. Very convenient for busy retail environments.",
+        "author": "Store Manager",
+        "company": "Fashion Retail"
+      }
+    },
+    "faq": {
+      "title": "Frequently Asked Questions",
+      "q1": {
+        "question": "Are there any limitations during the free trial?",
+        "answer": "The free trial includes 10 documents and 1 workspace. You can use all core features including video annotations, image editing, and QR code access."
+      },
+      "q2": {
+        "question": "Do I need a credit card for the trial?",
+        "answer": "No credit card is required. Simply sign up with your email to start your 14-day free trial."
+      },
+      "q3": {
+        "question": "Can I cancel anytime?",
+        "answer": "Yes, you can cancel your subscription at any time. Your data will be retained for 30 days after cancellation."
+      },
+      "q4": {
+        "question": "Is my data secure?",
+        "answer": "Yes, all data is encrypted and stored securely. We use industry-standard security practices and comply with data protection regulations."
+      },
+      "q5": {
+        "question": "Can I use it on mobile devices?",
+        "answer": "Yes, our platform is fully responsive and works on smartphones and tablets. Staff can access manuals anytime, anywhere."
+      },
+      "q6": {
+        "question": "What video formats are supported?",
+        "answer": "We support MP4, MOV, and WebM formats. Videos are automatically optimized for web playback."
+      }
+    },
+    "finalCta": {
+      "title": "Ready to Transform Your Training?",
+      "subtitle": "Join hundreds of businesses already using our platform",
+      "ctaPrimary": "Start 14-Day Free Trial",
+      "ctaSecondary": "Watch Demo",
+      "trustBadge": "No credit card required • Cancel anytime"
+    },
+    "footer": {
+      "product": "Product",
+      "features": "Features",
+      "pricing": "Pricing",
+      "useCases": "Use Cases",
+      "company": "Company",
+      "about": "About Us",
+      "contact": "Contact",
+      "blog": "Blog",
+      "legal": "Legal",
+      "terms": "Terms of Service",
+      "privacy": "Privacy Policy",
+      "commerce": "Commercial Transaction Act",
+      "copyright": "© 2025 SOP Manual. All rights reserved."
+    }
   }
 }
