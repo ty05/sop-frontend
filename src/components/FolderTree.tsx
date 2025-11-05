@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import apiClient from '@/lib/api';
 
 interface Folder {
@@ -33,11 +33,8 @@ export default function FolderTree({
   const [loading, setLoading] = useState(true);
   const [dragOverFolderId, setDragOverFolderId] = useState<string | null | 'root'>(null);
 
-  useEffect(() => {
-    loadFolders();
-  }, [workspaceId, refreshKey]);
-
-  const loadFolders = async () => {
+  const loadFolders = useCallback(async () => {
+    setLoading(true);
     try {
       const response = await apiClient.get(`/folders/tree?workspace_id=${workspaceId}`);
       setFolders(response.data);
@@ -46,7 +43,11 @@ export default function FolderTree({
     } finally {
       setLoading(false);
     }
-  };
+  }, [workspaceId]);
+
+  useEffect(() => {
+    loadFolders();
+  }, [loadFolders, refreshKey]);
 
   const toggleFolder = (folderId: string) => {
     const newExpanded = new Set(expandedFolders);
