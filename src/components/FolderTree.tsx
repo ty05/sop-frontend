@@ -17,6 +17,7 @@ interface FolderTreeProps {
   onSelectFolder: (folderId: string | null) => void;
   onCreateFolder?: (parentId: string | null) => void;
   onMoveDocument?: (documentId: string, folderId: string | null) => void;
+  refreshKey?: number;
 }
 
 export default function FolderTree({
@@ -24,7 +25,8 @@ export default function FolderTree({
   selectedFolderId,
   onSelectFolder,
   onCreateFolder,
-  onMoveDocument
+  onMoveDocument,
+  refreshKey
 }: FolderTreeProps) {
   const [folders, setFolders] = useState<Folder[]>([]);
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
@@ -33,7 +35,7 @@ export default function FolderTree({
 
   useEffect(() => {
     loadFolders();
-  }, [workspaceId]);
+  }, [workspaceId, refreshKey]);
 
   const loadFolders = async () => {
     try {

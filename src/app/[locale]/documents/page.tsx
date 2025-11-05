@@ -26,6 +26,7 @@ export default function DocumentsPage() {
   const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
   const [showFolderModal, setShowFolderModal] = useState(false);
   const [pendingInvitationsCount, setPendingInvitationsCount] = useState(0);
+  const [folderRefreshKey, setFolderRefreshKey] = useState(0);
 
   // Check authentication
   useEffect(() => {
@@ -112,6 +113,8 @@ export default function DocumentsPage() {
       await documentsAPI.move(documentId, targetFolderId);
       // Reload documents after moving
       loadDocuments();
+      // Refresh folder tree to update document counts
+      setFolderRefreshKey(prev => prev + 1);
     } catch (error) {
       console.error('Failed to move document:', error);
       alert('Failed to move document. Please try again.');
@@ -223,6 +226,7 @@ export default function DocumentsPage() {
                   onSelectFolder={setSelectedFolderId}
                   onCreateFolder={() => setShowFolderModal(true)}
                   onMoveDocument={handleMoveDocument}
+                  refreshKey={folderRefreshKey}
                 />
               </div>
 
