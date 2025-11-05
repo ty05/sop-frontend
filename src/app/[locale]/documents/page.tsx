@@ -107,6 +107,17 @@ export default function DocumentsPage() {
     }
   };
 
+  const handleMoveDocument = async (documentId: string, targetFolderId: string | null) => {
+    try {
+      await documentsAPI.move(documentId, targetFolderId);
+      // Reload documents after moving
+      loadDocuments();
+    } catch (error) {
+      console.error('Failed to move document:', error);
+      alert('Failed to move document. Please try again.');
+    }
+  };
+
   // Show error state
   if (workspaceError) {
     return (
@@ -211,6 +222,7 @@ export default function DocumentsPage() {
                   selectedFolderId={selectedFolderId}
                   onSelectFolder={setSelectedFolderId}
                   onCreateFolder={() => setShowFolderModal(true)}
+                  onMoveDocument={handleMoveDocument}
                 />
               </div>
 
@@ -238,18 +250,32 @@ export default function DocumentsPage() {
                 {documents.map((doc) => (
                   <div
                     key={doc.id}
+                    draggable
+                    onDragStart={(e) => {
+                      e.dataTransfer.effectAllowed = 'move';
+                      e.dataTransfer.setData('documentId', doc.id);
+                      e.currentTarget.classList.add('opacity-50');
+                    }}
+                    onDragEnd={(e) => {
+                      e.currentTarget.classList.remove('opacity-50');
+                    }}
                     onClick={() => router.push(`/${locale}/documents/${doc.id}`)}
-                    className="bg-white p-4 rounded-lg shadow cursor-pointer hover:shadow-lg transition"
+                    className="bg-white p-4 rounded-lg shadow cursor-move hover:shadow-lg transition"
                   >
                     <div className="flex justify-between items-start">
-                      <div className="flex-1">
-                        <h3 className="text-xl font-semibold">{doc.title}</h3>
+                      <div className="flex-1 pointer-events-none">
+                        <div className="flex items-center gap-2">
+                          <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                          </svg>
+                          <h3 className="text-xl font-semibold">{doc.title}</h3>
+                        </div>
                         <p className="text-gray-600 text-sm mt-1">{doc.description}</p>
                       </div>
                       {(doc.status === 'ARCHIVED' || doc.status === 'DRAFT') && (
                         <button
                           onClick={(e) => handleDelete(doc.id, doc.title, e)}
-                          className="ml-2 text-red-600 hover:text-red-800 hover:bg-red-50 p-2 rounded transition"
+                          className="ml-2 text-red-600 hover:text-red-800 hover:bg-red-50 p-2 rounded transition pointer-events-auto"
                           title={tDocument('deleteDocument')}
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -258,7 +284,7 @@ export default function DocumentsPage() {
                         </button>
                       )}
                     </div>
-                    <div className="flex gap-2 mt-2">
+                    <div className="flex gap-2 mt-2 pointer-events-none">
                       <span className="text-xs bg-gray-200 px-2 py-1 rounded">
                         {tDocument(`status.${doc.status.toLowerCase()}`)}
                       </span>

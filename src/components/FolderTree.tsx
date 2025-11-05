@@ -16,17 +16,20 @@ interface FolderTreeProps {
   selectedFolderId: string | null;
   onSelectFolder: (folderId: string | null) => void;
   onCreateFolder?: (parentId: string | null) => void;
+  onMoveDocument?: (documentId: string, folderId: string | null) => void;
 }
 
 export default function FolderTree({
   workspaceId,
   selectedFolderId,
   onSelectFolder,
-  onCreateFolder
+  onCreateFolder,
+  onMoveDocument
 }: FolderTreeProps) {
   const [folders, setFolders] = useState<Folder[]>([]);
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
+  const [dragOverFolderId, setDragOverFolderId] = useState<string | null | 'root'>(null);
 
   useEffect(() => {
     loadFolders();
@@ -53,10 +56,35 @@ export default function FolderTree({
     setExpandedFolders(newExpanded);
   };
 
+  const handleDragOver = (e: React.DragEvent, folderId: string | null | 'root') => {
+    e.preventDefault();
+    e.stopPropagation();
+    e.dataTransfer.dropEffect = 'move';
+    setDragOverFolderId(folderId === 'root' ? 'root' : folderId);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragOverFolderId(null);
+  };
+
+  const handleDrop = (e: React.DragEvent, folderId: string | null) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragOverFolderId(null);
+
+    const documentId = e.dataTransfer.getData('documentId');
+    if (documentId && onMoveDocument) {
+      onMoveDocument(documentId, folderId);
+    }
+  };
+
   const renderFolder = (folder: Folder, depth: number = 0) => {
     const isExpanded = expandedFolders.has(folder.id);
     const isSelected = selectedFolderId === folder.id;
     const hasChildren = folder.children && folder.children.length > 0;
+    const isDragOver = dragOverFolderId === folder.id;
 
     return (
       <div key={folder.id}>
@@ -65,9 +93,13 @@ export default function FolderTree({
             flex items-center gap-2 px-2 py-1.5 rounded cursor-pointer
             hover:bg-gray-100 transition-colors
             ${isSelected ? 'bg-blue-50 text-blue-700 font-medium' : ''}
+            ${isDragOver ? 'bg-green-100 ring-2 ring-green-500' : ''}
           `}
           style={{ paddingLeft: `${depth * 16 + 8}px` }}
           onClick={() => onSelectFolder(folder.id)}
+          onDragOver={(e) => handleDragOver(e, folder.id)}
+          onDragLeave={handleDragLeave}
+          onDrop={(e) => handleDrop(e, folder.id)}
         >
           {hasChildren && (
             <button
@@ -120,8 +152,12 @@ export default function FolderTree({
           flex items-center gap-2 px-2 py-1.5 rounded cursor-pointer mb-1
           hover:bg-gray-100 transition-colors
           ${selectedFolderId === null ? 'bg-blue-50 text-blue-700 font-medium' : ''}
+          ${dragOverFolderId === 'root' ? 'bg-green-100 ring-2 ring-green-500' : ''}
         `}
         onClick={() => onSelectFolder(null)}
+        onDragOver={(e) => handleDragOver(e, 'root')}
+        onDragLeave={handleDragLeave}
+        onDrop={(e) => handleDrop(e, null)}
       >
         <span className="text-xl">📄</span>
         <span>All Documents</span>
