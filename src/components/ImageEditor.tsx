@@ -322,14 +322,14 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
         ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
         ctx.fillRect(0, 0, image.naturalWidth, image.naturalHeight);
 
-        // Cut out spotlight areas
-        ctx.globalCompositeOperation = 'destination-out';
+        // Redraw the original image in spotlight areas (on top of overlay)
         spotlights.forEach(s => {
-          ctx.fillStyle = 'black';
-          ctx.fillRect(s.x, s.y, s.width, s.height);
+          ctx.drawImage(
+            image,
+            s.x, s.y, s.width, s.height,  // Source rectangle
+            s.x, s.y, s.width, s.height   // Destination rectangle
+          );
         });
-        // Reset composite operation
-        ctx.globalCompositeOperation = 'source-over';
       }
 
       // 3. Draw annotations (non-spotlight elements)
