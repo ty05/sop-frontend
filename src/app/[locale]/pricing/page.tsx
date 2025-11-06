@@ -5,69 +5,44 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { useWorkspace } from '@/contexts/WorkspaceContext';
 import apiClient from '@/lib/api';
-
-const plans = [
-  {
-    id: 'trial',
-    name: '14-Day Trial',
-    price: null,
-    trialDays: 14,
-    features: [
-      '1 workspace',
-      '1 workspace owner',
-      'Unlimited viewers',
-      '10 documents',
-      '1GB storage',
-      'Basic support'
-    ],
-    cta: 'Get Started',
-    popular: false
-  },
-  {
-    id: 'basic',
-    name: 'Basic',
-    price: 20,
-    features: [
-      '3 workspaces',
-      '3 editors per workspace',
-      'Unlimited viewers',
-      'Unlimited documents',
-      '10GB storage',
-      '120 min video storage',
-      'Email support',
-      'PDF export',
-      'QR codes'
-    ],
-    cta: 'Upgrade to Basic',
-    popular: true
-  },
-  {
-    id: 'pro',
-    name: 'Pro',
-    price: 50,
-    features: [
-      '10 workspaces',
-      '10 editors per workspace',
-      'Unlimited viewers',
-      'Unlimited documents',
-      '50GB storage',
-      '500 min video storage',
-      'Priority support',
-      'Custom branding',
-      'Analytics dashboard',
-      'API access'
-    ],
-    cta: 'Upgrade to Pro',
-    popular: false
-  }
-];
+import { useTranslations, useLocale } from 'next-intl';
 
 export default function PricingPage() {
   const router = useRouter();
+  const locale = useLocale();
+  const t = useTranslations('pricing');
   const { user, loading } = useAuth();
   const { activeWorkspace } = useWorkspace();
   const [upgrading, setUpgrading] = useState<string | null>(null);
   const [currentPlan, setCurrentPlan] = useState<string>('trial');
+
+  const plans = [
+    {
+      id: 'trial',
+      name: t('plans.trial.name'),
+      price: null,
+      trialDays: 14,
+      features: Object.values(t.raw('plans.trial.features') as Record<string, string>),
+      cta: t('getStarted'),
+      popular: false
+    },
+    {
+      id: 'basic',
+      name: t('plans.basic.name'),
+      price: 20,
+      features: Object.values(t.raw('plans.basic.features') as Record<string, string>),
+      cta: t('upgradeToBasic'),
+      popular: true
+    },
+    {
+      id: 'pro',
+      name: t('plans.pro.name'),
+      price: 50,
+      features: Object.values(t.raw('plans.pro.features') as Record<string, string>),
+      cta: t('upgradeToPro'),
+      popular: false
+    }
+  ];
 
   // Fetch current subscription when workspace is available
   useEffect(() => {
@@ -90,24 +65,24 @@ export default function PricingPage() {
 
   const handleSelectPlan = async (planId: string) => {
     if (!user) {
-      router.push('/auth/login?redirect=/pricing');
+      router.push(`/${locale}/auth/login?redirect=/${locale}/pricing`);
       return;
     }
 
     // If current plan, go to settings
     if (planId === currentPlan) {
-      router.push('/workspace/settings');
+      router.push(`/${locale}/workspace/settings`);
       return;
     }
 
     if (planId === 'trial') {
       // Trial is automatic on signup, just redirect to get started
-      router.push('/documents');
+      router.push(`/${locale}/documents`);
       return;
     }
 
     if (!activeWorkspace) {
-      alert('Please select a workspace first');
+      alert(t('selectWorkspaceFirst'));
       return;
     }
 
@@ -120,7 +95,7 @@ export default function PricingPage() {
       );
       window.location.href = res.data.checkout_url;
     } catch (error: any) {
-      alert(error.response?.data?.detail || 'Failed to start checkout');
+      alert(error.response?.data?.detail || t('failedToCheckout'));
       setUpgrading(null);
     }
   };
@@ -128,7 +103,7 @@ export default function PricingPage() {
   // Helper to determine button text
   const getButtonText = (plan: any) => {
     if (plan.id === currentPlan) {
-      return 'Current Plan';
+      return t('currentPlan');
     }
     return plan.cta;
   };
@@ -143,9 +118,9 @@ export default function PricingPage() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold mb-4">Choose Your Plan</h1>
+          <h1 className="text-4xl font-bold mb-4">{t('title')}</h1>
           <p className="text-xl text-gray-600">
-            Start with a 14-day free trial, upgrade as you grow
+            {t('subtitle')}
           </p>
         </div>
 
@@ -161,7 +136,7 @@ export default function PricingPage() {
               {plan.popular && (
                 <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
                   <span className="bg-blue-600 text-white px-4 py-1 rounded-full text-sm font-semibold">
-                    Most Popular
+                    {t('mostPopular')}
                   </span>
                 </div>
               )}
@@ -171,20 +146,20 @@ export default function PricingPage() {
                 <div className="text-4xl font-bold mb-1">
                   {plan.price === null ? (
                     <>
-                      <span className="text-3xl">{plan.trialDays} Days</span>
-                      <span className="text-lg text-gray-600 font-normal block mt-1">Free Trial</span>
+                      <span className="text-3xl">{plan.trialDays} {t('days')}</span>
+                      <span className="text-lg text-gray-600 font-normal block mt-1">{t('freeTrial')}</span>
                     </>
                   ) : (
                     <>
                       ${plan.price}
-                      <span className="text-lg text-gray-600 font-normal">/month</span>
+                      <span className="text-lg text-gray-600 font-normal">{t('perMonth')}</span>
                     </>
                   )}
                 </div>
               </div>
 
               <ul className="space-y-3 mb-8">
-                {plan.features.map((feature, i) => (
+                {plan.features.map((feature: string, i: number) => (
                   <li key={i} className="flex items-start gap-2">
                     <svg
                       className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5"
@@ -215,7 +190,7 @@ export default function PricingPage() {
                     : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
                 } disabled:opacity-50 disabled:cursor-not-allowed`}
               >
-                {upgrading === plan.id ? 'Processing...' : getButtonText(plan)}
+                {upgrading === plan.id ? t('processing') : getButtonText(plan)}
               </button>
             </div>
           ))}
@@ -224,38 +199,18 @@ export default function PricingPage() {
         {/* FAQ Section */}
         <div className="max-w-3xl mx-auto">
           <h2 className="text-3xl font-bold text-center mb-8">
-            Frequently Asked Questions
+            {t('faq.title')}
           </h2>
 
           <div className="space-y-6">
-            <div className="bg-white rounded-lg p-6 shadow">
-              <h3 className="font-semibold text-lg mb-2">Can I change plans later?</h3>
-              <p className="text-gray-600">
-                Yes, you can upgrade or downgrade at any time. Changes take effect immediately.
-              </p>
-            </div>
-
-            <div className="bg-white rounded-lg p-6 shadow">
-              <h3 className="font-semibold text-lg mb-2">What payment methods do you accept?</h3>
-              <p className="text-gray-600">
-                We accept all major credit cards via Stripe.
-              </p>
-            </div>
-
-            <div className="bg-white rounded-lg p-6 shadow">
-              <h3 className="font-semibold text-lg mb-2">Is there a free trial?</h3>
-              <p className="text-gray-600">
-                Yes! Every new workspace gets a 14-day free trial with access to all trial features.
-                After the trial ends, upgrade to Basic or Pro to continue using your workspace.
-              </p>
-            </div>
-
-            <div className="bg-white rounded-lg p-6 shadow">
-              <h3 className="font-semibold text-lg mb-2">Can I cancel anytime?</h3>
-              <p className="text-gray-600">
-                Yes, cancel anytime from your workspace settings. No questions asked.
-              </p>
-            </div>
+            {['q1', 'q2', 'q3', 'q4'].map((q) => (
+              <div key={q} className="bg-white rounded-lg p-6 shadow">
+                <h3 className="font-semibold text-lg mb-2">{t(`faq.${q}.question`)}</h3>
+                <p className="text-gray-600">
+                  {t(`faq.${q}.answer`)}
+                </p>
+              </div>
+            ))}
           </div>
         </div>
       </div>

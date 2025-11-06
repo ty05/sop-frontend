@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { useWorkspace } from '@/contexts/WorkspaceContext';
 import apiClient from '@/lib/api';
+import { useTranslations, useLocale } from 'next-intl';
 
 interface Member {
   id: string;
@@ -27,6 +28,8 @@ interface Invitation {
 
 export default function WorkspaceSettingsPage() {
   const router = useRouter();
+  const locale = useLocale();
+  const t = useTranslations('settings');
   const { user, loading: authLoading } = useAuth();
   const { activeWorkspace, loading: workspaceLoading } = useWorkspace();
   const [members, setMembers] = useState<Member[]>([]);
@@ -41,9 +44,9 @@ export default function WorkspaceSettingsPage() {
   // Check authentication
   useEffect(() => {
     if (!authLoading && !user) {
-      router.push('/auth/login');
+      router.push(`/${locale}/auth/login`);
     }
-  }, [user, authLoading, router]);
+  }, [user, authLoading, router, locale]);
 
   useEffect(() => {
     if (activeWorkspace) {
@@ -78,7 +81,7 @@ export default function WorkspaceSettingsPage() {
 
   const handleRoleChange = async (memberId: string, newRole: string) => {
     if (!activeWorkspace) return;
-    if (!confirm(`Change role to ${newRole}?`)) return;
+    if (!confirm(t('confirmations.changeRole', { role: newRole }))) return;
 
     try {
       await apiClient.patch(
@@ -87,7 +90,7 @@ export default function WorkspaceSettingsPage() {
       );
       loadData();
     } catch (error: any) {
-      alert(error.response?.data?.detail || 'Failed to update role');
+      alert(error.response?.data?.detail || t('errors.failedToUpdateRole'));
     }
   };
 

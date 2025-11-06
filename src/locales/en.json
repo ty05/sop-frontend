@@ -258,6 +258,184 @@
     "deleteFailed": "Delete failed. Please try again.",
     "permissionDenied": "You do not have permission to perform this action."
   },
+  "settings": {
+    "title": "Workspace Settings",
+    "inviteUser": "+ Invite User",
+    "members": "Members",
+    "pendingInvitations": "Pending Invitations",
+    "billingSubscription": "Billing & Subscription",
+    "accessDenied": "Access Denied",
+    "accessDeniedMessage": "You need Owner role to access workspace settings.",
+    "backToDocuments": "Back to Documents",
+    "loading": "Loading...",
+    "loadingWorkspace": "Loading workspace...",
+    "joined": "Joined",
+    "lastLogin": "Last login",
+    "invitedBy": "Invited by",
+    "expires": "Expires",
+    "remove": "Remove",
+    "cancel": "Cancel",
+    "currentPlan": "Plan",
+    "14DayTrial": "14-Day Trial",
+    "trialPlan": "Trial Plan",
+    "basicPlan": "Basic Plan",
+    "proPlan": "Pro Plan",
+    "activeTrial": "Active Trial",
+    "active": "Active",
+    "trialExpired": "Trial expired - Please upgrade to continue",
+    "daysLeftInTrial": "Only {days} day{plural} left in your trial!",
+    "daysRemainingInTrial": "{days} days remaining in your trial",
+    "trialEnds": "Trial ends",
+    "renewsOn": "Renews on",
+    "manageBilling": "Manage Billing",
+    "trialLimits": "14-Day Trial Limits:",
+    "trialExpiredTitle": "Trial Expired",
+    "workspaceLimit": "{current} workspace maximum",
+    "documentsLimit": "{current} documents maximum",
+    "storageLimit": "{size}GB storage",
+    "upgradeMessage": "Upgrade to a paid plan to continue using your workspace",
+    "currentUsage": "Current Usage",
+    "documents": "Documents",
+    "storage": "Storage",
+    "chooseAPlan": "Choose a Plan to Continue",
+    "upgradeYourPlan": "Upgrade Your Plan",
+    "basic": "Basic",
+    "pro": "Pro",
+    "recommended": "Recommended",
+    "upgradeToBasic": "Upgrade to Basic",
+    "upgradeToPro": "Upgrade to Pro",
+    "viewDetailedComparison": "View detailed plan comparison →",
+    "dangerZone": "Danger Zone",
+    "deleteWorkspace": "Delete Workspace",
+    "deleteWorkspaceDescription": "Permanently delete this workspace and all its data",
+    "inviteModal": {
+      "title": "Invite User",
+      "email": "Email",
+      "emailPlaceholder": "user@example.com",
+      "emailRequired": "Email *",
+      "role": "Role",
+      "roleRequired": "Role *",
+      "viewerRole": "Viewer (Read only)",
+      "editorRole": "Editor (Can create/edit)",
+      "ownerNote": "Only Owners can invite other Owners",
+      "sendInvitation": "Send Invitation",
+      "sending": "Sending...",
+      "successMessage": "✅ Invitation sent to {email}!\n\nThey will receive an email with a link to join your workspace.",
+      "enterEmail": "Please enter an email address",
+      "invalidEmail": "Please enter a valid email address",
+      "selectRole": "Please select a role",
+      "errorMessage": "❌ Error: {message}"
+    },
+    "confirmations": {
+      "changeRole": "Change role to {role}?",
+      "removeMember": "Remove {email} from workspace?",
+      "cancelInvite": "Cancel this invitation?",
+      "deleteWorkspaceConfirm": "Delete workspace \"{name}\"? This cannot be undone!",
+      "deleteWorkspacePrompt": "Type \"{name}\" to confirm deletion:",
+      "deleteWorkspaceNoMatch": "Workspace name did not match. Deletion canceled.",
+      "workspaceDeleted": "Workspace deleted"
+    },
+    "errors": {
+      "failedToUpdateRole": "Failed to update role",
+      "failedToRemoveMember": "Failed to remove member",
+      "failedToCancelInvitation": "Failed to cancel invitation",
+      "failedToCheckout": "Failed to start checkout",
+      "failedToOpenBillingPortal": "Failed to open billing portal",
+      "failedToDeleteWorkspace": "Failed to delete workspace"
+    },
+    "features": {
+      "workspaces": "{count} workspaces",
+      "editorsPerWorkspace": "{count} editors per workspace",
+      "storage": "{size}GB storage",
+      "videoStorage": "{minutes} min video storage",
+      "prioritySupport": "Priority support",
+      "customBranding": "Custom branding",
+      "analyticsDashboard": "Analytics dashboard",
+      "apiAccess": "API access",
+      "unlimitedViewers": "Unlimited viewers",
+      "unlimitedDocuments": "Unlimited documents",
+      "unlimitedEverything": "Unlimited everything",
+      "pdfExport": "PDF export",
+      "qrCodes": "QR codes",
+      "emailSupport": "Email support"
+    }
+  },
+  "pricing": {
+    "title": "Choose Your Plan",
+    "subtitle": "Start with a 14-day free trial, upgrade as you grow",
+    "mostPopular": "Most Popular",
+    "currentPlan": "Current Plan",
+    "processing": "Processing...",
+    "perMonth": "/month",
+    "days": "Days",
+    "freeTrial": "Free Trial",
+    "getStarted": "Get Started",
+    "upgradeToBasic": "Upgrade to Basic",
+    "upgradeToPro": "Upgrade to Pro",
+    "selectWorkspaceFirst": "Please select a workspace first",
+    "failedToCheckout": "Failed to start checkout",
+    "faq": {
+      "title": "Frequently Asked Questions",
+      "q1": {
+        "question": "Can I change plans later?",
+        "answer": "Yes, you can upgrade or downgrade at any time. Changes take effect immediately."
+      },
+      "q2": {
+        "question": "What payment methods do you accept?",
+        "answer": "We accept all major credit cards via Stripe."
+      },
+      "q3": {
+        "question": "Is there a free trial?",
+        "answer": "Yes! Every new workspace gets a 14-day free trial with access to all trial features. After the trial ends, upgrade to Basic or Pro to continue using your workspace."
+      },
+      "q4": {
+        "question": "Can I cancel anytime?",
+        "answer": "Yes, cancel anytime from your workspace settings. No questions asked."
+      }
+    },
+    "plans": {
+      "trial": {
+        "name": "14-Day Trial",
+        "features": {
+          "workspace": "1 workspace",
+          "owner": "1 workspace owner",
+          "viewers": "Unlimited viewers",
+          "documents": "10 documents",
+          "storage": "1GB storage",
+          "support": "Basic support"
+        }
+      },
+      "basic": {
+        "name": "Basic",
+        "features": {
+          "workspaces": "3 workspaces",
+          "editors": "3 editors per workspace",
+          "viewers": "Unlimited viewers",
+          "documents": "Unlimited documents",
+          "storage": "10GB storage",
+          "videoStorage": "120 min video storage",
+          "support": "Email support",
+          "pdfExport": "PDF export",
+          "qrCodes": "QR codes"
+        }
+      },
+      "pro": {
+        "name": "Pro",
+        "features": {
+          "workspaces": "10 workspaces",
+          "editors": "10 editors per workspace",
+          "viewers": "Unlimited viewers",
+          "documents": "Unlimited documents",
+          "storage": "50GB storage",
+          "videoStorage": "500 min video storage",
+          "support": "Priority support",
+          "branding": "Custom branding",
+          "analytics": "Analytics dashboard",
+          "api": "API access"
+        }
+      }
+    }
+  },
   "landing": {
     "hero": {
       "headline": "Easy-to-Create Operation Manuals for Restaurants, Clinics, and Retail Stores",

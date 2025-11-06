@@ -258,6 +258,184 @@
     "deleteFailed": "削除に失敗しました。もう一度お試しください。",
     "permissionDenied": "この操作を実行する権限がありません。"
   },
+  "settings": {
+    "title": "ワークスペース設定",
+    "inviteUser": "+ ユーザーを招待",
+    "members": "メンバー",
+    "pendingInvitations": "保留中の招待",
+    "billingSubscription": "請求とサブスクリプション",
+    "accessDenied": "アクセス拒否",
+    "accessDeniedMessage": "ワークスペース設定にアクセスするには、オーナー権限が必要です。",
+    "backToDocuments": "ドキュメントに戻る",
+    "loading": "読み込み中...",
+    "loadingWorkspace": "ワークスペースを読み込み中...",
+    "joined": "参加日",
+    "lastLogin": "最終ログイン",
+    "invitedBy": "招待者",
+    "expires": "有効期限",
+    "remove": "削除",
+    "cancel": "キャンセル",
+    "currentPlan": "プラン",
+    "14DayTrial": "14日間トライアル",
+    "trialPlan": "トライアルプラン",
+    "basicPlan": "ベーシックプラン",
+    "proPlan": "プロプラン",
+    "activeTrial": "トライアル実施中",
+    "active": "有効",
+    "trialExpired": "トライアル期間が終了しました - アップグレードして続ける",
+    "daysLeftInTrial": "トライアル期間があと{days}日です！",
+    "daysRemainingInTrial": "トライアル期間残り{days}日",
+    "trialEnds": "トライアル終了日",
+    "renewsOn": "更新日",
+    "manageBilling": "請求管理",
+    "trialLimits": "14日間トライアルの制限:",
+    "trialExpiredTitle": "トライアル期間終了",
+    "workspaceLimit": "最大{current}ワークスペース",
+    "documentsLimit": "最大{current}ドキュメント",
+    "storageLimit": "{size}GBストレージ",
+    "upgradeMessage": "ワークスペースを引き続き使用するには、有料プランにアップグレードしてください",
+    "currentUsage": "現在の使用状況",
+    "documents": "ドキュメント",
+    "storage": "ストレージ",
+    "chooseAPlan": "プランを選択して続ける",
+    "upgradeYourPlan": "プランをアップグレード",
+    "basic": "ベーシック",
+    "pro": "プロ",
+    "recommended": "おすすめ",
+    "upgradeToBasic": "ベーシックにアップグレード",
+    "upgradeToPro": "プロにアップグレード",
+    "viewDetailedComparison": "詳細なプラン比較を見る →",
+    "dangerZone": "危険な操作",
+    "deleteWorkspace": "ワークスペースを削除",
+    "deleteWorkspaceDescription": "このワークスペースとすべてのデータを完全に削除",
+    "inviteModal": {
+      "title": "ユーザーを招待",
+      "email": "メールアドレス",
+      "emailPlaceholder": "user@example.com",
+      "emailRequired": "メールアドレス *",
+      "role": "権限",
+      "roleRequired": "権限 *",
+      "viewerRole": "閲覧者（読み取り専用）",
+      "editorRole": "編集者（作成・編集可能）",
+      "ownerNote": "オーナーを招待できるのはオーナーのみです",
+      "sendInvitation": "招待を送信",
+      "sending": "送信中...",
+      "successMessage": "✅ {email}に招待を送信しました！\n\nワークスペースに参加するためのリンクがメールで送られます。",
+      "enterEmail": "メールアドレスを入力してください",
+      "invalidEmail": "有効なメールアドレスを入力してください",
+      "selectRole": "権限を選択してください",
+      "errorMessage": "❌ エラー: {message}"
+    },
+    "confirmations": {
+      "changeRole": "権限を{role}に変更しますか？",
+      "removeMember": "{email}をワークスペースから削除しますか？",
+      "cancelInvite": "この招待をキャンセルしますか？",
+      "deleteWorkspaceConfirm": "ワークスペース「{name}」を削除しますか？この操作は元に戻せません！",
+      "deleteWorkspacePrompt": "削除を確認するには「{name}」と入力してください:",
+      "deleteWorkspaceNoMatch": "ワークスペース名が一致しません。削除がキャンセルされました。",
+      "workspaceDeleted": "ワークスペースが削除されました"
+    },
+    "errors": {
+      "failedToUpdateRole": "権限の更新に失敗しました",
+      "failedToRemoveMember": "メンバーの削除に失敗しました",
+      "failedToCancelInvitation": "招待のキャンセルに失敗しました",
+      "failedToCheckout": "チェックアウトの開始に失敗しました",
+      "failedToOpenBillingPortal": "請求ポータルを開けませんでした",
+      "failedToDeleteWorkspace": "ワークスペースの削除に失敗しました"
+    },
+    "features": {
+      "workspaces": "{count}ワークスペース",
+      "editorsPerWorkspace": "ワークスペースあたり{count}編集者",
+      "storage": "{size}GBストレージ",
+      "videoStorage": "{minutes}分の動画ストレージ",
+      "prioritySupport": "優先サポート",
+      "customBranding": "カスタムブランディング",
+      "analyticsDashboard": "分析ダッシュボード",
+      "apiAccess": "APIアクセス",
+      "unlimitedViewers": "無制限の閲覧者",
+      "unlimitedDocuments": "無制限のドキュメント",
+      "unlimitedEverything": "すべて無制限",
+      "pdfExport": "PDFエクスポート",
+      "qrCodes": "QRコード",
+      "emailSupport": "メールサポート"
+    }
+  },
+  "pricing": {
+    "title": "プランを選択",
+    "subtitle": "14日間無料トライアルから始めて、成長に合わせてアップグレード",
+    "mostPopular": "人気No.1",
+    "currentPlan": "現在のプラン",
+    "processing": "処理中...",
+    "perMonth": "/月",
+    "days": "日間",
+    "freeTrial": "無料トライアル",
+    "getStarted": "今すぐ始める",
+    "upgradeToBasic": "ベーシックにアップグレード",
+    "upgradeToPro": "プロにアップグレード",
+    "selectWorkspaceFirst": "最初にワークスペースを選択してください",
+    "failedToCheckout": "チェックアウトの開始に失敗しました",
+    "faq": {
+      "title": "よくある質問",
+      "q1": {
+        "question": "後でプランを変更できますか？",
+        "answer": "はい、いつでもアップグレードまたはダウングレードできます。変更はすぐに反映されます。"
+      },
+      "q2": {
+        "question": "どのような支払い方法を受け付けていますか？",
+        "answer": "Stripe経由で主要なクレジットカードをすべて受け付けています。"
+      },
+      "q3": {
+        "question": "無料トライアルはありますか？",
+        "answer": "はい！すべての新しいワークスペースには、トライアル機能へのアクセスを含む14日間の無料トライアルがあります。トライアル終了後、ベーシックまたはプロにアップグレードしてワークスペースを使い続けることができます。"
+      },
+      "q4": {
+        "question": "いつでもキャンセルできますか？",
+        "answer": "はい、ワークスペース設定からいつでもキャンセルできます。質問はありません。"
+      }
+    },
+    "plans": {
+      "trial": {
+        "name": "14日間トライアル",
+        "features": {
+          "workspace": "1ワークスペース",
+          "owner": "1ワークスペースオーナー",
+          "viewers": "無制限の閲覧者",
+          "documents": "10ドキュメント",
+          "storage": "1GBストレージ",
+          "support": "基本サポート"
+        }
+      },
+      "basic": {
+        "name": "ベーシック",
+        "features": {
+          "workspaces": "3ワークスペース",
+          "editors": "ワークスペースあたり3編集者",
+          "viewers": "無制限の閲覧者",
+          "documents": "無制限のドキュメント",
+          "storage": "10GBストレージ",
+          "videoStorage": "120分の動画ストレージ",
+          "support": "メールサポート",
+          "pdfExport": "PDFエクスポート",
+          "qrCodes": "QRコード"
+        }
+      },
+      "pro": {
+        "name": "プロ",
+        "features": {
+          "workspaces": "10ワークスペース",
+          "editors": "ワークスペースあたり10編集者",
+          "viewers": "無制限の閲覧者",
+          "documents": "無制限のドキュメント",
+          "storage": "50GBストレージ",
+          "videoStorage": "500分の動画ストレージ",
+          "support": "優先サポート",
+          "branding": "カスタムブランディング",
+          "analytics": "分析ダッシュボード",
+          "api": "APIアクセス"
+        }
+      }
+    }
+  },
   "landing": {
     "hero": {
       "headline": "飲食店・クリニック・小売店向け 誰でも簡単に作れる業務マニュアル",
