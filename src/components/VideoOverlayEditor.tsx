@@ -684,9 +684,17 @@ export default function VideoOverlayEditor({
 
   const isPointInOverlay = (x: number, y: number, overlay: Overlay): boolean => {
     if (overlay.type === 'text') {
-      // Rough approximation for text bounds
-      return x >= overlay.x && x <= overlay.x + 100 &&
-             y >= overlay.y - (overlay.fontSize || 24) && y <= overlay.y;
+      // Measure actual text width for accurate hit detection
+      const ctx = canvasRef.current?.getContext('2d');
+      if (ctx && overlay.text) {
+        ctx.font = `${overlay.fontSize || 24}px Arial`;
+        const metrics = ctx.measureText(overlay.text);
+        const textWidth = metrics.width;
+        const textHeight = overlay.fontSize || 24;
+        return x >= overlay.x && x <= overlay.x + textWidth &&
+               y >= overlay.y - textHeight && y <= overlay.y;
+      }
+      return false;
     } else if (overlay.width !== undefined && overlay.height !== undefined) {
       if (overlay.type === 'arrow') {
         // For arrows, check if near the line
