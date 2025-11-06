@@ -263,7 +263,6 @@
     "inviteUser": "+ ユーザーを招待",
     "members": "メンバー",
     "pendingInvitations": "保留中の招待",
-    "billingSubscription": "請求とサブスクリプション",
     "accessDenied": "アクセス拒否",
     "accessDeniedMessage": "ワークスペース設定にアクセスするには、オーナー権限が必要です。",
     "backToDocuments": "ドキュメントに戻る",
@@ -275,56 +274,101 @@
     "expires": "有効期限",
     "remove": "削除",
     "cancel": "キャンセル",
-    "currentPlan": "プラン",
-    "14DayTrial": "14日間トライアル",
-    "trialPlan": "トライアルプラン",
-    "basicPlan": "ベーシックプラン",
-    "proPlan": "プロプラン",
-    "activeTrial": "トライアル実施中",
-    "active": "有効",
-    "trialExpired": "トライアル期間が終了しました - アップグレードして続ける",
-    "daysLeftInTrial": "トライアル期間があと{days}日です！",
-    "daysRemainingInTrial": "トライアル期間残り{days}日",
-    "trialEnds": "トライアル終了日",
-    "renewsOn": "更新日",
-    "manageBilling": "請求管理",
-    "trialLimits": "14日間トライアルの制限:",
-    "trialExpiredTitle": "トライアル期間終了",
-    "workspaceLimit": "最大{current}ワークスペース",
-    "documentsLimit": "最大{current}ドキュメント",
-    "storageLimit": "{size}GBストレージ",
-    "upgradeMessage": "ワークスペースを引き続き使用するには、有料プランにアップグレードしてください",
-    "currentUsage": "現在の使用状況",
-    "documents": "ドキュメント",
-    "storage": "ストレージ",
-    "chooseAPlan": "プランを選択して続ける",
-    "upgradeYourPlan": "プランをアップグレード",
-    "basic": "ベーシック",
-    "pro": "プロ",
-    "recommended": "おすすめ",
-    "upgradeToBasic": "ベーシックにアップグレード",
-    "upgradeToPro": "プロにアップグレード",
-    "viewDetailedComparison": "詳細なプラン比較を見る →",
-    "dangerZone": "危険な操作",
-    "deleteWorkspace": "ワークスペースを削除",
-    "deleteWorkspaceDescription": "このワークスペースとすべてのデータを完全に削除",
-    "inviteModal": {
+    "roles": {
+      "owner": "オーナー",
+      "editor": "編集者",
+      "viewer": "閲覧者"
+    },
+    "billing": {
+      "title": "請求とサブスクリプション",
+      "trialPlanName": "14日間トライアル",
+      "planName": "{plan}プラン",
+      "status": {
+        "activeTrial": "トライアル実施中",
+        "active": "有効",
+        "expired": "期限切れ"
+      },
+      "trialExpired": "トライアル期間が終了しました - アップグレードして続ける",
+      "trialDaysLeft": "トライアル期間があと{days}日です！",
+      "trialDaysRemaining": "トライアル期間残り{days}日",
+      "trialEnds": "トライアル終了日",
+      "renewsOn": "更新日",
+      "manageBilling": "請求管理",
+      "trialLimitsTitle": "14日間トライアルの制限:",
+      "trialExpiredTitle": "トライアル期間終了",
+      "limits": {
+        "workspaces": "最大1ワークスペース",
+        "documents": "最大10ドキュメント",
+        "storage": "1GBストレージ"
+      },
+      "upgradeRequired": "ワークスペースを引き続き使用するには、有料プランにアップグレードしてください",
+      "currentUsage": "現在の使用状況",
+      "documents": "ドキュメント",
+      "storage": "ストレージ",
+      "members": "メンバー",
+      "choosePlan": "プランを選択して続ける",
+      "upgradeYourPlan": "プランをアップグレード",
+      "plans": {
+        "basic": {
+          "name": "ベーシック",
+          "price": "$20/月",
+          "features": {
+            "workspaces": "3ワークスペース",
+            "documents": "無制限のドキュメント",
+            "storage": "10GBストレージ",
+            "pdfExport": "PDFエクスポート"
+          }
+        },
+        "pro": {
+          "name": "プロ",
+          "price": "$50/月",
+          "features": {
+            "workspaces": "10ワークスペース",
+            "unlimited": "すべて無制限",
+            "storage": "50GBストレージ",
+            "support": "優先サポート"
+          },
+          "comparison": {
+            "workspaces": "10ワークスペース（ベーシックは3）",
+            "editors": "ワークスペースあたり10編集者",
+            "storage": "50GBストレージ（ベーシックは10GB）",
+            "video": "500分の動画ストレージ",
+            "support": "優先サポート",
+            "branding": "カスタムブランディング",
+            "analytics": "分析ダッシュボード",
+            "api": "APIアクセス"
+          }
+        }
+      },
+      "recommended": "おすすめ",
+      "upgradeToBasic": "ベーシックにアップグレード",
+      "upgradeToPro": "プロにアップグレード",
+      "viewComparison": "詳細なプラン比較を見る →"
+    },
+    "dangerZone": {
+      "title": "危険な操作",
+      "deleteWorkspace": "ワークスペースを削除",
+      "deleteDescription": "このワークスペースとすべてのデータを完全に削除"
+    },
+    "invite": {
       "title": "ユーザーを招待",
-      "email": "メールアドレス",
+      "email": "メールアドレス *",
       "emailPlaceholder": "user@example.com",
-      "emailRequired": "メールアドレス *",
-      "role": "権限",
-      "roleRequired": "権限 *",
-      "viewerRole": "閲覧者（読み取り専用）",
-      "editorRole": "編集者（作成・編集可能）",
-      "ownerNote": "オーナーを招待できるのはオーナーのみです",
+      "role": "権限 *",
+      "roles": {
+        "viewer": "閲覧者（読み取り専用）",
+        "editor": "編集者（作成・編集可能）"
+      },
+      "roleNote": "オーナーを招待できるのはオーナーのみです",
       "sendInvitation": "招待を送信",
       "sending": "送信中...",
-      "successMessage": "✅ {email}に招待を送信しました！\n\nワークスペースに参加するためのリンクがメールで送られます。",
-      "enterEmail": "メールアドレスを入力してください",
-      "invalidEmail": "有効なメールアドレスを入力してください",
-      "selectRole": "権限を選択してください",
-      "errorMessage": "❌ エラー: {message}"
+      "success": "✅ {email}に招待を送信しました！\n\nワークスペースに参加するためのリンクがメールで送られます。",
+      "errors": {
+        "emailRequired": "メールアドレスを入力してください",
+        "emailInvalid": "有効なメールアドレスを入力してください",
+        "roleRequired": "権限を選択してください",
+        "failed": "招待の送信に失敗しました。もう一度お試しください。"
+      }
     },
     "confirmations": {
       "changeRole": "権限を{role}に変更しますか？",
@@ -336,28 +380,13 @@
       "workspaceDeleted": "ワークスペースが削除されました"
     },
     "errors": {
+      "error": "エラー",
       "failedToUpdateRole": "権限の更新に失敗しました",
       "failedToRemoveMember": "メンバーの削除に失敗しました",
       "failedToCancelInvitation": "招待のキャンセルに失敗しました",
       "failedToCheckout": "チェックアウトの開始に失敗しました",
       "failedToOpenBillingPortal": "請求ポータルを開けませんでした",
       "failedToDeleteWorkspace": "ワークスペースの削除に失敗しました"
-    },
-    "features": {
-      "workspaces": "{count}ワークスペース",
-      "editorsPerWorkspace": "ワークスペースあたり{count}編集者",
-      "storage": "{size}GBストレージ",
-      "videoStorage": "{minutes}分の動画ストレージ",
-      "prioritySupport": "優先サポート",
-      "customBranding": "カスタムブランディング",
-      "analyticsDashboard": "分析ダッシュボード",
-      "apiAccess": "APIアクセス",
-      "unlimitedViewers": "無制限の閲覧者",
-      "unlimitedDocuments": "無制限のドキュメント",
-      "unlimitedEverything": "すべて無制限",
-      "pdfExport": "PDFエクスポート",
-      "qrCodes": "QRコード",
-      "emailSupport": "メールサポート"
     }
   },
   "pricing": {

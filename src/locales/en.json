@@ -263,7 +263,6 @@
     "inviteUser": "+ Invite User",
     "members": "Members",
     "pendingInvitations": "Pending Invitations",
-    "billingSubscription": "Billing & Subscription",
     "accessDenied": "Access Denied",
     "accessDeniedMessage": "You need Owner role to access workspace settings.",
     "backToDocuments": "Back to Documents",
@@ -275,56 +274,101 @@
     "expires": "Expires",
     "remove": "Remove",
     "cancel": "Cancel",
-    "currentPlan": "Plan",
-    "14DayTrial": "14-Day Trial",
-    "trialPlan": "Trial Plan",
-    "basicPlan": "Basic Plan",
-    "proPlan": "Pro Plan",
-    "activeTrial": "Active Trial",
-    "active": "Active",
-    "trialExpired": "Trial expired - Please upgrade to continue",
-    "daysLeftInTrial": "Only {days} day{plural} left in your trial!",
-    "daysRemainingInTrial": "{days} days remaining in your trial",
-    "trialEnds": "Trial ends",
-    "renewsOn": "Renews on",
-    "manageBilling": "Manage Billing",
-    "trialLimits": "14-Day Trial Limits:",
-    "trialExpiredTitle": "Trial Expired",
-    "workspaceLimit": "{current} workspace maximum",
-    "documentsLimit": "{current} documents maximum",
-    "storageLimit": "{size}GB storage",
-    "upgradeMessage": "Upgrade to a paid plan to continue using your workspace",
-    "currentUsage": "Current Usage",
-    "documents": "Documents",
-    "storage": "Storage",
-    "chooseAPlan": "Choose a Plan to Continue",
-    "upgradeYourPlan": "Upgrade Your Plan",
-    "basic": "Basic",
-    "pro": "Pro",
-    "recommended": "Recommended",
-    "upgradeToBasic": "Upgrade to Basic",
-    "upgradeToPro": "Upgrade to Pro",
-    "viewDetailedComparison": "View detailed plan comparison →",
-    "dangerZone": "Danger Zone",
-    "deleteWorkspace": "Delete Workspace",
-    "deleteWorkspaceDescription": "Permanently delete this workspace and all its data",
-    "inviteModal": {
+    "roles": {
+      "owner": "Owner",
+      "editor": "Editor",
+      "viewer": "Viewer"
+    },
+    "billing": {
+      "title": "Billing & Subscription",
+      "trialPlanName": "14-Day Trial",
+      "planName": "{plan} Plan",
+      "status": {
+        "activeTrial": "Active Trial",
+        "active": "Active",
+        "expired": "Expired"
+      },
+      "trialExpired": "Trial expired - Please upgrade to continue",
+      "trialDaysLeft": "Only {days} day left in your trial!",
+      "trialDaysRemaining": "{days} days remaining in your trial",
+      "trialEnds": "Trial ends",
+      "renewsOn": "Renews on",
+      "manageBilling": "Manage Billing",
+      "trialLimitsTitle": "14-Day Trial Limits:",
+      "trialExpiredTitle": "Trial Expired",
+      "limits": {
+        "workspaces": "1 workspace maximum",
+        "documents": "10 documents maximum",
+        "storage": "1GB storage"
+      },
+      "upgradeRequired": "Upgrade to a paid plan to continue using your workspace",
+      "currentUsage": "Current Usage",
+      "documents": "Documents",
+      "storage": "Storage",
+      "members": "Members",
+      "choosePlan": "Choose a Plan to Continue",
+      "upgradeYourPlan": "Upgrade Your Plan",
+      "plans": {
+        "basic": {
+          "name": "Basic",
+          "price": "$20/mo",
+          "features": {
+            "workspaces": "3 workspaces",
+            "documents": "Unlimited documents",
+            "storage": "10GB storage",
+            "pdfExport": "PDF export"
+          }
+        },
+        "pro": {
+          "name": "Pro",
+          "price": "$50/mo",
+          "features": {
+            "workspaces": "10 workspaces",
+            "unlimited": "Unlimited everything",
+            "storage": "50GB storage",
+            "support": "Priority support"
+          },
+          "comparison": {
+            "workspaces": "10 workspaces (vs 3 on Basic)",
+            "editors": "10 editors per workspace",
+            "storage": "50GB storage (vs 10GB on Basic)",
+            "video": "500 min video storage",
+            "support": "Priority support",
+            "branding": "Custom branding",
+            "analytics": "Analytics dashboard",
+            "api": "API access"
+          }
+        }
+      },
+      "recommended": "Recommended",
+      "upgradeToBasic": "Upgrade to Basic",
+      "upgradeToPro": "Upgrade to Pro",
+      "viewComparison": "View detailed plan comparison →"
+    },
+    "dangerZone": {
+      "title": "Danger Zone",
+      "deleteWorkspace": "Delete Workspace",
+      "deleteDescription": "Permanently delete this workspace and all its data"
+    },
+    "invite": {
       "title": "Invite User",
-      "email": "Email",
+      "email": "Email *",
       "emailPlaceholder": "user@example.com",
-      "emailRequired": "Email *",
-      "role": "Role",
-      "roleRequired": "Role *",
-      "viewerRole": "Viewer (Read only)",
-      "editorRole": "Editor (Can create/edit)",
-      "ownerNote": "Only Owners can invite other Owners",
+      "role": "Role *",
+      "roles": {
+        "viewer": "Viewer (Read only)",
+        "editor": "Editor (Can create/edit)"
+      },
+      "roleNote": "Only Owners can invite other Owners",
       "sendInvitation": "Send Invitation",
       "sending": "Sending...",
-      "successMessage": "✅ Invitation sent to {email}!\n\nThey will receive an email with a link to join your workspace.",
-      "enterEmail": "Please enter an email address",
-      "invalidEmail": "Please enter a valid email address",
-      "selectRole": "Please select a role",
-      "errorMessage": "❌ Error: {message}"
+      "success": "✅ Invitation sent to {email}!\n\nThey will receive an email with a link to join your workspace.",
+      "errors": {
+        "emailRequired": "Please enter an email address",
+        "emailInvalid": "Please enter a valid email address",
+        "roleRequired": "Please select a role",
+        "failed": "Failed to send invitation. Please try again."
+      }
     },
     "confirmations": {
       "changeRole": "Change role to {role}?",
@@ -336,28 +380,13 @@
       "workspaceDeleted": "Workspace deleted"
     },
     "errors": {
+      "error": "Error",
       "failedToUpdateRole": "Failed to update role",
       "failedToRemoveMember": "Failed to remove member",
       "failedToCancelInvitation": "Failed to cancel invitation",
       "failedToCheckout": "Failed to start checkout",
       "failedToOpenBillingPortal": "Failed to open billing portal",
       "failedToDeleteWorkspace": "Failed to delete workspace"
-    },
-    "features": {
-      "workspaces": "{count} workspaces",
-      "editorsPerWorkspace": "{count} editors per workspace",
-      "storage": "{size}GB storage",
-      "videoStorage": "{minutes} min video storage",
-      "prioritySupport": "Priority support",
-      "customBranding": "Custom branding",
-      "analyticsDashboard": "Analytics dashboard",
-      "apiAccess": "API access",
-      "unlimitedViewers": "Unlimited viewers",
-      "unlimitedDocuments": "Unlimited documents",
-      "unlimitedEverything": "Unlimited everything",
-      "pdfExport": "PDF export",
-      "qrCodes": "QR codes",
-      "emailSupport": "Email support"
     }
   },
   "pricing": {
