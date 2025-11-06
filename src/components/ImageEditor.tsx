@@ -60,8 +60,8 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
     const viewportWidth = Math.min(window.innerWidth * 0.9, 1280);
     const availableHeight = viewportHeight - 150;
     const availableWidth = viewportWidth - 100;
-    const sH = availableHeight / image.height;
-    const sW = availableWidth / image.width;
+    const sH = availableHeight / image.naturalHeight;
+    const sW = availableWidth / image.naturalWidth;
     const fit = Math.min(sH, sW, 1);
     setScale(fit);
     setFitScale(fit);
@@ -304,8 +304,8 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
 
       // Create off-screen canvas for proper compositing
       const canvas = document.createElement('canvas');
-      canvas.width = image.width * 2; // 2x for high DPI
-      canvas.height = image.height * 2;
+      canvas.width = image.naturalWidth * 2; // 2x for high DPI
+      canvas.height = image.naturalHeight * 2;
       const ctx = canvas.getContext('2d');
       if (!ctx) throw new Error('Failed to get canvas context');
 
@@ -314,13 +314,13 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
       ctx.scale(2, 2);
 
       // 1. Draw background image
-      ctx.drawImage(image, 0, 0, image.width, image.height);
+      ctx.drawImage(image, 0, 0, image.naturalWidth, image.naturalHeight);
 
       // 2. Draw spotlight mask if exists
       if (spotlights.length > 0) {
         // Draw dark overlay
         ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-        ctx.fillRect(0, 0, image.width, image.height);
+        ctx.fillRect(0, 0, image.naturalWidth, image.naturalHeight);
 
         // Cut out spotlight areas
         ctx.globalCompositeOperation = 'destination-out';
@@ -483,8 +483,8 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
           )}
           <Stage
             ref={stageRef}
-            width={image?.width || 800}
-            height={image?.height || 600}
+            width={image?.naturalWidth || 800}
+            height={image?.naturalHeight || 600}
             scaleX={scale}
             scaleY={scale}
             x={stagePos.x}
@@ -507,8 +507,8 @@ export default function ImageEditor({ imageUrl, onSave, onCancel }: ImageEditorP
                   <Rect
                     x={0}
                     y={0}
-                    width={image.width}
-                    height={image.height}
+                    width={image.naturalWidth}
+                    height={image.naturalHeight}
                     fill="rgba(0,0,0,0.7)"
                   />
                   {spotlights.map(s => (
