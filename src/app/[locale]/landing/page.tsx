@@ -43,12 +43,12 @@ export default function LandingPage() {
             >
               {t('hero.ctaPrimary')}
             </Link>
-            <Link
+            {/* <Link
               href="#how-it-works"
               className="w-full sm:w-auto bg-white text-blue-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-50 transition border-2 border-blue-600"
             >
               {t('hero.ctaSecondary')}
-            </Link>
+            </Link> */}
           </div>
           <p className="mt-6 text-sm text-gray-500 flex items-center justify-center gap-2">
             <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -58,7 +58,7 @@ export default function LandingPage() {
           </p>
 
           {/* Hero Image Placeholder */}
-          <div className="mt-12 rounded-xl overflow-hidden shadow-2xl border border-gray-200">
+          {/* <div className="mt-12 rounded-xl overflow-hidden shadow-2xl border border-gray-200">
             <div className="bg-gradient-to-br from-blue-100 via-purple-50 to-pink-50 aspect-video flex items-center justify-center">
               <div className="text-center">
                 <svg className="w-24 h-24 mx-auto mb-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -68,7 +68,7 @@ export default function LandingPage() {
                 <p className="text-gray-600 font-medium">Product Demo Video</p>
               </div>
             </div>
-          </div>
+          </div> */}
         </div>
       </section>
 
@@ -287,13 +287,13 @@ export default function LandingPage() {
       </section>
 
       {/* Social Proof Section */}
-      <section className="py-16 md:py-24 px-4">
+      {/* <section className="py-16 md:py-24 px-4">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 text-gray-900">
             {t('socialProof.title')}
           </h2>
 
-          {/* Stats */}
+          
           <div className="grid md:grid-cols-3 gap-8 mb-16">
             {(['users', 'satisfaction', 'timeReduction'] as const).map((stat) => (
               <div key={stat} className="text-center">
@@ -305,7 +305,7 @@ export default function LandingPage() {
             ))}
           </div>
 
-          {/* Testimonials */}
+          
           <div className="grid md:grid-cols-3 gap-8">
             {['testimonial1', 'testimonial2', 'testimonial3'].map((testimonial) => (
               <div key={testimonial} className="bg-white rounded-xl p-6 shadow-lg">
@@ -329,7 +329,7 @@ export default function LandingPage() {
             ))}
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* FAQ Section */}
       <section className="py-16 md:py-24 px-4 bg-gray-50">
