@@ -136,13 +136,13 @@ export default function LandingPage() {
       </section>
 
       {/* Use Cases Section */}
-      <section className="py-16 md:py-24 px-4 bg-gray-50">
+      {/* <section className="py-16 md:py-24 px-4 bg-gray-50">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 text-gray-900">
             {t('useCases.title')}
           </h2>
 
-          {/* Tabs */}
+         
           <div className="flex flex-wrap justify-center gap-4 mb-8">
             {(['restaurant', 'clinic', 'retail'] as const).map((useCase) => (
               <button
@@ -159,7 +159,7 @@ export default function LandingPage() {
             ))}
           </div>
 
-          {/* Tab Content */}
+          
           <div className="bg-white rounded-xl p-8 md:p-12 shadow-lg">
             <h3 className="text-2xl md:text-3xl font-bold mb-4 text-gray-900">
               {t(`useCases.${activeUseCase}.example`)}
@@ -172,10 +172,10 @@ export default function LandingPage() {
             </div>
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* How It Works Section */}
-      <section id="how-it-works" className="py-16 md:py-24 px-4">
+      {/* <section id="how-it-works" className="py-16 md:py-24 px-4">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 text-gray-900">
             {t('howItWorks.title')}
@@ -196,7 +196,7 @@ export default function LandingPage() {
             ))}
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* Pricing Section */}
       <section className="py-16 md:py-24 px-4 bg-gray-50">
@@ -385,12 +385,6 @@ export default function LandingPage() {
               className="w-full sm:w-auto bg-white text-blue-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-100 transition shadow-lg hover:shadow-xl"
             >
               {t('finalCta.ctaPrimary')}
-            </Link>
-            <Link
-              href="#how-it-works"
-              className="w-full sm:w-auto bg-blue-700 text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-blue-800 transition border-2 border-white"
-            >
-              {t('finalCta.ctaSecondary')}
             </Link>
           </div>
           <p className="mt-6 text-sm text-blue-100">
