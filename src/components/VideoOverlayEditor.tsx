@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { videoAPI, assetsAPI } from '@/lib/api';
 import VideoTimeline from './VideoTimeline';
+import { useTranslations } from 'next-intl';
 
 interface Overlay {
   id: string;
@@ -31,6 +32,8 @@ export default function VideoOverlayEditor({
   onClose
 }: VideoOverlayEditorProps) {
   const { session } = useAuth();
+  const t = useTranslations('videoEditor');
+  const tCommon = useTranslations('common');
   const [overlays, setOverlays] = useState<Overlay[]>([]);
   const [overlayHistory, setOverlayHistory] = useState<Overlay[][]>([]);
   const [currentTime, setCurrentTime] = useState(0);
@@ -193,6 +196,8 @@ export default function VideoOverlayEditor({
         case 'text':
           if (overlay.text) {
             ctx.font = `${overlay.fontSize || 24}px Arial`;
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'alphabetic';
             const metrics = ctx.measureText(overlay.text);
             const textWidth = metrics.width;
             const textHeight = overlay.fontSize || 24;
@@ -226,6 +231,8 @@ export default function VideoOverlayEditor({
     switch (overlay.type) {
       case 'text':
         ctx.font = `${overlay.fontSize || 24}px Arial`;
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'alphabetic';
         ctx.fillText(overlay.text || '', overlay.x, overlay.y);
         if (isSelected) {
           const metrics = ctx.measureText(overlay.text || '');
@@ -688,6 +695,8 @@ export default function VideoOverlayEditor({
       const ctx = canvasRef.current?.getContext('2d');
       if (ctx && overlay.text) {
         ctx.font = `${overlay.fontSize || 24}px Arial`;
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'alphabetic';
         const metrics = ctx.measureText(overlay.text);
         const textWidth = metrics.width;
         const textHeight = overlay.fontSize || 24;
@@ -776,6 +785,8 @@ export default function VideoOverlayEditor({
       const ctx = canvasRef.current?.getContext('2d');
       if (ctx) {
         ctx.font = `${overlay.fontSize || 24}px Arial`;
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'alphabetic';
         const metrics = ctx.measureText(overlay.text || '');
         const textWidth = metrics.width;
 
@@ -824,14 +835,14 @@ export default function VideoOverlayEditor({
       }
 
       if (newOverlays.length > 0) {
-        alert(`Saved ${newOverlays.length} new overlay(s) successfully!`);
+        alert(t('overlaysSaved', { count: newOverlays.length }));
       } else {
-        alert('No new overlays to save');
+        alert(t('noNewOverlays'));
       }
       onClose();
     } catch (error) {
       console.error('Failed to save overlays:', error);
-      alert('Failed to save overlays');
+      alert(t('failedToSaveOverlays'));
     }
   };
 
@@ -839,7 +850,7 @@ export default function VideoOverlayEditor({
     if (!selectedOverlay) {
       return;
     }
-    if (confirm('Delete this overlay?')) {
+    if (confirm(t('deleteOverlayConfirm'))) {
       const newOverlays = overlays.filter(o => o.id !== selectedOverlay);
       saveToHistory(newOverlays);
       setSelectedOverlay(null);
@@ -914,7 +925,7 @@ export default function VideoOverlayEditor({
       <div className="bg-white rounded-lg w-full max-w-6xl h-[90vh] flex flex-col">
         {/* Header */}
         <div className="p-4 border-b flex justify-between items-center">
-          <h2 className="text-xl font-bold">Video Overlay Editor</h2>
+          <h2 className="text-xl font-bold">{t('title')}</h2>
           <button
             onClick={onClose}
             className="text-gray-500 hover:text-gray-700 text-2xl"
@@ -926,14 +937,14 @@ export default function VideoOverlayEditor({
         <div className="flex-1 flex overflow-hidden">
           {/* Toolbar */}
           <div className="w-64 border-r p-4 overflow-y-auto">
-            <h3 className="font-semibold mb-3">Tools</h3>
+            <h3 className="font-semibold mb-3">{t('toolsHeader')}</h3>
             <div className="space-y-2 mb-6">
               {[
-                { tool: 'select', label: 'Select', icon: '↖️' },
-                { tool: 'text', label: 'Text', icon: 'T' },
-                { tool: 'rectangle', label: 'Rectangle', icon: '▢' },
-                { tool: 'circle', label: 'Circle', icon: '○' },
-                { tool: 'arrow', label: 'Arrow', icon: '→' }
+                { tool: 'select', label: t('tools.select'), icon: '↖️' },
+                { tool: 'text', label: t('tools.text'), icon: 'T' },
+                { tool: 'rectangle', label: t('tools.rectangle'), icon: '▢' },
+                { tool: 'circle', label: t('tools.circle'), icon: '○' },
+                { tool: 'arrow', label: t('tools.arrow'), icon: '→' }
               ].map(({ tool, label, icon }) => (
                 <button
                   key={tool}
@@ -950,10 +961,10 @@ export default function VideoOverlayEditor({
               ))}
             </div>
 
-            <h3 className="font-semibold mb-3">Properties</h3>
+            <h3 className="font-semibold mb-3">{t('propertiesHeader')}</h3>
             <div className="space-y-3">
               <div>
-                <label className="text-sm text-gray-600 block mb-1">Color</label>
+                <label className="text-sm text-gray-600 block mb-1">{t('color')}</label>
                 <input
                   type="color"
                   value={color}
@@ -964,7 +975,7 @@ export default function VideoOverlayEditor({
 
               {selectedTool === 'text' && (
                 <div>
-                  <label className="text-sm text-gray-600 block mb-1">Font Size</label>
+                  <label className="text-sm text-gray-600 block mb-1">{t('fontSize')}</label>
                   <input
                     type="number"
                     value={fontSize}
@@ -979,7 +990,7 @@ export default function VideoOverlayEditor({
               {/* Overlays List */}
               {overlays.length > 0 && (
                 <div className="pt-3 border-t mt-4">
-                  <h4 className="text-sm font-semibold mb-2">Overlays ({overlays.length})</h4>
+                  <h4 className="text-sm font-semibold mb-2">{t('overlays')} ({overlays.length})</h4>
                   <div className="space-y-1 max-h-48 overflow-y-auto">
                     {overlays.map((overlay, index) => (
                       <div
@@ -1025,12 +1036,12 @@ export default function VideoOverlayEditor({
               {selectedOverlayData && (
                 <>
                   <div className="pt-3 border-t">
-                    <h4 className="text-sm font-semibold mb-2">Selected Overlay</h4>
+                    <h4 className="text-sm font-semibold mb-2">{t('selectedOverlay')}</h4>
                     <div className="text-xs text-gray-600 mb-2">
-                      Type: {selectedOverlayData.type}
+                      {t('type')}: {selectedOverlayData.type}
                     </div>
                     <div>
-                      <label className="text-sm text-gray-600 block mb-1">Start Time</label>
+                      <label className="text-sm text-gray-600 block mb-1">{t('startTime')}</label>
                       <input
                         type="number"
                         value={selectedOverlayData.startTime}
@@ -1048,7 +1059,7 @@ export default function VideoOverlayEditor({
                       />
                     </div>
                     <div className="mt-2">
-                      <label className="text-sm text-gray-600 block mb-1">End Time</label>
+                      <label className="text-sm text-gray-600 block mb-1">{t('endTime')}</label>
                       <input
                         type="number"
                         value={selectedOverlayData.endTime}
@@ -1068,10 +1079,10 @@ export default function VideoOverlayEditor({
                     <button
                       onClick={handleDeleteOverlay}
                       className="w-full mt-3 bg-red-600 text-white px-3 py-2 rounded hover:bg-red-700 flex items-center justify-center gap-2 font-semibold shadow-md"
-                      title="Delete selected overlay (Delete/Backspace)"
+                      title={t('deleteOverlay')}
                     >
                       <span className="text-lg">🗑️</span>
-                      Delete Overlay
+                      {t('deleteOverlay')}
                     </button>
                   </div>
                 </>
@@ -1164,12 +1175,12 @@ export default function VideoOverlayEditor({
                 {isPlaying ? (
                   <>
                     <span className="text-xl">⏸</span>
-                    Pause
+                    {t('pause')}
                   </>
                 ) : (
                   <>
                     <span className="text-xl">▶</span>
-                    Play
+                    {t('play')}
                   </>
                 )}
               </button>
@@ -1181,10 +1192,10 @@ export default function VideoOverlayEditor({
                     ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                     : 'bg-purple-600 text-white hover:bg-purple-700'
                 }`}
-                title="Undo (Ctrl/Cmd+Z)"
+                title={t('undo')}
               >
                 <span className="text-xl">↶</span>
-                Undo
+                {t('undo')}
               </button>
               <button
                 onClick={handleDeleteOverlay}
@@ -1194,12 +1205,12 @@ export default function VideoOverlayEditor({
                     ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
                     : 'bg-red-600 text-white hover:bg-red-700'
                 }`}
-                title={selectedOverlay ? 'Delete selected overlay (Delete/Backspace)' : 'Select an overlay to delete'}
+                title={selectedOverlay ? t('deleteOverlay') : t('selectOverlayToDelete')}
               >
                 <span className="text-lg">🗑️</span>
-                Delete
+                {t('delete')}
               </button>
-              <span className="text-sm text-gray-600">Spacebar: play/pause | Ctrl/Cmd+Z: undo | Delete/Backspace: delete overlay</span>
+              <span className="text-sm text-gray-600">{t('keyboardShortcuts')}</span>
             </div>
 
             {/* Timeline */}
@@ -1229,13 +1240,13 @@ export default function VideoOverlayEditor({
             onClick={onClose}
             className="px-4 py-2 border rounded hover:bg-gray-100"
           >
-            Cancel
+            {tCommon('cancel')}
           </button>
           <button
             onClick={handleSaveOverlays}
             className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
           >
-            Save Overlays
+            {t('saveOverlays')}
           </button>
         </div>
       </div>

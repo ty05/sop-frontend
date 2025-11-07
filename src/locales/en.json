@@ -194,7 +194,7 @@
     "instructions": "Hold Space or middle mouse button to pan. Use mouse wheel to zoom."
   },
   "videoEditor": {
-    "title": "Video Editor",
+    "title": "Video Overlay Editor",
     "addOverlay": "Add Overlay",
     "chapters": "Chapters",
     "annotations": "Annotations",
@@ -203,6 +203,8 @@
     "trim": "Trim Video",
     "save": "Save",
     "cancel": "Cancel",
+    "toolsHeader": "Tools",
+    "propertiesHeader": "Properties",
     "tools": {
       "select": "Select",
       "text": "Text",
@@ -210,10 +212,29 @@
       "circle": "Circle",
       "arrow": "Arrow"
     },
+    "color": "Color",
+    "fontSize": "Font Size",
+    "overlays": "Overlays",
+    "selectedOverlay": "Selected Overlay",
+    "type": "Type",
+    "startTime": "Start Time",
+    "endTime": "End Time",
+    "deleteOverlay": "Delete Overlay",
+    "play": "Play",
+    "pause": "Pause",
+    "undo": "Undo",
+    "delete": "Delete",
+    "keyboard Shortcuts": "Spacebar: play/pause | Ctrl/Cmd+Z: undo | Delete/Backspace: delete overlay",
+    "selectOverlayToDelete": "Select an overlay to delete",
+    "saveOverlays": "Save Overlays",
     "loadingVideo": "Loading video...",
     "enterText": "Enter text...",
     "clickToAddText": "Click on video to add text",
-    "noOverlays": "No overlays yet"
+    "noOverlays": "No overlays yet",
+    "overlaysSaved": "Saved {count} new overlay(s) successfully!",
+    "noNewOverlays": "No new overlays to save",
+    "failedToSaveOverlays": "Failed to save overlays",
+    "deleteOverlayConfirm": "Delete this overlay?"
   },
   "chapter": {
     "chapters": "Chapters",
