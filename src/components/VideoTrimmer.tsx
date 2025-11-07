@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 interface VideoTrimmerProps {
   videoId: string;
@@ -17,6 +18,7 @@ export default function VideoTrimmer({
   duration,
   onSave
 }: VideoTrimmerProps) {
+  const t = useTranslations('videoTrimmer');
   const [startSec, setStartSec] = useState(currentStart);
   const [endSec, setEndSec] = useState(currentEnd || duration);
 
@@ -32,12 +34,12 @@ export default function VideoTrimmer({
 
   return (
     <div className="bg-gray-100 p-4 rounded-lg">
-      <h4 className="font-semibold mb-4">Trim Video (Non-Destructive)</h4>
+      <h4 className="font-semibold mb-4">{t('title')}</h4>
 
       <div className="space-y-4">
         <div>
           <label className="block text-sm font-medium mb-1">
-            Start Time: {formatTime(startSec)}
+            {t('startTime')}: {formatTime(startSec)}
           </label>
           <input
             type="range"
@@ -52,7 +54,7 @@ export default function VideoTrimmer({
 
         <div>
           <label className="block text-sm font-medium mb-1">
-            End Time: {formatTime(endSec)}
+            {t('endTime')}: {formatTime(endSec)}
           </label>
           <input
             type="range"
@@ -66,14 +68,14 @@ export default function VideoTrimmer({
         </div>
 
         <div className="text-sm text-gray-600">
-          Selected duration: {formatTime(endSec - startSec)}
+          {t('selectedDuration')}: {formatTime(endSec - startSec)}
         </div>
 
         <button
           onClick={handleSave}
           className="bg-blue-600 text-white px-4 py-2 rounded w-full"
         >
-          Save Trim Points
+          {t('saveTrimPoints')}
         </button>
       </div>
     </div>

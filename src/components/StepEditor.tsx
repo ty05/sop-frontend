@@ -499,7 +499,7 @@ export default function StepEditor({ step, onUpdate, readOnly = false, workspace
                 video={step.video}
                 videoId={step.video_id}
                 startTime={step.video_start_sec}
-                enablePiP={true}
+                enablePiP={false}
               />
 
               {!readOnly && editing && (

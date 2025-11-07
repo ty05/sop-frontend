@@ -224,7 +224,7 @@
     "pause": "Pause",
     "undo": "Undo",
     "delete": "Delete",
-    "keyboard Shortcuts": "Spacebar: play/pause | Ctrl/Cmd+Z: undo | Delete/Backspace: delete overlay",
+    "keyboardShortcuts": "Spacebar: play/pause | Ctrl/Cmd+Z: undo | Delete/Backspace: delete overlay",
     "selectOverlayToDelete": "Select an overlay to delete",
     "saveOverlays": "Save Overlays",
     "loadingVideo": "Loading video...",
@@ -235,6 +235,17 @@
     "noNewOverlays": "No new overlays to save",
     "failedToSaveOverlays": "Failed to save overlays",
     "deleteOverlayConfirm": "Delete this overlay?"
+  },
+  "videoTrimmer": {
+    "title": "Trim Video (Non-Destructive)",
+    "startTime": "Start Time",
+    "endTime": "End Time",
+    "selectedDuration": "Selected duration",
+    "saveTrimPoints": "Save Trim Points"
+  },
+  "videoPlayer": {
+    "loadingVideo": "Loading video...",
+    "chapters": "Chapters"
   },
   "chapter": {
     "chapters": "Chapters",

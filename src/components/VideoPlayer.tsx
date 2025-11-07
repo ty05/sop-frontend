@@ -3,6 +3,7 @@
 import { useRef, useState, useEffect } from 'react';
 import apiClient from '@/lib/api';
 import { VideoDetail } from '@/types';
+import { useTranslations } from 'next-intl';
 
 interface Chapter {
   id: string;
@@ -33,6 +34,7 @@ export default function VideoPlayer({
   onTimeUpdate,
   enablePiP = false
 }: VideoPlayerProps) {
+  const t = useTranslations('videoPlayer');
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [playbackUrl, setPlaybackUrl] = useState<string>('');
@@ -276,7 +278,7 @@ export default function VideoPlayer({
           <div className="w-full h-full flex items-center justify-center text-white">
             <div className="text-center">
               <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-white mb-4"></div>
-              <p>Loading video...</p>
+              <p>{t('loadingVideo')}</p>
             </div>
           </div>
         )}
@@ -285,7 +287,7 @@ export default function VideoPlayer({
       {/* Chapters */}
       {chapters.length > 0 && (
         <div className="mt-4">
-          <h4 className="font-semibold mb-2">Chapters</h4>
+          <h4 className="font-semibold mb-2">{t('chapters')}</h4>
           <div className="space-y-1">
             {chapters.map((chapter) => (
               <button

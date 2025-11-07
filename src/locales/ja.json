@@ -236,6 +236,17 @@
     "failedToSaveOverlays": "オーバーレイの保存に失敗しました",
     "deleteOverlayConfirm": "このオーバーレイを削除しますか？"
   },
+  "videoTrimmer": {
+    "title": "動画をトリミング（非破壊）",
+    "startTime": "開始時間",
+    "endTime": "終了時間",
+    "selectedDuration": "選択した長さ",
+    "saveTrimPoints": "トリムポイントを保存"
+  },
+  "videoPlayer": {
+    "loadingVideo": "動画を読み込み中...",
+    "chapters": "チャプター"
+  },
   "chapter": {
     "chapters": "チャプター",
     "addChapter": "+ チャプターを追加",
