@@ -120,7 +120,7 @@ export default function VideoOverlayEditor({
     if (defaultDurationMode === 'full') {
       return { startTime: 0, endTime: duration };
     } else {
-      return { startTime: currentTime, endTime: Math.min(currentTime + 5, duration) };
+      return { startTime: currentTime, endTime: Math.min(currentTime + 3, duration) };
     }
   };
 
@@ -1110,7 +1110,7 @@ export default function VideoOverlayEditor({
                         : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
                     }`}
                   >
-                    {t('shortDuration') || 'Short (5s)'}
+                    {t('shortDuration') || 'Short (3s)'}
                   </button>
                   <button
                     onClick={() => setDefaultDurationMode('full')}

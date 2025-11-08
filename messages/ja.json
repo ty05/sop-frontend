@@ -84,5 +84,42 @@
     "published": "ドキュメントが公開されました！ステップが検索可能になりました。",
     "savedAsDraft": "ドキュメントが下書きに設定されました！",
     "archived": "ドキュメントがアーカイブされました！"
+  },
+  "videoEditor": {
+    "title": "動画オーバーレイエディター",
+    "toolsHeader": "ツール",
+    "propertiesHeader": "プロパティ",
+    "tools": {
+      "select": "選択",
+      "text": "テキスト",
+      "rectangle": "四角形",
+      "circle": "円",
+      "arrow": "矢印",
+      "mosaic": "モザイク"
+    },
+    "defaultDuration": "デフォルト表示時間",
+    "shortDuration": "短期間（3秒）",
+    "fullVideo": "動画全体",
+    "defaultDurationHelp": "新規オーバーレイのデフォルト表示時間",
+    "color": "色",
+    "fontSize": "フォントサイズ",
+    "overlays": "オーバーレイ",
+    "selectedOverlay": "選択中のオーバーレイ",
+    "type": "タイプ",
+    "startTime": "開始時間",
+    "endTime": "終了時間",
+    "applyToFullVideo": "動画全体に適用",
+    "deleteOverlay": "オーバーレイを削除",
+    "selectOverlayToDelete": "削除するオーバーレイを選択してください",
+    "pause": "一時停止",
+    "play": "再生",
+    "undo": "元に戻す",
+    "delete": "削除",
+    "keyboardShortcuts": "スペース：再生/一時停止 | Ctrl/Cmd+Z：元に戻す | Delete/Backspace：オーバーレイを削除",
+    "saveOverlays": "オーバーレイを保存",
+    "overlaysSaved": "{{count}}個のオーバーレイが保存されました！",
+    "noNewOverlays": "保存する新しいオーバーレイがありません",
+    "failedToSaveOverlays": "オーバーレイの保存に失敗しました",
+    "deleteOverlayConfirm": "このオーバーレイを削除してもよろしいですか？"
   }
 }

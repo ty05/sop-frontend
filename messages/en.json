@@ -84,5 +84,42 @@
     "published": "Document published successfully! Steps are now searchable.",
     "savedAsDraft": "Document set to draft successfully!",
     "archived": "Document archived successfully!"
+  },
+  "videoEditor": {
+    "title": "Video Overlay Editor",
+    "toolsHeader": "Tools",
+    "propertiesHeader": "Properties",
+    "tools": {
+      "select": "Select",
+      "text": "Text",
+      "rectangle": "Rectangle",
+      "circle": "Circle",
+      "arrow": "Arrow",
+      "mosaic": "Mosaic"
+    },
+    "defaultDuration": "Default Duration",
+    "shortDuration": "Short (3s)",
+    "fullVideo": "Full Video",
+    "defaultDurationHelp": "Default duration for new overlays",
+    "color": "Color",
+    "fontSize": "Font Size",
+    "overlays": "Overlays",
+    "selectedOverlay": "Selected Overlay",
+    "type": "Type",
+    "startTime": "Start Time",
+    "endTime": "End Time",
+    "applyToFullVideo": "Apply to Full Video",
+    "deleteOverlay": "Delete Overlay",
+    "selectOverlayToDelete": "Select an overlay to delete",
+    "pause": "Pause",
+    "play": "Play",
+    "undo": "Undo",
+    "delete": "Delete",
+    "keyboardShortcuts": "Spacebar: play/pause | Ctrl/Cmd+Z: undo | Delete/Backspace: delete overlay",
+    "saveOverlays": "Save Overlays",
+    "overlaysSaved": "{{count}} overlay(s) saved successfully!",
+    "noNewOverlays": "No new overlays to save",
+    "failedToSaveOverlays": "Failed to save overlays",
+    "deleteOverlayConfirm": "Are you sure you want to delete this overlay?"
   }
 }
