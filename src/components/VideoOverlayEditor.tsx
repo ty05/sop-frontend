@@ -941,11 +941,9 @@ export default function VideoOverlayEditor({
 
       for (const overlay of newOverlays) {
         // Map frontend types to backend types
-        let backendType: 'shape' | 'text' | 'arrow' | 'mosaic';
-        if (overlay.type === 'rectangle' || overlay.type === 'circle') {
+        let backendType: 'shape' | 'text' | 'arrow';
+        if (overlay.type === 'rectangle' || overlay.type === 'circle' || overlay.type === 'mosaic') {
           backendType = 'shape';
-        } else if (overlay.type === 'mosaic') {
-          backendType = 'mosaic';
         } else {
           backendType = overlay.type as 'text' | 'arrow';
         }
