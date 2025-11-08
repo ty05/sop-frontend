@@ -8,7 +8,7 @@ import { useTranslations } from 'next-intl';
 
 interface Overlay {
   id: string;
-  type: 'text' | 'rectangle' | 'circle' | 'arrow';
+  type: 'text' | 'rectangle' | 'circle' | 'arrow' | 'mosaic';
   x: number;
   y: number;
   width?: number;
@@ -18,6 +18,7 @@ interface Overlay {
   color: string;
   startTime: number;
   endTime: number;
+  pixelSize?: number; // For mosaic effect
 }
 
 interface VideoOverlayEditorProps {
@@ -37,7 +38,7 @@ export default function VideoOverlayEditor({
   const [overlays, setOverlays] = useState<Overlay[]>([]);
   const [overlayHistory, setOverlayHistory] = useState<Overlay[][]>([]);
   const [currentTime, setCurrentTime] = useState(0);
-  const [selectedTool, setSelectedTool] = useState<'select' | 'text' | 'rectangle' | 'circle' | 'arrow'>('select');
+  const [selectedTool, setSelectedTool] = useState<'select' | 'text' | 'rectangle' | 'circle' | 'arrow' | 'mosaic'>('select');
   const [selectedOverlay, setSelectedOverlay] = useState<string | null>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
@@ -120,7 +121,7 @@ export default function VideoOverlayEditor({
       if (response.data) {
         const mappedOverlays = response.data.map((o: any) => {
           // Map backend type to frontend type
-          let frontendType: 'text' | 'rectangle' | 'circle' | 'arrow';
+          let frontendType: 'text' | 'rectangle' | 'circle' | 'arrow' | 'mosaic';
           if (o.type === 'shape') {
             frontendType = o.config.shape || 'rectangle';
           } else {
@@ -138,7 +139,8 @@ export default function VideoOverlayEditor({
             fontSize: o.config.fontSize,
             color: o.config.color,
             startTime: o.start_sec,
-            endTime: o.end_sec
+            endTime: o.end_sec,
+            pixelSize: o.config.pixelSize
           };
         });
         setOverlays(mappedOverlays);
@@ -205,6 +207,7 @@ export default function VideoOverlayEditor({
           }
           break;
         case 'rectangle':
+        case 'mosaic':
           if (overlay.width && overlay.height) {
             ctx.strokeRect(overlay.x - 5, overlay.y - 5, overlay.width + 10, overlay.height + 10);
           }
@@ -312,6 +315,100 @@ export default function VideoOverlayEditor({
             handles.forEach(handle => {
               ctx.beginPath();
               ctx.arc(handle.x, handle.y, handleRadius, 0, 2 * Math.PI);
+              ctx.fill();
+              ctx.stroke();
+            });
+          }
+        }
+        break;
+
+      case 'mosaic':
+        if (overlay.width && overlay.height) {
+          // Apply mosaic/pixelation effect
+          const pixelSize = overlay.pixelSize || 15;
+          const video = videoRef.current;
+
+          if (video && video.readyState >= 2) {
+            // Save current context state
+            ctx.save();
+
+            // Create a temporary canvas for the mosaic effect
+            const tempCanvas = document.createElement('canvas');
+            const tempCtx = tempCanvas.getContext('2d');
+
+            if (tempCtx) {
+              // Set temp canvas size to the overlay region
+              tempCanvas.width = overlay.width;
+              tempCanvas.height = overlay.height;
+
+              // Calculate the video source coordinates
+              const canvas = canvasRef.current;
+              if (canvas) {
+                const scaleX = video.videoWidth / canvas.width;
+                const scaleY = video.videoHeight / canvas.height;
+                const srcX = overlay.x * scaleX;
+                const srcY = overlay.y * scaleY;
+                const srcWidth = overlay.width * scaleX;
+                const srcHeight = overlay.height * scaleY;
+
+                // Draw the video region to temp canvas
+                tempCtx.drawImage(
+                  video,
+                  srcX, srcY, srcWidth, srcHeight,
+                  0, 0, overlay.width, overlay.height
+                );
+
+                // Apply pixelation by scaling down and up
+                const scaledWidth = Math.max(1, Math.floor(overlay.width / pixelSize));
+                const scaledHeight = Math.max(1, Math.floor(overlay.height / pixelSize));
+
+                // Draw scaled down version
+                tempCtx.drawImage(
+                  tempCanvas,
+                  0, 0, overlay.width, overlay.height,
+                  0, 0, scaledWidth, scaledHeight
+                );
+
+                // Disable image smoothing for pixelated effect
+                ctx.imageSmoothingEnabled = false;
+
+                // Draw scaled up version back to main canvas
+                ctx.drawImage(
+                  tempCanvas,
+                  0, 0, scaledWidth, scaledHeight,
+                  overlay.x, overlay.y, overlay.width, overlay.height
+                );
+
+                // Re-enable image smoothing
+                ctx.imageSmoothingEnabled = true;
+              }
+            }
+
+            ctx.restore();
+          }
+
+          // Draw border if selected
+          if (isSelected) {
+            ctx.strokeStyle = '#3B82F6';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(overlay.x, overlay.y, overlay.width, overlay.height);
+
+            // Draw resize handles at corners
+            const handleRadius = 6;
+            ctx.fillStyle = '#FFFFFF';
+            ctx.strokeStyle = '#3B82F6';
+            ctx.lineWidth = 2;
+
+            const corners = [
+              { x: overlay.x, y: overlay.y }, // nw
+              { x: overlay.x + overlay.width, y: overlay.y }, // ne
+              { x: overlay.x + overlay.width, y: overlay.y + overlay.height }, // se
+              { x: overlay.x, y: overlay.y + overlay.height } // sw
+            ];
+
+            corners.forEach(corner => {
+              ctx.beginPath();
+              ctx.arc(corner.x, corner.y, handleRadius, 0, 2 * Math.PI);
               ctx.fill();
               ctx.stroke();
             });
@@ -464,10 +561,10 @@ export default function VideoOverlayEditor({
     if (isResizing && selectedOverlay) {
       setOverlays(overlays.map(overlay => {
         if (overlay.id === selectedOverlay) {
-          if (overlay.type === 'rectangle') {
+          if (overlay.type === 'rectangle' || overlay.type === 'mosaic') {
             const newOverlay = { ...overlay };
 
-            // Handle corner resizing for rectangles
+            // Handle corner resizing for rectangles and mosaics
             if (isResizing === 'se') {
               // Southeast: resize from bottom-right corner
               newOverlay.width = Math.max(10, x - overlay.x);
@@ -581,6 +678,11 @@ export default function VideoOverlayEditor({
 
     if (selectedTool === 'rectangle') {
       ctx.strokeRect(drawStart.x, drawStart.y, x - drawStart.x, y - drawStart.y);
+    } else if (selectedTool === 'mosaic') {
+      // Draw preview for mosaic (just a dashed rectangle)
+      ctx.strokeRect(drawStart.x, drawStart.y, x - drawStart.x, y - drawStart.y);
+      ctx.fillStyle = 'rgba(128, 128, 128, 0.3)';
+      ctx.fillRect(drawStart.x, drawStart.y, x - drawStart.x, y - drawStart.y);
     } else if (selectedTool === 'circle') {
       const radius = Math.sqrt(Math.pow(x - drawStart.x, 2) + Math.pow(y - drawStart.y, 2)) / 2;
       ctx.beginPath();
@@ -640,6 +742,19 @@ export default function VideoOverlayEditor({
         width: Math.abs(x - drawStart.x),
         height: Math.abs(y - drawStart.y),
         color,
+        startTime: currentTime,
+        endTime: currentTime + 5
+      };
+    } else if (selectedTool === 'mosaic') {
+      newOverlay = {
+        id: `overlay-${Date.now()}`,
+        type: selectedTool,
+        x: drawStart.x,
+        y: drawStart.y,
+        width: Math.abs(x - drawStart.x),
+        height: Math.abs(y - drawStart.y),
+        color,
+        pixelSize: 15, // Default pixel size for mosaic effect
         startTime: currentTime,
         endTime: currentTime + 5
       };
@@ -749,7 +864,7 @@ export default function VideoOverlayEditor({
   const isPointNearResizeHandle = (x: number, y: number, overlay: Overlay): string | null => {
     const handleRadius = 8;
 
-    if (overlay.type === 'rectangle' && overlay.width !== undefined && overlay.height !== undefined) {
+    if ((overlay.type === 'rectangle' || overlay.type === 'mosaic') && overlay.width !== undefined && overlay.height !== undefined) {
       const corners = [
         { x: overlay.x, y: overlay.y, handle: 'nw' },
         { x: overlay.x + overlay.width, y: overlay.y, handle: 'ne' },
@@ -810,9 +925,11 @@ export default function VideoOverlayEditor({
 
       for (const overlay of newOverlays) {
         // Map frontend types to backend types
-        let backendType: 'shape' | 'text' | 'arrow';
+        let backendType: 'shape' | 'text' | 'arrow' | 'mosaic';
         if (overlay.type === 'rectangle' || overlay.type === 'circle') {
           backendType = 'shape';
+        } else if (overlay.type === 'mosaic') {
+          backendType = 'mosaic';
         } else {
           backendType = overlay.type as 'text' | 'arrow';
         }
@@ -822,14 +939,15 @@ export default function VideoOverlayEditor({
           start_sec: overlay.startTime,
           end_sec: overlay.endTime,
           config: {
-            shape: overlay.type === 'rectangle' ? 'rectangle' : overlay.type === 'circle' ? 'circle' : undefined,
+            shape: overlay.type === 'rectangle' ? 'rectangle' : overlay.type === 'circle' ? 'circle' : overlay.type === 'mosaic' ? 'mosaic' : undefined,
             x: overlay.x,
             y: overlay.y,
             width: overlay.width,
             height: overlay.height,
             text: overlay.text,
             fontSize: overlay.fontSize,
-            color: overlay.color
+            color: overlay.color,
+            pixelSize: overlay.pixelSize
           }
         });
       }
@@ -944,7 +1062,8 @@ export default function VideoOverlayEditor({
                 { tool: 'text', label: t('tools.text'), icon: 'T' },
                 { tool: 'rectangle', label: t('tools.rectangle'), icon: '▢' },
                 { tool: 'circle', label: t('tools.circle'), icon: '○' },
-                { tool: 'arrow', label: t('tools.arrow'), icon: '→' }
+                { tool: 'arrow', label: t('tools.arrow'), icon: '→' },
+                { tool: 'mosaic', label: t('tools.mosaic') || 'Mosaic', icon: '◫' }
               ].map(({ tool, label, icon }) => (
                 <button
                   key={tool}
@@ -1008,6 +1127,7 @@ export default function VideoOverlayEditor({
                             {overlay.type === 'rectangle' && '▢'}
                             {overlay.type === 'circle' && '○'}
                             {overlay.type === 'arrow' && '→'}
+                            {overlay.type === 'mosaic' && '◫'}
                           </span>
                           <span className="font-medium truncate">
                             {overlay.type === 'text'
