@@ -121,12 +121,28 @@ export default function LandingPage() {
                   </p>
                 </div>
                 <div className="flex-1 w-full">
-                  <div className="bg-gradient-to-br from-blue-100 to-purple-100 rounded-xl aspect-video flex items-center justify-center shadow-lg">
-                    <svg className="w-16 h-16 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      {featureIdx === 0 && <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />}
-                      {featureIdx === 1 && <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />}
-                      {featureIdx === 2 && <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />}
-                    </svg>
+                  <div className="rounded-xl overflow-hidden shadow-lg border border-gray-200">
+                    {featureIdx === 0 && (
+                      <img
+                        src="https://pub-1b9280c6db204bccb8b235db599be438.r2.dev/uploads/video.png"
+                        alt={t(`solution.${feature}.title`)}
+                        className="w-full h-full object-cover"
+                      />
+                    )}
+                    {featureIdx === 1 && (
+                      <img
+                        src="https://pub-1b9280c6db204bccb8b235db599be438.r2.dev/uploads/image.png"
+                        alt={t(`solution.${feature}.title`)}
+                        className="w-full h-full object-cover"
+                      />
+                    )}
+                    {featureIdx === 2 && (
+                      <img
+                        src="https://pub-1b9280c6db204bccb8b235db599be438.r2.dev/uploads/qr.png"
+                        alt={t(`solution.${feature}.title`)}
+                        className="w-full h-full object-cover"
+                      />
+                    )}
                   </div>
                 </div>
               </div>
@@ -333,7 +349,7 @@ export default function LandingPage() {
 
       {/* FAQ Section */}
       <section className="py-16 md:py-24 px-4">
-        <div className="max-w-3xl mx-auto">
+        <div className="max-w-3xl mx-auto bg-white">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 text-gray-900">
             {t('faq.title')}
           </h2>
