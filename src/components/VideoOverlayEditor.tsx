@@ -56,6 +56,7 @@ export default function VideoOverlayEditor({
   const [isPlaying, setIsPlaying] = useState(false);
   const [textResizeStartFontSize, setTextResizeStartFontSize] = useState<number | null>(null);
   const [textResizeStartX, setTextResizeStartX] = useState<number | null>(null);
+  const [defaultDurationMode, setDefaultDurationMode] = useState<'short' | 'full'>('short');
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -113,6 +114,23 @@ export default function VideoOverlayEditor({
       console.error('Failed to load video:', error);
       alert(`Failed to load video: ${error?.message || error}`);
     }
+  };
+
+  const getOverlayDuration = () => {
+    if (defaultDurationMode === 'full') {
+      return { startTime: 0, endTime: duration };
+    } else {
+      return { startTime: currentTime, endTime: Math.min(currentTime + 5, duration) };
+    }
+  };
+
+  const applyFullVideoDuration = () => {
+    if (!selectedOverlay) return;
+    setOverlays(overlays.map(o =>
+      o.id === selectedOverlay
+        ? { ...o, startTime: 0, endTime: duration }
+        : o
+    ));
   };
 
   const loadOverlays = async () => {
@@ -732,6 +750,7 @@ export default function VideoOverlayEditor({
     const y = e.clientY - rect.top;
 
     let newOverlay: Overlay | null = null;
+    const overlayDuration = getOverlayDuration();
 
     if (selectedTool === 'rectangle' || selectedTool === 'circle') {
       newOverlay = {
@@ -742,8 +761,7 @@ export default function VideoOverlayEditor({
         width: Math.abs(x - drawStart.x),
         height: Math.abs(y - drawStart.y),
         color,
-        startTime: currentTime,
-        endTime: currentTime + 5
+        ...overlayDuration
       };
     } else if (selectedTool === 'mosaic') {
       newOverlay = {
@@ -755,8 +773,7 @@ export default function VideoOverlayEditor({
         height: Math.abs(y - drawStart.y),
         color,
         pixelSize: 15, // Default pixel size for mosaic effect
-        startTime: currentTime,
-        endTime: currentTime + 5
+        ...overlayDuration
       };
     } else if (selectedTool === 'arrow') {
       // For arrows, allow negative width/height to support all directions
@@ -768,8 +785,7 @@ export default function VideoOverlayEditor({
         width: x - drawStart.x,  // Can be negative
         height: y - drawStart.y, // Can be negative
         color,
-        startTime: currentTime,
-        endTime: currentTime + 5
+        ...overlayDuration
       };
     }
 
@@ -785,6 +801,7 @@ export default function VideoOverlayEditor({
   const handleAddText = () => {
     if (!textPosition || !textInput.trim()) return;
 
+    const overlayDuration = getOverlayDuration();
     const newOverlay: Overlay = {
       id: `overlay-${Date.now()}`,
       type: 'text',
@@ -793,8 +810,7 @@ export default function VideoOverlayEditor({
       text: textInput,
       fontSize,
       color,
-      startTime: currentTime,
-      endTime: currentTime + 5
+      ...overlayDuration
     };
 
     saveToHistory([...overlays, newOverlay]);
@@ -1082,6 +1098,38 @@ export default function VideoOverlayEditor({
 
             <h3 className="font-semibold mb-3">{t('propertiesHeader')}</h3>
             <div className="space-y-3">
+              {/* Default Duration Mode */}
+              <div className="border-b pb-3">
+                <label className="text-sm text-gray-600 block mb-2">
+                  {t('defaultDuration') || 'Default Duration'}
+                </label>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setDefaultDurationMode('short')}
+                    className={`flex-1 px-3 py-2 rounded text-xs font-medium ${
+                      defaultDurationMode === 'short'
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                    }`}
+                  >
+                    {t('shortDuration') || 'Short (5s)'}
+                  </button>
+                  <button
+                    onClick={() => setDefaultDurationMode('full')}
+                    className={`flex-1 px-3 py-2 rounded text-xs font-medium ${
+                      defaultDurationMode === 'full'
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                    }`}
+                  >
+                    {t('fullVideo') || 'Full Video'}
+                  </button>
+                </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  {t('defaultDurationHelp') || 'Default duration for new overlays'}
+                </p>
+              </div>
+
               <div>
                 <label className="text-sm text-gray-600 block mb-1">{t('color')}</label>
                 <input
@@ -1196,6 +1244,19 @@ export default function VideoOverlayEditor({
                         max={duration}
                       />
                     </div>
+
+                    {/* Quick action to apply full video duration */}
+                    {(selectedOverlayData.startTime !== 0 || selectedOverlayData.endTime !== duration) && (
+                      <button
+                        onClick={applyFullVideoDuration}
+                        className="w-full mt-2 bg-green-600 text-white px-3 py-2 rounded hover:bg-green-700 flex items-center justify-center gap-2 text-sm font-medium"
+                        title={t('applyToFullVideo') || 'Apply to entire video'}
+                      >
+                        <span>⏱️</span>
+                        {t('applyToFullVideo') || 'Apply to Full Video'}
+                      </button>
+                    )}
+
                     <button
                       onClick={handleDeleteOverlay}
                       className="w-full mt-3 bg-red-600 text-white px-3 py-2 rounded hover:bg-red-700 flex items-center justify-center gap-2 font-semibold shadow-md"
