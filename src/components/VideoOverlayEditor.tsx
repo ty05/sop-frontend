@@ -1103,10 +1103,10 @@ export default function VideoOverlayEditor({
                 <label className="text-sm text-gray-600 block mb-2">
                   {t('defaultDuration') || 'Default Duration'}
                 </label>
-                <div className="flex gap-2">
+                <div className="flex flex-col gap-2">
                   <button
                     onClick={() => setDefaultDurationMode('short')}
-                    className={`flex-1 px-3 py-2 rounded text-xs font-medium ${
+                    className={`w-full px-3 py-2 rounded text-xs font-medium ${
                       defaultDurationMode === 'short'
                         ? 'bg-blue-600 text-white'
                         : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
@@ -1116,7 +1116,7 @@ export default function VideoOverlayEditor({
                   </button>
                   <button
                     onClick={() => setDefaultDurationMode('full')}
-                    className={`flex-1 px-3 py-2 rounded text-xs font-medium ${
+                    className={`w-full px-3 py-2 rounded text-xs font-medium ${
                       defaultDurationMode === 'full'
                         ? 'bg-blue-600 text-white'
                         : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
