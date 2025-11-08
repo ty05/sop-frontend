@@ -200,6 +200,61 @@ export default function VideoPlayer({
             ctx.beginPath();
             ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
             ctx.stroke();
+          } else if (config.shape === 'mosaic') {
+            // Mosaic: apply pixelation effect to hide content
+            const pixelSize = config.pixelSize || 15;
+
+            if (video.readyState >= 2) {
+              ctx.save();
+
+              // Create temporary canvas for mosaic effect
+              const tempCanvas = document.createElement('canvas');
+              const tempCtx = tempCanvas.getContext('2d');
+
+              if (tempCtx) {
+                tempCanvas.width = config.width;
+                tempCanvas.height = config.height;
+
+                // Calculate video source coordinates
+                const scaleX = video.videoWidth / canvas.width;
+                const scaleY = video.videoHeight / canvas.height;
+                const srcX = config.x * scaleX;
+                const srcY = config.y * scaleY;
+                const srcWidth = config.width * scaleX;
+                const srcHeight = config.height * scaleY;
+
+                // Draw video region to temp canvas
+                tempCtx.drawImage(
+                  video,
+                  srcX, srcY, srcWidth, srcHeight,
+                  0, 0, config.width, config.height
+                );
+
+                // Apply pixelation
+                const scaledWidth = Math.max(1, Math.floor(config.width / pixelSize));
+                const scaledHeight = Math.max(1, Math.floor(config.height / pixelSize));
+
+                tempCtx.drawImage(
+                  tempCanvas,
+                  0, 0, config.width, config.height,
+                  0, 0, scaledWidth, scaledHeight
+                );
+
+                // Disable smoothing for pixelated effect
+                ctx.imageSmoothingEnabled = false;
+
+                // Draw scaled up version back to main canvas
+                ctx.drawImage(
+                  tempCanvas,
+                  0, 0, scaledWidth, scaledHeight,
+                  config.x, config.y, config.width, config.height
+                );
+
+                ctx.imageSmoothingEnabled = true;
+              }
+
+              ctx.restore();
+            }
           }
           break;
       }
