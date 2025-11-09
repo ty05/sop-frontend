@@ -696,5 +696,133 @@
       "commerce": "Commercial Transaction Act",
       "copyright": "© 2025 SOP Manual. All rights reserved."
     }
+  },
+  "terms": {
+    "title": "Terms of Service",
+    "lastUpdated": "Last Updated: November 9, 2025",
+    "backToHome": "Back to Home",
+    "sections": {
+      "agreement": {
+        "title": "1. Agreement to Terms",
+        "content": "By accessing or using SOP Manual (\"Service\"), you agree to be bound by these Terms of Service (\"Terms\"). If you disagree with any part of these terms, you may not access the Service."
+      },
+      "description": {
+        "title": "2. Description of Service",
+        "content": "SOP Manual is a software platform that allows users to create, manage, and share standard operating procedure manuals with video and image annotations. The Service includes tools for document creation, media editing, collaboration, and distribution."
+      },
+      "accounts": {
+        "title": "3. User Accounts",
+        "intro": "To use certain features of the Service, you must register for an account. You agree to:",
+        "requirements": [
+          "Provide accurate, current, and complete information during registration",
+          "Maintain the security of your password and account",
+          "Promptly notify us of any unauthorized use of your account",
+          "Accept responsibility for all activities that occur under your account"
+        ],
+        "ageRequirement": "You must be at least 18 years old to use this Service. By using the Service, you represent that you meet this age requirement."
+      },
+      "payment": {
+        "title": "4. Subscription and Payment",
+        "intro": "Some aspects of the Service may be provided for a fee. You agree to pay all fees associated with your subscription plan. Subscription fees are billed in advance on a recurring basis (monthly or annually).",
+        "terms": [
+          "Fees are non-refundable except as required by law or as expressly stated in these Terms",
+          "We reserve the right to change our fees upon 30 days' notice",
+          "You may cancel your subscription at any time, effective at the end of your current billing period",
+          "Failure to pay fees may result in suspension or termination of your account"
+        ]
+      },
+      "userContent": {
+        "title": "5. User Content",
+        "ownership": "You retain all rights to the content you upload, create, or share through the Service (\"User Content\"). By uploading User Content, you grant us a worldwide, non-exclusive, royalty-free license to use, store, display, and distribute your User Content solely for the purpose of providing and improving the Service.",
+        "warranties": "You represent and warrant that:",
+        "warrantyList": [
+          "You own or have the necessary rights to all User Content you submit",
+          "Your User Content does not violate any third-party rights, including intellectual property rights",
+          "Your User Content does not contain illegal, harmful, or offensive material"
+        ]
+      },
+      "prohibited": {
+        "title": "6. Prohibited Uses",
+        "intro": "You agree not to use the Service:",
+        "list": [
+          "In any way that violates any applicable law or regulation",
+          "To transmit any harmful, threatening, abusive, or defamatory content",
+          "To impersonate or misrepresent your affiliation with any person or entity",
+          "To interfere with or disrupt the Service or servers",
+          "To attempt to gain unauthorized access to any portion of the Service",
+          "To use automated systems to access the Service without our permission",
+          "To upload viruses, malware, or any malicious code"
+        ]
+      },
+      "intellectual": {
+        "title": "7. Intellectual Property",
+        "content": "The Service and its original content (excluding User Content), features, and functionality are owned by SOP Manual and are protected by international copyright, trademark, patent, trade secret, and other intellectual property laws.",
+        "restrictions": "You may not copy, modify, distribute, sell, or lease any part of our Service without our prior written permission."
+      },
+      "privacy": {
+        "title": "8. Data Privacy",
+        "content": "Your use of the Service is also governed by our Privacy Policy. We collect, use, and protect your personal information as described in our Privacy Policy. By using the Service, you consent to our collection and use of your data as outlined in the Privacy Policy."
+      },
+      "termination": {
+        "title": "9. Termination",
+        "ourRights": "We may terminate or suspend your account and access to the Service immediately, without prior notice or liability, for any reason, including if you breach these Terms.",
+        "effect": "Upon termination, your right to use the Service will immediately cease. If you wish to terminate your account, you may simply discontinue using the Service or contact us to request account deletion."
+      },
+      "disclaimer": {
+        "title": "10. Disclaimer of Warranties",
+        "asIs": "The Service is provided \"AS IS\" and \"AS AVAILABLE\" without warranties of any kind, either express or implied, including but not limited to implied warranties of merchantability, fitness for a particular purpose, or non-infringement.",
+        "noWarranty": "We do not warrant that:",
+        "list": [
+          "The Service will be uninterrupted, secure, or error-free",
+          "The results obtained from using the Service will be accurate or reliable",
+          "Any errors in the Service will be corrected"
+        ]
+      },
+      "limitation": {
+        "title": "11. Limitation of Liability",
+        "intro": "To the maximum extent permitted by law, SOP Manual shall not be liable for any indirect, incidental, special, consequential, or punitive damages, or any loss of profits or revenues, whether incurred directly or indirectly, or any loss of data, use, goodwill, or other intangible losses resulting from:",
+        "scenarios": [
+          "Your use or inability to use the Service",
+          "Any unauthorized access to or use of our servers and/or any personal information stored therein",
+          "Any interruption or cessation of transmission to or from the Service",
+          "Any bugs, viruses, or other harmful code that may be transmitted through the Service",
+          "Any errors or omissions in any content or for any loss or damage incurred as a result of the use of any content"
+        ]
+      },
+      "indemnification": {
+        "title": "12. Indemnification",
+        "intro": "You agree to defend, indemnify, and hold harmless SOP Manual and its employees, contractors, agents, officers, and directors from and against any and all claims, damages, obligations, losses, liabilities, costs, or debt, and expenses arising from:",
+        "scenarios": [
+          "Your use of and access to the Service",
+          "Your violation of any term of these Terms",
+          "Your violation of any third-party right, including any copyright, property, or privacy right",
+          "Any claim that your User Content caused damage to a third party"
+        ]
+      },
+      "changes": {
+        "title": "13. Changes to Terms",
+        "modification": "We reserve the right to modify or replace these Terms at any time. If a revision is material, we will provide at least 30 days' notice prior to any new terms taking effect. What constitutes a material change will be determined at our sole discretion.",
+        "continued": "By continuing to access or use our Service after revisions become effective, you agree to be bound by the revised terms. If you do not agree to the new terms, please stop using the Service."
+      },
+      "governing": {
+        "title": "14. Governing Law",
+        "content": "These Terms shall be governed and construed in accordance with the laws of the jurisdiction in which SOP Manual operates, without regard to its conflict of law provisions."
+      },
+      "contact": {
+        "title": "15. Contact Us",
+        "intro": "If you have any questions about these Terms, please contact us at:",
+        "email": "Email: support@sopmanual.com"
+      }
+    }
+  },
+  "privacy": {
+    "title": "Privacy Policy",
+    "lastUpdated": "Last Updated: November 9, 2025",
+    "backToHome": "Back to Home"
+  },
+  "commerce": {
+    "title": "Commercial Transaction Act",
+    "lastUpdated": "Last Updated: November 9, 2025",
+    "backToHome": "Back to Home"
   }
 }
