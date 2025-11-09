@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { useState, useEffect } from 'react';
 import { trackPageView, trackCTAClick } from '@/lib/analytics';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 export default function LandingPage() {
   const t = useTranslations('landing');
@@ -48,6 +49,7 @@ export default function LandingPage() {
           </div>
 
           <div className="flex items-center gap-3">
+            <LanguageSwitcher />
             <Link
               href="/auth/login"
               className="text-gray-700 hover:text-blue-600 transition font-medium"

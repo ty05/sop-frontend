@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 export default function TermsOfServicePage() {
   const t = useTranslations('terms');
@@ -18,6 +19,7 @@ export default function TermsOfServicePage() {
           </div>
 
           <div className="flex items-center gap-3">
+            <LanguageSwitcher />
             <Link
               href="/landing"
               className="text-gray-700 hover:text-blue-600 transition font-medium"
