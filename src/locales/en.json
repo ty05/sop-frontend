@@ -995,15 +995,15 @@
       "business": {
         "title": "1. Business Information",
         "name": "Business Name",
-        "nameValue": "[Your Company or Sole Proprietor Name]",
+        "nameValue": "repetizero",
         "representative": "Representative",
-        "representativeValue": "[Full Name of Representative]",
+        "representativeValue": "Takashi Yanagisawa",
         "address": "Address",
-        "addressValue": "〒[Postal Code]\n[Prefecture][City][Street Address]\n[Building Name/Room Number]",
+        "addressValue": "〒452-0002\nMori Building No. 2, Room 401, 4-24-5 Meieki, Nakamura-ku, Nagoya-shi, Aichi, Japan",
         "email": "Contact Email",
         "emailValue": "support@repetizero.com",
         "phone": "Phone Number",
-        "phoneValue": "[Phone Number]",
+        "phoneValue": "It will be disclosed without delay when requested",
         "hours": "Business Hours",
         "hoursValue": "Monday - Friday, 9:00 AM - 6:00 PM (JST)"
       },
@@ -1119,9 +1119,9 @@
       "registration": {
         "title": "7. Business Registration Information",
         "corporateNumber": "Corporate Number",
-        "corporateNumberValue": "[Corporate Number] (for corporations only)",
+        "corporateNumberValue": "N/A",
         "invoiceNumber": "Qualified Invoice Issuer Registration Number",
-        "invoiceNumberValue": "[Registration Number] (Invoice System Compliant)",
+        "invoiceNumberValue": "N/A",
         "antiqueDealer": "Antique Dealer License Number",
         "antiqueDealerValue": "Not applicable (digital service)"
       },
@@ -1149,11 +1149,11 @@
         "generalHours": "Hours: Monday - Friday 9:00-18:00 (JST)",
         "generalNote": "*Excluding weekends and holidays",
         "billing": "Billing Inquiries",
-        "billingEmail": "Email: billing@repetizero.com",
+        "billingEmail": "Email: support@repetizero.com",
         "addressLabel": "Address",
-        "addressValue": "〒[Postal Code]\n[Address]",
+        "addressValue": "〒4520002\nMori Building No. 2, Room 401, 4-24-5 Meieki, Nakamura-ku, Nagoya-shi, Aichi, Japan",
         "phoneLabel": "TEL",
-        "phoneValue": "[Phone Number]",
+        "phoneValue": "It will be disclosed without delay when requested",
         "lastUpdated": "Last Updated: November 9, 2025"
       }
     }
