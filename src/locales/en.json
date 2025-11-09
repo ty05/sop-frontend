@@ -1031,12 +1031,12 @@
         },
         "basic": {
           "name": "Basic Plan",
-          "price": "$29/month or $290/year (save 17%)",
-          "description": "Includes: Up to 10 documents, 5GB storage, basic support"
+          "price": "¥3,980/month or ¥39,800/year (tax included) *Save 2 months with annual payment",
+          "description": "Includes: Up to 50 documents, 10GB storage, basic support"
         },
         "pro": {
           "name": "Pro Plan",
-          "price": "$99/month or $990/year (save 17%)",
+          "price": "¥9,800/month or ¥98,000/year (tax included) *Save 2 months with annual payment",
           "description": "Includes: Unlimited documents, 50GB storage, priority support, advanced features"
         },
         "methodsTitle": "3.2 Payment Methods",
@@ -1050,9 +1050,11 @@
         "terms": [
           "Subscription fees are billed in advance on a recurring basis (monthly or annually)",
           "Automatic renewal unless cancelled before the end of the current billing period",
-          "All prices are in USD unless otherwise stated",
-          "Taxes may be added where applicable",
-          "Payment is processed securely through our payment provider, Stripe"
+          "All prices are displayed in Japanese Yen (tax included)",
+          "10% consumption tax is included",
+          "Payment is processed securely through our payment provider, Stripe",
+          "Qualified invoices can be issued",
+          "Receipts can be downloaded from account settings"
         ]
       },
       "refund": {
@@ -1069,7 +1071,7 @@
         "refundIntro": "We offer a 30-day money-back guarantee for first-time subscribers:",
         "refundTerms": [
           "If you are not satisfied within the first 30 days, you may request a full refund",
-          "Refund requests must be submitted via email to support@sopmanual.com",
+          "Refund requests must be submitted via email to support@repetizero.com",
           "Refunds are processed within 5-10 business days",
           "This guarantee applies only to the first subscription period",
           "Renewal payments are non-refundable except in cases of service failure or billing errors"
@@ -1080,7 +1082,7 @@
         "intro": "We provide customer support through the following channels:",
         "email": {
           "title": "Email Support",
-          "contact": "support@sopmanual.com",
+          "contact": "support@repetizero.com",
           "response": "Response time: Within 24 hours (business days)"
         },
         "hours": {
@@ -1092,9 +1094,9 @@
         "title": "6. Contact Information",
         "intro": "For questions about our commercial terms, billing, or transactions, please contact us:",
         "generalSupport": "General Support",
-        "generalEmail": "support@sopmanual.com",
+        "generalEmail": "support@repetizero.com",
         "billing": "Billing Inquiries",
-        "billingEmail": "billing@sopmanual.com"
+        "billingEmail": "billing@repetizero.com"
       }
     }
   },

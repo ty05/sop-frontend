@@ -1034,13 +1034,13 @@
         },
         "basic": {
           "name": "ベーシックプラン",
-          "price": "月額$29または年額$290（17％割引）",
-          "description": "含まれるもの：10文書まで、5GBストレージ、基本サポート"
+          "price": "月額¥3,980または年額¥39,800（税込）※年払いで2ヶ月分お得",
+          "description": "含まれるもの：ドキュメント数50個まで、ストレージ10GB、基本サポート"
         },
         "pro": {
           "name": "プロプラン",
-          "price": "月額$99または年額$990（17％割引）",
-          "description": "含まれるもの：無制限の文書、50GBストレージ、優先サポート、高度な機能"
+          "price": "月額¥9,800または年額¥98,000（税込）※年払いで2ヶ月分お得",
+          "description": "含まれるもの：ドキュメント数無制限、ストレージ50GB、優先サポート、高度な機能"
         },
         "methodsTitle": "3.2 支払方法",
         "methodsIntro": "以下の支払方法を受け付けています：",
@@ -1053,9 +1053,11 @@
         "terms": [
           "サブスクリプション料金は定期的（月次または年次）に前払いで請求されます",
           "現在の請求期間終了前にキャンセルしない限り、自動更新されます",
-          "特に明記されていない限り、すべての価格は米ドルです",
-          "該当する場合は税金が追加されます",
-          "支払いは決済プロバイダーのStripeを通じて安全に処理されます"
+          "すべての価格は日本円（税込）で表示されています",
+          "消費税（10%）が含まれています",
+          "支払いは決済プロバイダーのStripeを通じて安全に処理されます",
+          "適格請求書（インボイス）の発行が可能です",
+          "領収書はアカウント設定からダウンロードできます"
         ]
       },
       "refund": {
@@ -1072,7 +1074,7 @@
         "refundIntro": "初回サブスクライバーには30日間の返金保証を提供しています：",
         "refundTerms": [
           "最初の30日以内にご満足いただけない場合は、全額返金をリクエストできます",
-          "返金リクエストはsupport@sopmanual.comまでメールで提出してください",
+          "返金リクエストはsupport@repetizero.comまでメールで提出してください",
           "返金は5〜10営業日以内に処理されます",
           "この保証は最初のサブスクリプション期間にのみ適用されます",
           "更新支払いは、サービス障害または請求エラーの場合を除き、返金不可です"
@@ -1083,7 +1085,7 @@
         "intro": "以下のチャネルを通じてカスタマーサポートを提供しています：",
         "email": {
           "title": "メールサポート",
-          "contact": "support@sopmanual.com",
+          "contact": "support@repetizero.com",
           "response": "応答時間：24時間以内（営業日）"
         },
         "hours": {
@@ -1095,9 +1097,9 @@
         "title": "6. お問い合わせ先",
         "intro": "商取引条件、請求、または取引に関するご質問は、以下までお問い合わせください：",
         "generalSupport": "一般サポート",
-        "generalEmail": "support@sopmanual.com",
+        "generalEmail": "support@repetizero.com",
         "billing": "請求に関するお問い合わせ",
-        "billingEmail": "billing@sopmanual.com"
+        "billingEmail": "support@repetizero.com"
       }
     }
   },
@@ -1263,11 +1265,11 @@
         "generalHours": "受付時間：月曜日〜金曜日 9:00-18:00（日本時間）",
         "generalNote": "※土日祝日を除く",
         "billing": "請求に関するお問い合わせ",
-        "billingEmail": "Email: billing@repetizero.com",
+        "billingEmail": "Email: support@repetizero.com",
         "addressLabel": "住所",
-        "addressValue": "〒[郵便番号]\n[住所]",
+        "addressValue": "〒4500002 愛知県名古屋市中村区名駅4丁目24番5号第2森ビル401",
         "phoneLabel": "TEL",
-        "phoneValue": "[電話番号]",
+        "phoneValue": "請求があれば遅滞なく開示する",
         "lastUpdated": "最終更新日：2025年11月9日"
       }
     }
