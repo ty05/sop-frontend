@@ -35,13 +35,14 @@ apiClient.interceptors.response.use(
     if (error.response?.status === 402) {
       const detail = error.response.data?.detail;
       const message = detail?.message || 'Please upgrade to continue';
-      const upgradeUrl = detail?.upgrade_url || '/workspace/settings';
+      const trialEnded = detail?.trial_ended;
 
-      // Show alert with error message
-      alert(message);
+      // Trigger a custom event that the app layout will listen to
+      window.dispatchEvent(new CustomEvent('trial-expired', {
+        detail: { message, trialEnded }
+      }));
 
-      // Redirect to upgrade page
-      window.location.href = upgradeUrl;
+      // Don't redirect here - let the modal handle it
     }
 
     return Promise.reject(error);
