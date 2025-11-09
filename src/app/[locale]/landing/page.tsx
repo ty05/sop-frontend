@@ -26,6 +26,45 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-white">
+      {/* Header */}
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+        <nav className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Link href="/landing" className="text-xl md:text-2xl font-bold text-blue-600 hover:text-blue-700 transition">
+              SOP Manual
+            </Link>
+          </div>
+
+          <div className="hidden md:flex items-center gap-6">
+            <a href="#features" className="text-gray-700 hover:text-blue-600 transition font-medium">
+              Features
+            </a>
+            <a href="#pricing" className="text-gray-700 hover:text-blue-600 transition font-medium">
+              Pricing
+            </a>
+            <a href="#faq" className="text-gray-700 hover:text-blue-600 transition font-medium">
+              FAQ
+            </a>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <Link
+              href="/auth/login"
+              className="text-gray-700 hover:text-blue-600 transition font-medium"
+            >
+              Login
+            </Link>
+            <Link
+              href={ctaLink}
+              onClick={() => handleCTAClick('header')}
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition"
+            >
+              Get Started
+            </Link>
+          </div>
+        </nav>
+      </header>
+
       {/* Hero Section */}
       <section className="bg-gradient-to-b from-blue-50 to-white py-16 md:py-24 px-4">
         <div className="max-w-6xl mx-auto text-center">
@@ -99,7 +138,7 @@ export default function LandingPage() {
       </section>
 
       {/* Solution/Features Section */}
-      <section className="py-16 md:py-24 px-4">
+      <section id="features" className="py-16 md:py-24 px-4">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 text-gray-900">
             {t('solution.title')}
@@ -215,7 +254,7 @@ export default function LandingPage() {
       </section> */}
 
       {/* Pricing Section */}
-      <section className="py-16 md:py-24 px-4 bg-gray-50">
+      <section id="pricing" className="py-16 md:py-24 px-4 bg-gray-50">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 text-gray-900">
             {t('pricing.title')}
@@ -348,7 +387,7 @@ export default function LandingPage() {
       </section> */}
 
       {/* FAQ Section */}
-      <section className="py-16 md:py-24 px-4">
+      <section id="faq" className="py-16 md:py-24 px-4">
         <div className="max-w-3xl mx-auto bg-white">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 text-gray-900">
             {t('faq.title')}
