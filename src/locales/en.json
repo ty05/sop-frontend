@@ -693,7 +693,7 @@
       "legal": "Legal",
       "terms": "Terms of Service",
       "privacy": "Privacy Policy",
-      "commerce": "Commercial Transaction Act",
+      "legalNotice": "Legal Notice",
       "copyright": "© 2025 SOP Manual. All rights reserved."
     }
   },
@@ -984,119 +984,6 @@
         "title": "8. Contact Us",
         "intro": "If you have any questions about this Privacy Policy, please contact us:",
         "email": "Email: support@repetizero.com"
-      }
-    }
-  },
-  "commerce": {
-    "title": "Commercial Transaction Act",
-    "lastUpdated": "Last Updated: November 9, 2025",
-    "backToHome": "Back to Home",
-    "sections": {
-      "business": {
-        "title": "1. Business Information",
-        "name": "Business Name",
-        "nameValue": "SOP Manual",
-        "representative": "Representative",
-        "representativeValue": "[Company Representative Name]",
-        "address": "Business Address",
-        "addressValue": "[Business Address]",
-        "email": "Contact Email",
-        "emailValue": "support@sopmanual.com",
-        "phone": "Contact Phone",
-        "phoneValue": "[Phone Number]",
-        "hours": "Business Hours",
-        "hoursValue": "Monday - Friday, 9:00 AM - 6:00 PM (Local Time)"
-      },
-      "service": {
-        "title": "2. Service Description",
-        "intro": "SOP Manual is a cloud-based software service that enables users to create, manage, and distribute standard operating procedure manuals with integrated video and image annotations.",
-        "featuresTitle": "2.1 Core Features",
-        "features": [
-          "Document creation and management tools",
-          "Video recording and annotation capabilities",
-          "Image editing and markup features",
-          "Team collaboration and sharing",
-          "QR code generation for easy access",
-          "Multi-language support",
-          "Cloud storage and hosting"
-        ]
-      },
-      "pricing": {
-        "title": "3. Pricing and Payment Terms",
-        "plansTitle": "3.1 Subscription Plans",
-        "trial": {
-          "name": "Free Trial",
-          "price": "$0 for 14 days",
-          "description": "Full access to all features during trial period. No credit card required."
-        },
-        "basic": {
-          "name": "Basic Plan",
-          "price": "¥3,980/month or ¥39,800/year (tax included) *Save 2 months with annual payment",
-          "description": "Includes: Up to 50 documents, 10GB storage, basic support"
-        },
-        "pro": {
-          "name": "Pro Plan",
-          "price": "¥9,800/month or ¥98,000/year (tax included) *Save 2 months with annual payment",
-          "description": "Includes: Unlimited documents, 50GB storage, priority support, advanced features"
-        },
-        "methodsTitle": "3.2 Payment Methods",
-        "methodsIntro": "We accept the following payment methods:",
-        "methods": [
-          "Credit Cards (Visa, Mastercard, American Express, Discover)",
-          "Debit Cards",
-          "Online payment systems (processed through Stripe)"
-        ],
-        "termsTitle": "3.3 Billing Terms",
-        "terms": [
-          "Subscription fees are billed in advance on a recurring basis (monthly or annually)",
-          "Automatic renewal unless cancelled before the end of the current billing period",
-          "All prices are displayed in Japanese Yen (tax included)",
-          "10% consumption tax is included",
-          "Payment is processed securely through our payment provider, Stripe",
-          "Qualified invoices can be issued",
-          "Receipts can be downloaded from account settings"
-        ]
-      },
-      "refund": {
-        "title": "4. Cancellation and Refund Policy",
-        "cancellationTitle": "4.1 Cancellation",
-        "cancellationIntro": "You may cancel your subscription at any time through your account settings or by contacting customer support.",
-        "cancellationTerms": [
-          "Cancellations take effect at the end of your current billing period",
-          "You will continue to have access to the service until the end of your paid period",
-          "No partial refunds are provided for the remaining days of your subscription period",
-          "You can reactivate your account at any time"
-        ],
-        "refundTitle": "4.2 Refund Policy",
-        "refundIntro": "We offer a 30-day money-back guarantee for first-time subscribers:",
-        "refundTerms": [
-          "If you are not satisfied within the first 30 days, you may request a full refund",
-          "Refund requests must be submitted via email to support@repetizero.com",
-          "Refunds are processed within 5-10 business days",
-          "This guarantee applies only to the first subscription period",
-          "Renewal payments are non-refundable except in cases of service failure or billing errors"
-        ]
-      },
-      "support": {
-        "title": "5. Customer Support",
-        "intro": "We provide customer support through the following channels:",
-        "email": {
-          "title": "Email Support",
-          "contact": "support@repetizero.com",
-          "response": "Response time: Within 24 hours (business days)"
-        },
-        "hours": {
-          "title": "Support Hours",
-          "schedule": "Monday - Friday: 9:00 AM - 6:00 PM (Local Time)"
-        }
-      },
-      "contact": {
-        "title": "6. Contact Information",
-        "intro": "For questions about our commercial terms, billing, or transactions, please contact us:",
-        "generalSupport": "General Support",
-        "generalEmail": "support@repetizero.com",
-        "billing": "Billing Inquiries",
-        "billingEmail": "billing@repetizero.com"
       }
     }
   },

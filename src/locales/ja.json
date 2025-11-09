@@ -1110,12 +1110,12 @@
     "sections": {
       "business": {
         "title": "1. 事業者情報",
-        "name": "事業者名",
+        "name": "Repetizero",
         "nameValue": "[あなたの会社名または個人事業主名]",
         "representative": "代表者",
-        "representativeValue": "[代表者のフルネーム]",
+        "representativeValue": "栁澤貴",
         "address": "所在地",
-        "addressValue": "〒[郵便番号]\n[都道府県][市区町村][番地]\n[建物名・部屋番号]",
+        "addressValue": "〒4500002 \n愛知県名古屋市中村区名駅4丁目24番5号\n第2森ビル401",
         "email": "連絡先メール",
         "emailValue": "support@repetizero.com",
         "phone": "電話番号",
@@ -1235,9 +1235,9 @@
       "registration": {
         "title": "7. 事業者登録情報",
         "corporateNumber": "法人番号",
-        "corporateNumberValue": "[法人番号]（法人の場合のみ）",
+        "corporateNumberValue": "該当なし（個人事業主のため法人番号なし）",
         "invoiceNumber": "適格請求書発行事業者登録番号",
-        "invoiceNumberValue": "[登録番号]（インボイス制度対応）",
+        "invoiceNumberValue": "未登録（インボイス未対応）",
         "antiqueDealer": "古物商許可番号",
         "antiqueDealerValue": "該当なし（デジタルサービスのため）"
       },

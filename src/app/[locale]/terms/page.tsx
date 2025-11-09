@@ -270,7 +270,6 @@ export default function TermsOfServicePage() {
               {t('title')}
             </Link>
             <Link href="/privacy" className="hover:text-white transition">Privacy Policy</Link>
-            <Link href="/commerce" className="hover:text-white transition">Commercial Transaction Act</Link>
             <Link href="/legal" className="hover:text-white transition">Legal Notice</Link>
             <Link href="/landing" className="hover:text-white transition">Home</Link>
           </div>

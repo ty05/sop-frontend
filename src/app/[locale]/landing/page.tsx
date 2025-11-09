@@ -474,8 +474,7 @@ export default function LandingPage() {
             <ul className="space-y-2">
               <li><Link href="/terms" className="hover:text-white transition">{t('footer.terms')}</Link></li>
               <li><Link href="/privacy" className="hover:text-white transition">{t('footer.privacy')}</Link></li>
-              <li><Link href="/commerce" className="hover:text-white transition">{t('footer.commerce')}</Link></li>
-              <li><Link href="/legal" className="hover:text-white transition">Legal Notice</Link></li>
+              <li><Link href="/legal" className="hover:text-white transition">{t('footer.legalNotice')}</Link></li>
             </ul>
           </div>
           <div>

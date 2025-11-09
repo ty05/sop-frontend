@@ -280,7 +280,6 @@ export default function LegalNoticePage() {
           <div className="flex flex-wrap justify-center gap-6 mb-4">
             <Link href="/terms" className="hover:text-white transition">Terms of Service</Link>
             <Link href="/privacy" className="hover:text-white transition">Privacy Policy</Link>
-            <Link href="/commerce" className="hover:text-white transition">Commercial Transaction Act</Link>
             <Link href="/legal" className="hover:text-white transition">{t('title')}</Link>
             <Link href="/landing" className="hover:text-white transition">Home</Link>
           </div>
