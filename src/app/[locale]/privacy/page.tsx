@@ -118,6 +118,17 @@ export default function PrivacyPolicyPage() {
                 <li key={idx}>{item}</li>
               ))}
             </ul>
+            <p className="text-gray-700 leading-relaxed mb-4">
+              {t('sections.howWeShare.providers.compliance')}
+            </p>
+
+            <h3 className="text-xl font-bold text-gray-900 mb-3 mt-6">{t('sections.howWeShare.paymentHandling.subtitle')}</h3>
+            <p className="text-gray-700 leading-relaxed mb-4">
+              {t('sections.howWeShare.paymentHandling.content')}
+            </p>
+            <p className="text-gray-700 leading-relaxed mb-4">
+              {t('sections.howWeShare.paymentHandling.stripePolicy')}
+            </p>
 
             <h3 className="text-xl font-bold text-gray-900 mb-3 mt-6">{t('sections.howWeShare.legal.subtitle')}</h3>
             <p className="text-gray-700 leading-relaxed mb-4">
@@ -181,7 +192,6 @@ export default function PrivacyPolicyPage() {
             </p>
             <div className="bg-gray-50 p-4 rounded-lg">
               <p className="text-gray-700 font-medium">{t('sections.contact.email')}</p>
-              <p className="text-gray-700 font-medium mt-2">{t('sections.contact.support')}</p>
             </div>
           </section>
         </div>
@@ -193,6 +203,8 @@ export default function PrivacyPolicyPage() {
           <div className="flex flex-wrap justify-center gap-6 mb-4">
             <Link href="/terms" className="hover:text-white transition">Terms of Service</Link>
             <Link href="/privacy" className="hover:text-white transition">{t('title')}</Link>
+            <Link href="/commerce" className="hover:text-white transition">Commercial Transaction Act</Link>
+            <Link href="/legal" className="hover:text-white transition">Legal Notice</Link>
             <Link href="/landing" className="hover:text-white transition">Home</Link>
           </div>
           <p className="text-sm">© 2025 SOP Manual. All rights reserved.</p>

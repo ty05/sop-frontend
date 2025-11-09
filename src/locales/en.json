@@ -729,7 +729,31 @@
           "We reserve the right to change our fees upon 30 days' notice",
           "You may cancel your subscription at any time, effective at the end of your current billing period",
           "Failure to pay fees may result in suspension or termination of your account"
-        ]
+        ],
+        "freeTrial": {
+          "subtitle": "4.1 Free Trial",
+          "list": [
+            "We offer a 14-day free trial period for new users",
+            "No credit card information is required during the trial period",
+            "Your trial will NOT automatically convert to a paid plan after expiration",
+            "To continue using the service after trial expiration, please upgrade to a paid plan",
+            "During the trial period, the following limits apply:"
+          ],
+          "limits": [
+            "Documents: Maximum 10",
+            "Workspaces: 1 only",
+            "Storage: Up to 1GB"
+          ]
+        },
+        "processing": {
+          "subtitle": "4.2 Payment Processing",
+          "list": [
+            "All payments are processed through Stripe, a third-party payment service",
+            "Credit card information is NOT stored on our servers",
+            "Stripe's terms of service (https://stripe.com/legal) apply to payment security and processing",
+            "For payment-related issues, please contact Stripe support"
+          ]
+        }
       },
       "userContent": {
         "title": "5. User Content",
@@ -766,7 +790,17 @@
       "termination": {
         "title": "9. Termination",
         "ourRights": "We may terminate or suspend your account and access to the Service immediately, without prior notice or liability, for any reason, including if you breach these Terms.",
-        "effect": "Upon termination, your right to use the Service will immediately cease. If you wish to terminate your account, you may simply discontinue using the Service or contact us to request account deletion."
+        "effect": "Upon termination, your right to use the Service will immediately cease. If you wish to terminate your account, you may simply discontinue using the Service or contact us to request account deletion.",
+        "dataRetention": {
+          "subtitle": "9.1 Data After Account Termination",
+          "intro": "Regarding data handling after termination:",
+          "list": [
+            "You can export your data for 30 days after account termination",
+            "After 30 days, all user content (documents, videos, images) will be permanently deleted",
+            "Deleted data CANNOT be recovered",
+            "We strongly recommend downloading backups of your data before deletion"
+          ]
+        }
       },
       "disclaimer": {
         "title": "10. Disclaimer of Warranties",
@@ -810,8 +844,18 @@
       },
       "contact": {
         "title": "15. Contact Us",
-        "intro": "If you have any questions about these Terms, please contact us at:",
-        "email": "Email: support@sopmanual.com"
+        "intro": "For questions about these Terms or support, please contact us at:",
+        "email": "Email: support@repetizero.com",
+        "lastUpdated": "Last Updated: November 9, 2025"
+      },
+      "availability": {
+        "title": "16. Service Availability",
+        "list": [
+          "We aim for 99% uptime but do not guarantee it",
+          "The Service may be temporarily unavailable due to maintenance, updates, or force majeure",
+          "We will notify users in advance of planned maintenance whenever possible",
+          "We are not liable for damages resulting from service interruptions"
+        ]
       }
     }
   },
@@ -840,7 +884,7 @@
           "includes": [
             "Name and contact information (email address, phone number)",
             "Account credentials (username, password)",
-            "Payment information (credit card details, billing address)",
+            "Payment information: We use Stripe (a third-party payment service). Credit card information is sent directly to Stripe and is NOT stored on our servers.",
             "Profile information (company name, job title, preferences)",
             "Content you create, upload, or share through our service (documents, videos, images, annotations)"
           ]
@@ -879,17 +923,24 @@
         },
         "providers": {
           "subtitle": "4.2 Service Providers",
-          "intro": "We may share your information with third-party service providers who perform services on our behalf, including:",
+          "intro": "We may share your information with third-party service providers who perform services on our behalf:",
           "list": [
-            "Cloud hosting providers",
-            "Payment processors",
+            "Cloud hosting providers (Cloudflare R2, Railway)",
+            "Payment processors (Stripe - credit card information is processed directly by Stripe and NOT stored by us)",
+            "Database services (Supabase)",
             "Email service providers",
             "Analytics services",
             "Customer support tools"
-          ]
+          ],
+          "compliance": "These service providers meet our privacy standards and comply with applicable data protection laws."
+        },
+        "paymentHandling": {
+          "subtitle": "4.3 Payment Information Handling",
+          "content": "We use Stripe for payment processing. Credit card information is sent directly to Stripe and processed according to Stripe's security standards (PCI DSS Level 1 compliant). We do NOT store or process full credit card numbers.",
+          "stripePolicy": "For Stripe's privacy policy, please visit: https://stripe.com/privacy"
         },
         "legal": {
-          "subtitle": "4.3 Legal Requirements",
+          "subtitle": "4.4 Legal Requirements",
           "content": "We may disclose your information if required to do so by law or in response to valid requests by public authorities."
         }
       },
@@ -932,8 +983,7 @@
       "contact": {
         "title": "8. Contact Us",
         "intro": "If you have any questions about this Privacy Policy, please contact us:",
-        "email": "Email: privacy@sopmanual.com",
-        "support": "Support: support@sopmanual.com"
+        "email": "Email: support@repetizero.com"
       }
     }
   },
@@ -1045,6 +1095,177 @@
         "generalEmail": "support@sopmanual.com",
         "billing": "Billing Inquiries",
         "billingEmail": "billing@sopmanual.com"
+      }
+    }
+  },
+  "legal": {
+    "title": "Specified Commercial Transactions Act Notice",
+    "lastUpdated": "Last Updated: November 9, 2025",
+    "backToHome": "Back to Home",
+    "sections": {
+      "business": {
+        "title": "1. Business Information",
+        "name": "Business Name",
+        "nameValue": "[Your Company or Sole Proprietor Name]",
+        "representative": "Representative",
+        "representativeValue": "[Full Name of Representative]",
+        "address": "Address",
+        "addressValue": "〒[Postal Code]\n[Prefecture][City][Street Address]\n[Building Name/Room Number]",
+        "email": "Contact Email",
+        "emailValue": "support@repetizero.com",
+        "phone": "Phone Number",
+        "phoneValue": "[Phone Number]",
+        "hours": "Business Hours",
+        "hoursValue": "Monday - Friday, 9:00 AM - 6:00 PM (JST)"
+      },
+      "service": {
+        "title": "2. Service Description",
+        "intro": "This service is a cloud-based platform for creating, managing, and sharing Standard Operating Procedures (SOPs).",
+        "featuresTitle": "Main Features",
+        "features": [
+          "Create and edit video manuals",
+          "Create procedures with text and images",
+          "Team collaboration and workspace management",
+          "Secure cloud storage",
+          "Version control and history tracking"
+        ]
+      },
+      "pricing": {
+        "title": "3. Pricing and Payment Terms",
+        "plansTitle": "3.1 Subscription Plans",
+        "trial": {
+          "name": "Free Trial",
+          "duration": "14 days free",
+          "features": "Access to all features during trial period",
+          "cardRequired": "No credit card required",
+          "limits": "Limitations",
+          "limitsList": [
+            "Documents: Maximum 10",
+            "Storage: Up to 1GB"
+          ]
+        },
+        "basic": {
+          "name": "Basic Plan",
+          "priceMonthly": "Monthly: ¥3,980 (tax included)",
+          "priceYearly": "Yearly: ¥39,800 (tax included) *Save 2 months with annual payment",
+          "featuresTitle": "Included",
+          "features": [
+            "Documents: Up to 50",
+            "Storage: 10GB",
+            "Basic support"
+          ]
+        },
+        "pro": {
+          "name": "Pro Plan",
+          "priceMonthly": "Monthly: ¥9,800 (tax included)",
+          "priceYearly": "Yearly: ¥98,000 (tax included) *Save 2 months with annual payment",
+          "featuresTitle": "Included",
+          "features": [
+            "Documents: Unlimited",
+            "Storage: 50GB",
+            "Priority support",
+            "Advanced features"
+          ]
+        },
+        "methodsTitle": "3.2 Payment Methods",
+        "methodsIntro": "We accept the following payment methods:",
+        "methods": [
+          "Credit cards (Visa, Mastercard, American Express, Discover)",
+          "Debit cards",
+          "Online payment systems (processed through Stripe)"
+        ],
+        "termsTitle": "3.3 Billing Terms",
+        "terms": [
+          "Subscription fees are billed in advance on a recurring basis (monthly or annually)",
+          "Automatically renews unless cancelled before the end of current billing period",
+          "All prices are displayed in Japanese Yen (tax included)",
+          "10% consumption tax is included",
+          "Payments are securely processed through our payment provider Stripe",
+          "Qualified invoices can be issued",
+          "Receipts can be downloaded from account settings"
+        ]
+      },
+      "refund": {
+        "title": "4. Cancellation and Refund Policy",
+        "cancellationTitle": "4.1 Cancellation",
+        "cancellationIntro": "You can cancel your subscription at any time through account settings or by contacting customer support.",
+        "cancellationTerms": [
+          "Cancellation takes effect at the end of the current billing period",
+          "You will have access to the service until the end of the paid period",
+          "No partial refunds are provided for remaining days in the subscription period",
+          "You can reactivate your account at any time"
+        ],
+        "refundTitle": "4.2 Refund Policy",
+        "refundIntro": "We offer a 30-day money-back guarantee for first-time subscribers:",
+        "refundTerms": [
+          "If you're not satisfied within the first 30 days, you can request a full refund",
+          "Refund requests must be submitted via email to support@repetizero.com",
+          "Refunds will be processed within 5-10 business days",
+          "This guarantee applies only to the first subscription period",
+          "Renewal payments are non-refundable except in cases of service failure or billing errors"
+        ]
+      },
+      "support": {
+        "title": "5. Customer Support",
+        "intro": "We provide customer support through the following channels:",
+        "email": {
+          "title": "Email Support",
+          "contact": "support@repetizero.com",
+          "response": "Response time: Within 24 hours (business days)"
+        },
+        "hours": {
+          "title": "Support Hours",
+          "schedule": "Monday - Friday: 9:00 AM - 6:00 PM (JST)"
+        }
+      },
+      "deliveryPeriod": {
+        "title": "6. Delivery Period",
+        "intro": "This service is a cloud-based digital service, so there is no physical product delivery.",
+        "terms": [
+          "Access to the service is provided immediately after payment completion",
+          "Account credentials are sent via email",
+          "Accessible anytime with an internet connection"
+        ]
+      },
+      "registration": {
+        "title": "7. Business Registration Information",
+        "corporateNumber": "Corporate Number",
+        "corporateNumberValue": "[Corporate Number] (for corporations only)",
+        "invoiceNumber": "Qualified Invoice Issuer Registration Number",
+        "invoiceNumberValue": "[Registration Number] (Invoice System Compliant)",
+        "antiqueDealer": "Antique Dealer License Number",
+        "antiqueDealerValue": "Not applicable (digital service)"
+      },
+      "serviceProvision": {
+        "title": "8. Service Provision Timing",
+        "terms": [
+          "Service becomes available immediately after payment completion",
+          "Same applies when upgrading to a paid plan after trial period ends",
+          "Service access is available 24/7 (except during maintenance)"
+        ]
+      },
+      "disclaimer": {
+        "title": "9. Disclaimer",
+        "terms": [
+          "Service usage requires an internet connection and web browser",
+          "Some features may not be available depending on your environment",
+          "Damages from service interruptions or failures will be handled according to the Terms of Service",
+          "This notice is created in accordance with Japan's Specified Commercial Transactions Act"
+        ]
+      },
+      "contact": {
+        "title": "10. Contact Information",
+        "generalSupport": "General Support & Refund Inquiries",
+        "generalEmail": "Email: support@repetizero.com",
+        "generalHours": "Hours: Monday - Friday 9:00-18:00 (JST)",
+        "generalNote": "*Excluding weekends and holidays",
+        "billing": "Billing Inquiries",
+        "billingEmail": "Email: billing@repetizero.com",
+        "addressLabel": "Address",
+        "addressValue": "〒[Postal Code]\n[Address]",
+        "phoneLabel": "TEL",
+        "phoneValue": "[Phone Number]",
+        "lastUpdated": "Last Updated: November 9, 2025"
       }
     }
   }

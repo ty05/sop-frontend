@@ -83,6 +83,26 @@ export default function TermsOfServicePage() {
                 <li key={idx}>{term}</li>
               ))}
             </ul>
+
+            <h3 className="text-xl font-bold text-gray-900 mb-3 mt-6">{t('sections.payment.freeTrial.subtitle')}</h3>
+            <ul className="list-disc pl-6 mb-4 text-gray-700 space-y-2">
+              {(t.raw('sections.payment.freeTrial.list') as string[]).map((item, idx) => (
+                <li key={idx}>{item}</li>
+              ))}
+            </ul>
+            <p className="text-gray-700 leading-relaxed mb-2 font-semibold">Trial Limitations:</p>
+            <ul className="list-disc pl-6 mb-4 text-gray-700 space-y-2">
+              {(t.raw('sections.payment.freeTrial.limits') as string[]).map((limit, idx) => (
+                <li key={idx}>{limit}</li>
+              ))}
+            </ul>
+
+            <h3 className="text-xl font-bold text-gray-900 mb-3 mt-6">{t('sections.payment.processing.subtitle')}</h3>
+            <ul className="list-disc pl-6 mb-4 text-gray-700 space-y-2">
+              {(t.raw('sections.payment.processing.list') as string[]).map((item, idx) => (
+                <li key={idx}>{item}</li>
+              ))}
+            </ul>
           </section>
 
           {/* 5. User Content */}
@@ -142,6 +162,13 @@ export default function TermsOfServicePage() {
             <p className="text-gray-700 leading-relaxed mb-4">
               {t('sections.termination.effect')}
             </p>
+
+            <h3 className="text-xl font-bold text-gray-900 mb-3 mt-6">{t('sections.termination.dataRetention.subtitle')}</h3>
+            <ul className="list-disc pl-6 mb-4 text-gray-700 space-y-2">
+              {(t.raw('sections.termination.dataRetention.list') as string[]).map((item, idx) => (
+                <li key={idx}>{item}</li>
+              ))}
+            </ul>
           </section>
 
           {/* 10. Disclaimer of Warranties */}
@@ -214,6 +241,23 @@ export default function TermsOfServicePage() {
             <div className="bg-gray-50 p-4 rounded-lg">
               <p className="text-gray-700 font-medium">{t('sections.contact.email')}</p>
             </div>
+            <p className="text-gray-600 text-sm mt-4">{t('sections.contact.lastUpdated')}</p>
+          </section>
+
+          {/* 16. Service Availability */}
+          <section className="mb-10">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">{t('sections.availability.title')}</h2>
+            <p className="text-gray-700 leading-relaxed mb-4">
+              {t('sections.availability.intro')}
+            </p>
+            <ul className="list-disc pl-6 mb-4 text-gray-700 space-y-2">
+              {(t.raw('sections.availability.list') as string[]).map((item, idx) => (
+                <li key={idx}>{item}</li>
+              ))}
+            </ul>
+            <p className="text-gray-700 leading-relaxed mb-4">
+              {t('sections.availability.disclaimer')}
+            </p>
           </section>
         </div>
       </div>
@@ -226,6 +270,8 @@ export default function TermsOfServicePage() {
               {t('title')}
             </Link>
             <Link href="/privacy" className="hover:text-white transition">Privacy Policy</Link>
+            <Link href="/commerce" className="hover:text-white transition">Commercial Transaction Act</Link>
+            <Link href="/legal" className="hover:text-white transition">Legal Notice</Link>
             <Link href="/landing" className="hover:text-white transition">Home</Link>
           </div>
           <p className="text-sm">© 2025 SOP Manual. All rights reserved.</p>
