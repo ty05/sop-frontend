@@ -39,36 +39,149 @@ export default function PrivacyPolicyPage() {
           {t('lastUpdated')}
         </p>
 
-        <div className="bg-blue-50 border-l-4 border-blue-600 p-6 mb-8">
-          <p className="text-gray-800">
-            <strong>Note:</strong> Full bilingual content for Privacy Policy is being prepared.
-            For now, please refer to our Terms of Service for our data handling commitments,
-            or contact us at privacy@sopmanual.com for specific privacy inquiries.
-          </p>
-        </div>
-
         <div className="prose prose-lg max-w-none">
+          {/* 1. Introduction */}
           <section className="mb-10">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Summary</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">{t('sections.introduction.title')}</h2>
             <p className="text-gray-700 leading-relaxed mb-4">
-              We respect your privacy and are committed to protecting your personal data.
-              This Privacy Policy explains how we collect, use, and safeguard your information
-              when you use SOP Manual.
+              {t('sections.introduction.welcome')}
+            </p>
+            <p className="text-gray-700 leading-relaxed mb-4">
+              {t('sections.introduction.agreement')}
+            </p>
+          </section>
+
+          {/* 2. Information We Collect */}
+          <section className="mb-10">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">{t('sections.infoCollect.title')}</h2>
+
+            <h3 className="text-xl font-bold text-gray-900 mb-3 mt-6">{t('sections.infoCollect.provided.subtitle')}</h3>
+            <p className="text-gray-700 leading-relaxed mb-4">
+              {t('sections.infoCollect.provided.intro')}
             </p>
             <ul className="list-disc pl-6 mb-4 text-gray-700 space-y-2">
-              <li>We collect information you provide and usage data</li>
-              <li>We use data to provide and improve our service</li>
-              <li>We protect your data with industry-standard security</li>
-              <li>You have rights to access, correct, and delete your data</li>
-              <li>We comply with GDPR, CCPA, and other privacy regulations</li>
+              {(t.raw('sections.infoCollect.provided.when') as string[]).map((item, idx) => (
+                <li key={idx}>{item}</li>
+              ))}
+            </ul>
+            <p className="text-gray-700 leading-relaxed mb-4">
+              {t('sections.infoCollect.provided.mayInclude')}
+            </p>
+            <ul className="list-disc pl-6 mb-4 text-gray-700 space-y-2">
+              {(t.raw('sections.infoCollect.provided.includes') as string[]).map((item, idx) => (
+                <li key={idx}>{item}</li>
+              ))}
+            </ul>
+
+            <h3 className="text-xl font-bold text-gray-900 mb-3 mt-6">{t('sections.infoCollect.automatic.subtitle')}</h3>
+            <p className="text-gray-700 leading-relaxed mb-4">
+              {t('sections.infoCollect.automatic.intro')}
+            </p>
+            <ul className="list-disc pl-6 mb-4 text-gray-700 space-y-2">
+              {(t.raw('sections.infoCollect.automatic.list') as string[]).map((item, idx) => (
+                <li key={idx}>{item}</li>
+              ))}
             </ul>
           </section>
 
+          {/* 3. How We Use Your Information */}
           <section className="mb-10">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Contact</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">{t('sections.howWeUse.title')}</h2>
+            <p className="text-gray-700 leading-relaxed mb-4">
+              {t('sections.howWeUse.intro')}
+            </p>
+            <ul className="list-disc pl-6 mb-4 text-gray-700 space-y-2">
+              {(t.raw('sections.howWeUse.purposes') as string[]).map((purpose, idx) => (
+                <li key={idx}>{purpose}</li>
+              ))}
+            </ul>
+          </section>
+
+          {/* 4. How We Share Your Information */}
+          <section className="mb-10">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">{t('sections.howWeShare.title')}</h2>
+            <p className="text-gray-700 leading-relaxed mb-4">
+              {t('sections.howWeShare.intro')}
+            </p>
+
+            <h3 className="text-xl font-bold text-gray-900 mb-3 mt-6">{t('sections.howWeShare.consent.subtitle')}</h3>
+            <p className="text-gray-700 leading-relaxed mb-4">
+              {t('sections.howWeShare.consent.content')}
+            </p>
+
+            <h3 className="text-xl font-bold text-gray-900 mb-3 mt-6">{t('sections.howWeShare.providers.subtitle')}</h3>
+            <p className="text-gray-700 leading-relaxed mb-4">
+              {t('sections.howWeShare.providers.intro')}
+            </p>
+            <ul className="list-disc pl-6 mb-4 text-gray-700 space-y-2">
+              {(t.raw('sections.howWeShare.providers.list') as string[]).map((item, idx) => (
+                <li key={idx}>{item}</li>
+              ))}
+            </ul>
+
+            <h3 className="text-xl font-bold text-gray-900 mb-3 mt-6">{t('sections.howWeShare.legal.subtitle')}</h3>
+            <p className="text-gray-700 leading-relaxed mb-4">
+              {t('sections.howWeShare.legal.content')}
+            </p>
+          </section>
+
+          {/* 5. Data Security */}
+          <section className="mb-10">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">{t('sections.dataSecurity.title')}</h2>
+            <p className="text-gray-700 leading-relaxed mb-4">
+              {t('sections.dataSecurity.intro')}
+            </p>
+            <ul className="list-disc pl-6 mb-4 text-gray-700 space-y-2">
+              {(t.raw('sections.dataSecurity.measures') as string[]).map((measure, idx) => (
+                <li key={idx}>{measure}</li>
+              ))}
+            </ul>
+            <p className="text-gray-700 leading-relaxed mb-4">
+              {t('sections.dataSecurity.disclaimer')}
+            </p>
+          </section>
+
+          {/* 6. Your Rights and Choices */}
+          <section className="mb-10">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">{t('sections.yourRights.title')}</h2>
+            <p className="text-gray-700 leading-relaxed mb-4">
+              {t('sections.yourRights.intro')}
+            </p>
+            <ul className="list-disc pl-6 mb-4 text-gray-700 space-y-2">
+              {(t.raw('sections.yourRights.rights') as string[]).map((right, idx) => (
+                <li key={idx}>{right}</li>
+              ))}
+            </ul>
+            <p className="text-gray-700 leading-relaxed mb-4">
+              {t('sections.yourRights.contact')}
+            </p>
+          </section>
+
+          {/* 7. Cookies and Tracking Technologies */}
+          <section className="mb-10">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">{t('sections.cookies.title')}</h2>
+            <p className="text-gray-700 leading-relaxed mb-4">
+              {t('sections.cookies.intro')}
+            </p>
+            <p className="text-gray-700 leading-relaxed mb-4">
+              {t('sections.cookies.types')}
+            </p>
+            <ul className="list-disc pl-6 mb-4 text-gray-700 space-y-2">
+              {(t.raw('sections.cookies.typesList') as string[]).map((type, idx) => (
+                <li key={idx}>{type}</li>
+              ))}
+            </ul>
+          </section>
+
+          {/* 8. Contact Us */}
+          <section className="mb-10">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">{t('sections.contact.title')}</h2>
+            <p className="text-gray-700 leading-relaxed mb-4">
+              {t('sections.contact.intro')}
+            </p>
             <div className="bg-gray-50 p-4 rounded-lg">
-              <p className="text-gray-700 font-medium">Email: privacy@sopmanual.com</p>
-              <p className="text-gray-700 font-medium mt-2">Support: support@sopmanual.com</p>
+              <p className="text-gray-700 font-medium">{t('sections.contact.email')}</p>
+              <p className="text-gray-700 font-medium mt-2">{t('sections.contact.support')}</p>
             </div>
           </section>
         </div>
