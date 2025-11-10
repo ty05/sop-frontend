@@ -343,7 +343,7 @@
       "plans": {
         "basic": {
           "name": "ベーシック",
-          "price": "$20/月",
+          "price": "¥3,980/月",
           "features": {
             "workspaces": "3ワークスペース",
             "documents": "無制限のドキュメント",
@@ -353,7 +353,7 @@
         },
         "pro": {
           "name": "プロ",
-          "price": "$50/月",
+          "price": "¥9,800/月",
           "features": {
             "workspaces": "10ワークスペース",
             "unlimited": "すべて無制限",
