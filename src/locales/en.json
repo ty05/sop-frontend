@@ -343,7 +343,7 @@
       "plans": {
         "basic": {
           "name": "Basic",
-          "price": "$20/mo",
+          "price": "$29/mo",
           "features": {
             "workspaces": "3 workspaces",
             "documents": "Unlimited documents",
@@ -353,7 +353,7 @@
         },
         "pro": {
           "name": "Pro",
-          "price": "$50/mo",
+          "price": "$79/mo",
           "features": {
             "workspaces": "10 workspaces",
             "unlimited": "Unlimited everything",

@@ -88,10 +88,12 @@ export default function PricingPage() {
 
     setUpgrading(planId);
 
+    console.log('🔍 Frontend - Sending checkout request:', { plan: planId, locale });
+
     try {
       const res = await apiClient.post(
         `/billing/checkout/${activeWorkspace.id}`,
-        { plan: planId }
+        { plan: planId, locale }
       );
       window.location.href = res.data.checkout_url;
     } catch (error: any) {

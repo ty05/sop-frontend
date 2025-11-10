@@ -123,8 +123,10 @@ export default function WorkspaceSettingsPage() {
       return;
     }
 
+    console.log('🔍 Frontend - Sending checkout request:', { plan, locale });
+
     try {
-      const res = await apiClient.post(`/billing/checkout/${activeWorkspace.id}`, { plan });
+      const res = await apiClient.post(`/billing/checkout/${activeWorkspace.id}`, { plan, locale });
       window.location.href = res.data.checkout_url;
     } catch (error: any) {
       console.error('❌ Checkout error:', error);
