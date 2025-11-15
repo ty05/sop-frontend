@@ -1111,8 +1111,8 @@
     "sections": {
       "business": {
         "title": "1. 事業者情報",
-        "name": "Repetizero",
-        "nameValue": "[あなたの会社名または個人事業主名]",
+        "name": "会社名",
+        "nameValue": "Repetizero",
         "representative": "代表者",
         "representativeValue": "栁澤貴",
         "address": "所在地",
@@ -1120,7 +1120,7 @@
         "email": "連絡先メール",
         "emailValue": "support@repetizero.com",
         "phone": "電話番号",
-        "phoneValue": "[電話番号]",
+        "phoneValue": "請求があれば遅滞なく開示する",
         "hours": "営業時間",
         "hoursValue": "月曜日〜金曜日、午前9時〜午後6時（日本時間）"
       },
