@@ -5,6 +5,7 @@ import { AuthProvider } from '@/contexts/AuthContext';
 import { WorkspaceProvider } from '@/contexts/WorkspaceContext';
 import {NextIntlClientProvider} from 'next-intl';
 import {getMessages} from 'next-intl/server';
+import { GoogleAnalytics } from '@next/third-parties/google';
 
 export const metadata: Metadata = {
   title: 'SOP Manual SaaS',
@@ -50,6 +51,11 @@ export default async function LocaleLayout({
           </AuthProvider>
         </NextIntlClientProvider>
         <PWAInstallPrompt />
+
+        {/* Google Analytics - only in production */}
+        {process.env.NODE_ENV === 'production' && process.env.NEXT_PUBLIC_GA_ID && (
+          <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
+        )}
 
         {/* Service Worker - DISABLED - Unregister old broken SW */}
         <script dangerouslySetInnerHTML={{

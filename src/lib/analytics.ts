@@ -10,9 +10,13 @@
  * - Or any other analytics service
  *
  * Usage:
- * import { trackEvent } from '@/lib/analytics';
+ * import { trackEvent, gaEvents } from '@/lib/analytics';
  * trackEvent('Button_Clicked', { button_name: 'CTA', position: 'hero' });
+ * gaEvents.trialSignupClick('hero');
  */
+
+// Google Analytics 4 Measurement ID
+export const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_ID;
 
 export type AnalyticsEvent = {
   event: string;
@@ -138,3 +142,107 @@ export function identifyUser(userId: string, properties?: Record<string, any>) {
     (window as any).analytics.identify(userId, properties);
   }
 }
+
+// =============================================================================
+// Predefined GA4 Events for easy tracking
+// =============================================================================
+
+type GTagEvent = {
+  action: string;
+  category: string;
+  label?: string;
+  value?: number;
+};
+
+const sendGAEvent = ({ action, category, label, value }: GTagEvent) => {
+  if (typeof window !== 'undefined' && window.gtag) {
+    window.gtag('event', action, {
+      event_category: category,
+      event_label: label,
+      value: value,
+    });
+  }
+};
+
+export const gaEvents = {
+  // Landing page events
+  trialSignupClick: (location: string) => {
+    sendGAEvent({
+      action: 'trial_signup_click',
+      category: 'engagement',
+      label: location, // 'hero', 'pricing', 'footer'
+    });
+  },
+
+  // Auth events
+  signupComplete: () => {
+    sendGAEvent({
+      action: 'signup_complete',
+      category: 'conversion',
+    });
+  },
+
+  loginComplete: () => {
+    sendGAEvent({
+      action: 'login_complete',
+      category: 'engagement',
+    });
+  },
+
+  // Document events
+  documentCreated: () => {
+    sendGAEvent({
+      action: 'document_created',
+      category: 'engagement',
+    });
+  },
+
+  videoUploaded: () => {
+    sendGAEvent({
+      action: 'video_uploaded',
+      category: 'engagement',
+    });
+  },
+
+  imageUploaded: () => {
+    sendGAEvent({
+      action: 'image_uploaded',
+      category: 'engagement',
+    });
+  },
+
+  // Upgrade events
+  upgradeClick: (plan: string) => {
+    sendGAEvent({
+      action: 'upgrade_click',
+      category: 'conversion',
+      label: plan, // 'basic', 'pro'
+    });
+  },
+
+  checkoutStarted: (plan: string, price: number) => {
+    sendGAEvent({
+      action: 'checkout_started',
+      category: 'conversion',
+      label: plan,
+      value: price,
+    });
+  },
+
+  purchaseComplete: (plan: string, price: number) => {
+    sendGAEvent({
+      action: 'purchase',
+      category: 'conversion',
+      label: plan,
+      value: price,
+    });
+  },
+
+  // Export events
+  pdfExport: () => {
+    sendGAEvent({
+      action: 'pdf_export',
+      category: 'engagement',
+    });
+  },
+};
