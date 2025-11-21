@@ -12,7 +12,7 @@ export default function HomePage() {
       if (await isAuthenticated()) {
         router.push('/documents');
       } else {
-        router.push('/auth/login');
+        router.push('/landing');
       }
     };
 
