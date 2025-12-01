@@ -1162,44 +1162,43 @@
     "title": "Contact Us",
     "subtitle": "Have questions or need help? We're here to assist you.",
     "backToHome": "Back to Home",
+    "form": {
+      "title": "Send us a message",
+      "name": "Name",
+      "namePlaceholder": "Your name",
+      "email": "Email Address",
+      "emailPlaceholder": "your@email.com",
+      "subject": "Subject",
+      "subjectPlaceholder": "Select a subject",
+      "subjects": {
+        "general": "General Inquiry",
+        "technical": "Technical Support",
+        "billing": "Billing & Payments",
+        "feedback": "Feedback & Suggestions",
+        "other": "Other"
+      },
+      "message": "Message",
+      "messagePlaceholder": "Tell us how we can help you...",
+      "submit": "Send Message",
+      "sending": "Sending...",
+      "successMessage": "Thank you! Your message has been sent successfully. We'll get back to you within 24 hours.",
+      "errorMessage": "Sorry, there was an error sending your message. Please try again or email us directly."
+    },
     "info": {
-      "title": "Contact Information",
       "email": {
         "title": "Email",
         "address": "support@repetizero.com",
-        "responseTime": "We respond within 24 hours on business days"
+        "responseTime": "Response within 24 hours"
       },
       "hours": {
         "title": "Business Hours",
-        "schedule": "Monday - Friday: 9:00 AM - 6:00 PM (JST)"
-      },
-      "address": {
-        "title": "Address",
-        "value": "〒452-0002\nMori Building No. 2, Room 401\n4-24-5 Meieki, Nakamura-ku\nNagoya-shi, Aichi, Japan"
+        "schedule": "Monday - Friday\n9:00 AM - 6:00 PM (JST)"
       }
     },
-    "support": {
-      "title": "How We Can Help",
-      "general": {
-        "title": "General Inquiries",
-        "description": "Questions about our service, features, or pricing? We're happy to help."
-      },
-      "technical": {
-        "title": "Technical Support",
-        "description": "Having trouble with the platform? Our support team will get you back on track."
-      },
-      "billing": {
-        "title": "Billing & Subscriptions",
-        "description": "Questions about payments, invoices, or plan changes? We've got you covered."
-      },
-      "feedback": {
-        "title": "Feedback & Suggestions",
-        "description": "We love hearing from our users. Share your ideas to help us improve."
-      },
-      "note": "Note:",
-      "noteMessage": "For urgent technical issues, please include your account email and a detailed description of the problem."
-    },
-    "faqPrompt": "Looking for quick answers?",
-    "faqLink": "Visit our FAQ page"
+    "faq": {
+      "title": "Need Quick Answers?",
+      "description": "Check out our frequently asked questions for instant help.",
+      "link": "Visit FAQ"
+    }
   }
 }
