@@ -1157,5 +1157,49 @@
         "lastUpdated": "Last Updated: November 9, 2025"
       }
     }
+  },
+  "contact": {
+    "title": "Contact Us",
+    "subtitle": "Have questions or need help? We're here to assist you.",
+    "backToHome": "Back to Home",
+    "info": {
+      "title": "Contact Information",
+      "email": {
+        "title": "Email",
+        "address": "support@repetizero.com",
+        "responseTime": "We respond within 24 hours on business days"
+      },
+      "hours": {
+        "title": "Business Hours",
+        "schedule": "Monday - Friday: 9:00 AM - 6:00 PM (JST)"
+      },
+      "address": {
+        "title": "Address",
+        "value": "〒452-0002\nMori Building No. 2, Room 401\n4-24-5 Meieki, Nakamura-ku\nNagoya-shi, Aichi, Japan"
+      }
+    },
+    "support": {
+      "title": "How We Can Help",
+      "general": {
+        "title": "General Inquiries",
+        "description": "Questions about our service, features, or pricing? We're happy to help."
+      },
+      "technical": {
+        "title": "Technical Support",
+        "description": "Having trouble with the platform? Our support team will get you back on track."
+      },
+      "billing": {
+        "title": "Billing & Subscriptions",
+        "description": "Questions about payments, invoices, or plan changes? We've got you covered."
+      },
+      "feedback": {
+        "title": "Feedback & Suggestions",
+        "description": "We love hearing from our users. Share your ideas to help us improve."
+      },
+      "note": "Note:",
+      "noteMessage": "For urgent technical issues, please include your account email and a detailed description of the problem."
+    },
+    "faqPrompt": "Looking for quick answers?",
+    "faqLink": "Visit our FAQ page"
   }
 }

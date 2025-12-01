@@ -454,18 +454,9 @@ export default function LandingPage() {
       <footer className="bg-gray-900 text-gray-300 py-12 px-4">
         <div className="max-w-6xl mx-auto grid md:grid-cols-4 gap-8">
           <div>
-            <h3 className="font-bold text-white mb-4">{t('footer.product')}</h3>
-            <ul className="space-y-2">
-              <li><Link href="/landing#how-it-works" className="hover:text-white transition">{t('footer.features')}</Link></li>
-              <li><Link href="/pricing" className="hover:text-white transition">{t('footer.pricing')}</Link></li>
-              <li><Link href="/landing#use-cases" className="hover:text-white transition">{t('footer.useCases')}</Link></li>
-            </ul>
-          </div>
-          <div>
             <h3 className="font-bold text-white mb-4">{t('footer.company')}</h3>
             <ul className="space-y-2">
-              <li><Link href="#" className="hover:text-white transition">{t('footer.about')}</Link></li>
-              <li><Link href="#" className="hover:text-white transition">{t('footer.contact')}</Link></li>
+              <li><Link href="/contact" className="hover:text-white transition">{t('footer.contact')}</Link></li>
               <li><Link href="#" className="hover:text-white transition">{t('footer.blog')}</Link></li>
             </ul>
           </div>
