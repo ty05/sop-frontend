@@ -3,6 +3,10 @@ import { supabase } from './supabase';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
+// Debug logging
+console.log('[API Client] Initializing with URL:', API_URL);
+console.log('[API Client] process.env.NEXT_PUBLIC_API_URL:', process.env.NEXT_PUBLIC_API_URL);
+
 const apiClient = axios.create({
   baseURL: API_URL,
   headers: {
@@ -13,6 +17,10 @@ const apiClient = axios.create({
 // Request interceptor to add Supabase auth token
 apiClient.interceptors.request.use(
   async (config) => {
+    // Debug logging
+    console.log('[API Client] Making request to:', config.baseURL, config.url);
+    console.log('[API Client] Full URL:', `${config.baseURL}${config.url}`);
+
     const { data: { session } } = await supabase.auth.getSession();
     if (session) {
       config.headers.Authorization = `Bearer ${session.access_token}`;
