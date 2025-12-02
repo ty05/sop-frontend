@@ -4,33 +4,33 @@ import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 
-// Sample blog posts - later this can be moved to a CMS or database
+// Blog posts - English and Japanese titles/excerpts handled via translations
 const blogPosts = [
   {
-    slug: 'getting-started-with-sop-manual',
-    title: 'Getting Started with SOP Manual',
-    excerpt: 'Learn how to create your first operation manual with video and image annotations in minutes.',
-    date: '2025-01-15',
+    slug: 'stop-repeated-questions',
+    titleKey: 'stopRepeatedQuestions',
+    excerptKey: 'stopRepeatedQuestionsExcerpt',
+    date: '2025-02-01',
     author: 'SOP Manual Team',
-    category: 'Tutorial',
+    category: 'Training',
     image: 'https://pub-1b9280c6db204bccb8b235db599be438.r2.dev/uploads/video.png'
   },
   {
-    slug: 'best-practices-for-training-videos',
-    title: 'Best Practices for Training Videos',
-    excerpt: 'Discover tips and techniques for creating effective training videos that your team will actually use.',
-    date: '2025-01-10',
+    slug: 'why-manuals-fail',
+    titleKey: 'whyManualsFail',
+    excerptKey: 'whyManualsFailExcerpt',
+    date: '2025-01-25',
     author: 'SOP Manual Team',
     category: 'Best Practices',
     image: 'https://pub-1b9280c6db204bccb8b235db599be438.r2.dev/uploads/image.png'
   },
   {
-    slug: 'how-qr-codes-improve-workplace-efficiency',
-    title: 'How QR Codes Improve Workplace Efficiency',
-    excerpt: 'Learn how QR codes can make your operation manuals more accessible and improve employee productivity.',
-    date: '2025-01-05',
+    slug: 'restaurant-qr-code-success',
+    titleKey: 'restaurantUseCase',
+    excerptKey: 'restaurantUseCaseExcerpt',
+    date: '2025-01-20',
     author: 'SOP Manual Team',
-    category: 'Features',
+    category: 'Case Study',
     image: 'https://pub-1b9280c6db204bccb8b235db599be438.r2.dev/uploads/qr.png'
   }
 ];
@@ -107,11 +107,11 @@ export default function BlogPage() {
                 </div>
 
                 <h2 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
-                  {post.title}
+                  {t(`posts.${post.titleKey}`)}
                 </h2>
 
                 <p className="text-gray-600 mb-4 line-clamp-3">
-                  {post.excerpt}
+                  {t(`posts.${post.excerptKey}`)}
                 </p>
 
                 <div className="flex items-center justify-between">

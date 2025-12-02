@@ -1218,6 +1218,14 @@
       "title": "Ready to get started?",
       "subtitle": "Join thousands of businesses using SOP Manual to streamline their operations.",
       "button": "Start Free Trial"
+    },
+    "posts": {
+      "stopRepeatedQuestions": "How to Stop Answering the Same Question Over and Over",
+      "stopRepeatedQuestionsExcerpt": "If you're tired of explaining the same procedures repeatedly to new hires, this article will show you how to transform your training approach with accessible, on-demand documentation.",
+      "whyManualsFail": "The Real Reason Nobody Uses Your Training Manual",
+      "whyManualsFailExcerpt": "You spent weeks creating that operations manual. Why is it gathering dust? Discover the structural reasons manuals fail and how to fix them.",
+      "restaurantUseCase": "How a QR Code Next to the Register Transformed Staff Training",
+      "restaurantUseCaseExcerpt": "A real story of how one restaurant reduced training questions by 60% and saved 55% of training time using strategically placed QR codes."
     }
   }
 }
