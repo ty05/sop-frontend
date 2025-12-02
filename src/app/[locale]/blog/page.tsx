@@ -86,7 +86,7 @@ export default function BlogPage() {
               <div className="aspect-video overflow-hidden bg-gray-100">
                 <img
                   src={post.image}
-                  alt={post.title}
+                  alt={t(`posts.${post.titleKey}`)}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
               </div>
