@@ -1317,5 +1317,24 @@
       "description": "すぐに答えが必要な場合は、FAQページをご覧ください。",
       "link": "FAQを見る"
     }
+  },
+  "blog": {
+    "title": "ブログ",
+    "subtitle": "SOP Manualを最大限に活用するためのヒント、チュートリアル、インサイト",
+    "backToHome": "ホームに戻る",
+    "backToBlog": "ブログに戻る",
+    "readMore": "続きを読む",
+    "noPosts": "まだ投稿がありません",
+    "noPostsDescription": "役立つ記事やガイドをお楽しみに。",
+    "postNotFound": "投稿が見つかりません",
+    "postNotFoundDescription": "お探しのブログ投稿は存在しません。",
+    "by": "著者",
+    "relatedPosts": "関連記事",
+    "viewAllPosts": "すべての投稿を見る",
+    "cta": {
+      "title": "今すぐ始めましょう",
+      "subtitle": "SOP Manualを使用して業務を効率化している数千の企業に参加しましょう。",
+      "button": "無料トライアルを始める"
+    }
   }
 }

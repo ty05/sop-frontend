@@ -457,7 +457,7 @@ export default function LandingPage() {
             <h3 className="font-bold text-white mb-4">{t('footer.company')}</h3>
             <ul className="space-y-2">
               <li><Link href="/contact" className="hover:text-white transition">{t('footer.contact')}</Link></li>
-              <li><Link href="#" className="hover:text-white transition">{t('footer.blog')}</Link></li>
+              <li><Link href="/blog" className="hover:text-white transition">{t('footer.blog')}</Link></li>
             </ul>
           </div>
           <div>

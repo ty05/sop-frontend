@@ -1200,5 +1200,24 @@
       "description": "Check out our frequently asked questions for instant help.",
       "link": "Visit FAQ"
     }
+  },
+  "blog": {
+    "title": "Blog",
+    "subtitle": "Tips, tutorials, and insights to help you get the most out of SOP Manual",
+    "backToHome": "Back to Home",
+    "backToBlog": "Back to Blog",
+    "readMore": "Read more",
+    "noPosts": "No posts yet",
+    "noPostsDescription": "Check back soon for helpful articles and guides.",
+    "postNotFound": "Post Not Found",
+    "postNotFoundDescription": "The blog post you're looking for doesn't exist.",
+    "by": "By",
+    "relatedPosts": "Related Posts",
+    "viewAllPosts": "View All Posts",
+    "cta": {
+      "title": "Ready to get started?",
+      "subtitle": "Join thousands of businesses using SOP Manual to streamline their operations.",
+      "button": "Start Free Trial"
+    }
   }
 }
