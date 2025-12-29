@@ -366,9 +366,7 @@
             "storage": "50GBストレージ（ベーシックは10GB）",
             "video": "500分の動画ストレージ",
             "support": "優先サポート",
-            "branding": "カスタムブランディング",
-            "analytics": "分析ダッシュボード",
-            "api": "APIアクセス"
+            "analytics": "分析ダッシュボード"
           }
         }
       },
@@ -490,9 +488,7 @@
           "storage": "50GBストレージ",
           "videoStorage": "500分の動画ストレージ",
           "support": "優先サポート",
-          "branding": "カスタムブランディング",
-          "analytics": "分析ダッシュボード",
-          "api": "APIアクセス"
+          "analytics": "分析ダッシュボード"
         }
       }
     }
@@ -613,9 +609,7 @@
           "videos": "無制限の動画",
           "qr": "QRコードアクセス",
           "support": "優先サポート",
-          "export": "PDFエクスポート",
-          "api": "APIアクセス",
-          "custom": "カスタムブランディング"
+          "export": "PDFエクスポート"
         },
         "cta": "今すぐ始める"
       },

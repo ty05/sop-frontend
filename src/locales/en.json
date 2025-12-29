@@ -366,9 +366,7 @@
             "storage": "50GB storage (vs 10GB on Basic)",
             "video": "500 min video storage",
             "support": "Priority support",
-            "branding": "Custom branding",
-            "analytics": "Analytics dashboard",
-            "api": "API access"
+            "analytics": "Analytics dashboard"
           }
         }
       },
@@ -490,9 +488,7 @@
           "storage": "50GB storage",
           "videoStorage": "500 min video storage",
           "support": "Priority support",
-          "branding": "Custom branding",
-          "analytics": "Analytics dashboard",
-          "api": "API access"
+          "analytics": "Analytics dashboard"
         }
       }
     }
@@ -613,9 +609,7 @@
           "videos": "Unlimited videos",
           "qr": "QR code access",
           "support": "Priority support",
-          "export": "PDF export",
-          "api": "API access",
-          "custom": "Custom branding"
+          "export": "PDF export"
         },
         "cta": "Get Started"
       },

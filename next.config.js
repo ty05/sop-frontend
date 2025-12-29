@@ -6,7 +6,6 @@ const nextConfig = {
   reactStrictMode: true,
 
   eslint: {
-    // WARNING: ビルド時のESLintチェックを無効化
     ignoreDuringBuilds: true,
   },
 
